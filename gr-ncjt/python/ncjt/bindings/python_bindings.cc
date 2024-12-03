@@ -21,6 +21,8 @@ namespace py = pybind11;
 // Please do not delete
 /**************************************/
 // BINDING_FUNCTION_PROTOTYPES(
+    void bind_burst_tx(py::module& m);
+    void bind_pkt_detect(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -49,5 +51,7 @@ PYBIND11_MODULE(ncjt_python, m)
     // Please do not delete
     /**************************************/
     // BINDING_FUNCTION_CALLS(
+    bind_burst_tx(m);
+    bind_pkt_detect(m);
     // ) END BINDING_FUNCTION_CALLS
 }

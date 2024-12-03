@@ -1,0 +1,69 @@
+id: ncjt_pkt_detect
+label: pkt_detect
+category: '[dMIMO]'
+
+templates:
+  imports: import ncjt
+  make: ncjt.pkt_detect(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorr_thrd}, ${xcorr_thrd}, ${max_corr_len}, ${debug})
+
+parameters:
+  - id: nchans
+    label: Number of Channels
+    dtype: int
+    default: 1
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: preamblelen
+    label: HTPreamble Length
+    dtype: int
+    default: '400'
+  - id: dataframelen
+    label: DataFrame Length
+    dtype: int
+  - id: sampfreq
+    label: Sample Freq
+    dtype: real
+    default: '1000000'
+    hide: part
+  - id: pktspersec
+    label: Packets/Sec
+    dtype: int
+    default: '8'
+  - id: acorrthrd
+    label: Search Threshold
+    dtype: real
+    default: '0.6'
+  - id: xcorrthrd
+    label: Xcorr Threshold
+    dtype: real
+    default: '0.5'
+  - id: maxcorrlen
+    label: Search Window
+    dtype: int
+    default: '4000'
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: complex
+    multiplicity: ${nchans}
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    multiplicity: ${nchans}
+
+asserts:
+  - ${ dataframelen > 0 }
+  - ${ dataframelen > 0 }
+  - ${ pktspersec >= 1 and pktspersec <= 100 }
+
+file_format: 1

@@ -6,4 +6,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-install(FILES DESTINATION share/gnuradio/grc/blocks)
+install(FILES
+    ncjt_burst_tx.block.yml
+    ncjt_pkt_detect.block.yml DESTINATION share/gnuradio/grc/blocks)

@@ -9,4 +9,6 @@
 ########################################################################
 # Install public header files
 ########################################################################
-install(FILES api.h DESTINATION include/gnuradio/ncjt)
+install(FILES api.h
+    burst_tx.h
+    pkt_detect.h DESTINATION include/gnuradio/ncjt)

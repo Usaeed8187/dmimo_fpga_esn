@@ -1,0 +1,40 @@
+id: ncjt_burst_tx
+label: Burst Tx
+category: '[dMIMO]'
+
+templates:
+  imports: import ncjt
+  make: ncjt.burst_tx(${filename}, ${samplerate}, ${pktspersec}, ${pktsize}, ${debug})
+
+parameters:
+  - id: filename
+    label: Data File
+    dtype: file_open
+    hide: part
+  - id: samplerate
+    label: Sampling Freq.
+    dtype: real
+    default: '1e6'
+  - id: pktspersec
+    label: Packet Per Second
+    dtype: int
+    default: '8'
+  - id: pktsize
+    label: Packet Size
+    dtype: int
+    default: '0'
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    multiplicity: '1'
+
+file_format: 1
