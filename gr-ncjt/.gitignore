@@ -1,0 +1,9 @@
+backup/
+build/
+cmake-build-debug/
+data/
+.DS_Store
+.vscode/
+.idea/
+__pycache__
+*~
