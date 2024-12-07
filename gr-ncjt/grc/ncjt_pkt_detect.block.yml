@@ -1,17 +1,17 @@
 id: ncjt_pkt_detect
-label: pkt_detect
+label: Packet Detect
 category: '[dMIMO]'
 
 templates:
   imports: import ncjt
-  make: ncjt.pkt_detect(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorr_thrd}, ${xcorr_thrd}, ${max_corr_len}, ${debug})
+  make: ncjt.pkt_detect(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
 
 parameters:
   - id: nchans
     label: Number of Channels
     dtype: int
     default: 1
-    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ]
     hide: part
   - id: preamblelen
     label: HTPreamble Length
@@ -20,8 +20,8 @@ parameters:
   - id: dataframelen
     label: DataFrame Length
     dtype: int
-  - id: sampfreq
-    label: Sample Freq
+  - id: samplerate
+    label: Sample Rate
     dtype: real
     default: '1000000'
     hide: part

@@ -87,12 +87,10 @@ burst_tx_impl::work(int noutput_items,
     }
 
     int data_remaining = d_data_len - d_buf_pos;
-    if (data_remaining == 0)
-    {
+    if (data_remaining == 0) {
         d_buf_pos = 0;
     }
-    else if (data_remaining < d_pktsize)
-    {
+    else if (data_remaining < d_pktsize) {
         throw std::runtime_error("packet fragmentation occurs");
     }
 
@@ -117,6 +115,7 @@ burst_tx_impl::work(int noutput_items,
         d_first_burst = false;
         d_time_secs = 2;
     }
+    d_buf_pos += d_pktsize;
     d_time_fracs += d_repeat_interval;
     double intpart; // normalize
     d_time_fracs = std::modf(d_time_fracs, &intpart);
@@ -144,6 +143,9 @@ burst_tx_impl::read_frame_data(const char *filename)
 
     GR_FSEEK(d_fp, 0, SEEK_SET);
     d_frame_data = (gr_complex *) malloc(file_size);
+    if (d_frame_data == nullptr)
+        throw std::runtime_error("failed to allocate packet buffer");
+
     if (packet_len != fread(d_frame_data, sizeof(gr_complex), packet_len, d_fp))
     {
         dout << "failed to read file content" << std::endl;

@@ -24,8 +24,15 @@ if(NOT ncjt_sources)
     return()
 endif(NOT ncjt_sources)
 
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+
 add_library(gnuradio-ncjt SHARED ${ncjt_sources})
-target_link_libraries(gnuradio-ncjt gnuradio::gnuradio-runtime)
+target_link_libraries(gnuradio-ncjt 
+	gnuradio::gnuradio-runtime
+	gnuradio-filter
+	gnuradio-fft
+	Eigen3::Eigen)
+
 target_include_directories(
     gnuradio-ncjt
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>

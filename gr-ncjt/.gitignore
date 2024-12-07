@@ -1,9 +1,12 @@
-backup/
-build/
+backup
+data*/
+demo/*.py
+tests/*.py
+build
 cmake-build-debug/
-data/
+.idea
 .DS_Store
 .vscode/
-.idea/
 __pycache__
 *~
+

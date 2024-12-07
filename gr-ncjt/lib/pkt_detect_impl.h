@@ -27,7 +27,7 @@ private:
     const int XCORR_DATA_LEN = LTF_LEN * 4; // Cross-correlation data buffer length
     const int MAX_XCORR_LEN = 1024; // Maximum cross-correlation output buffer length
     const int MAX_PREAMBLE_SYMS = 12; // Maximal number of HT preamble symbols (HT-SIG, etc.)
-    const int MAX_CHANS = 8; // Maximum number of IQ channels
+    const int MAX_CHANS = 20; // Maximum number of IQ channels
 
     int d_num_chans;  // Total number of IQ data channels
     int d_frame_len; // frame length in samples (HT preamble + data symbols)

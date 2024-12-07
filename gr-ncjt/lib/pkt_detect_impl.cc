@@ -54,11 +54,11 @@ pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
         throw std::runtime_error("invalid data frame length specified");
 
     // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF
-    d_frame_len = dataframelen + preamblelen - 3*SYM_LEN;
+    d_frame_len = dataframelen + preamblelen - 3*SYM_LEN; // 3*SYM_LEN;
 
     d_pkt_interval = 1.0 / (double) pktspersec;
     // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG)
-    d_wait_interval = (int) floor(samplerate * d_pkt_interval) - d_frame_len - 8 * SYM_LEN;
+    d_wait_interval = (int) floor(samplerate * d_pkt_interval) - d_frame_len - 8 * SYM_LEN; // 8 * SYM_LEN;
 
     d_corr_buf_pos = 0;
     d_corr_buf = malloc_complex(CORR_BUF_LEN);
