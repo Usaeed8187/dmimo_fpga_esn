@@ -23,6 +23,7 @@ namespace py = pybind11;
 // BINDING_FUNCTION_PROTOTYPES(
     void bind_burst_tx(py::module& m);
     void bind_pkt_detect(py::module& m);
+    void bind_sync_all(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -53,5 +54,6 @@ PYBIND11_MODULE(ncjt_python, m)
     // BINDING_FUNCTION_CALLS(
     bind_burst_tx(m);
     bind_pkt_detect(m);
+    bind_sync_all(m);
     // ) END BINDING_FUNCTION_CALLS
 }

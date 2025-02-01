@@ -26,7 +26,8 @@ include(GrPybind)
 
 list(APPEND ncjt_python_files
     burst_tx_python.cc
-    pkt_detect_python.cc python_bindings.cc)
+    pkt_detect_python.cc
+    sync_all_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(ncjt ../../.. gr::ncjt "${ncjt_python_files}")
 

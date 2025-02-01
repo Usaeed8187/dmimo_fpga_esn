@@ -3,8 +3,8 @@ label: Packet Detect
 category: '[dMIMO]'
 
 templates:
-  imports: import ncjt
-  make: ncjt.pkt_detect(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
+  imports: from gnuradio import ncjt
+  make: ncjt.pkt_detect(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${syncall}, ${debug})
 
 parameters:
   - id: nchans
@@ -41,6 +41,13 @@ parameters:
     label: Search Window
     dtype: int
     default: '4000'
+  - id: syncall
+    label: Sync Rx
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -54,12 +61,18 @@ inputs:
     domain: stream
     dtype: complex
     multiplicity: ${nchans}
+  - label: allrdy
+    domain: message
+    optional: true
 
 outputs:
   - label: out
     domain: stream
     dtype: complex
     multiplicity: ${nchans}
+  - label: rxrdy
+    domain: message
+    optional: true
 
 asserts:
   - ${ dataframelen > 0 }

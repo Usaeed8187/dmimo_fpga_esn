@@ -14,7 +14,8 @@ include(GrPlatform) #define LIB_SUFFIX
 list(APPEND ncjt_sources
     utils.cc
     burst_tx_impl.cc
-    pkt_detect_impl.cc)
+    pkt_detect_impl.cc
+    sync_all_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"

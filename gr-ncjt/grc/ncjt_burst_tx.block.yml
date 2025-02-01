@@ -3,7 +3,7 @@ label: Burst Tx
 category: '[dMIMO]'
 
 templates:
-  imports: import ncjt
+  imports: from gnuradio import ncjt
   make: ncjt.burst_tx(${filename}, ${samplerate}, ${pktspersec}, ${pktsize}, ${debug})
 
 parameters:

@@ -35,7 +35,7 @@ public:
     static sptr
     make(int nchans, int preamblelen, int dataframelen,
          double samplerate, int pktspersec, double acorr_thrd,
-         double xcorr_thrd, int max_corr_len, bool debug = false);
+         double xcorr_thrd, int max_corr_len, bool sync_all, bool debug = false);
 };
 
 } // namespace gr::ncjt

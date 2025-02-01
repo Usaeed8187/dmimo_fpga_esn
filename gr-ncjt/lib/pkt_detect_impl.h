@@ -38,7 +38,11 @@ private:
     float d_xcorr_thrd;     // Cross-correlation detection threshold
     int d_max_corr_len;     // Maximal auto-correlation buffer length
     int d_rx_ready_cnt;     // receiver synchronization counter
-    int d_rx_demod_en;      // receiver demodulation enabled
+    bool d_rx_demod_en;      // receiver demodulation enabled
+
+    bool d_sync_all;        // wait for all receiver are synchronized
+    bool d_rx_all_sync;     // all receiver synchronization done
+    bool d_rx_all_ready;    // all receiver ready to output data
 
     float *d_pwrest_buf;
     gr_complex *d_corr_buf;
@@ -59,6 +63,7 @@ private:
     float *d_xcorr_val;
 
     const bool d_debug;
+    pmt::pmt_t _id;
 
     enum { SEARCH, FINESYNC, DEFRAME, WAIT } d_state;
 
@@ -68,10 +73,16 @@ private:
     int
     fine_sync(const gr_vector_const_void_star &input_items, int buffer_len);
 
+    void
+    process_allsync_message(const pmt::pmt_t &msg);
+
+    void
+    send_rxstate_message(bool ready);
+
 public:
     pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
                     double samplerate, int pktspersec, double acorr_thrd,
-                    double xcorr_thrd, int max_corr_len, bool debug);
+                    double xcorr_thrd, int max_corr_len, bool sync_all, bool debug);
     ~pkt_detect_impl();
 
     void

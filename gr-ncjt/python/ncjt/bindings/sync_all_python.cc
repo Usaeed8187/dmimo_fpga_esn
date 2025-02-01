@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(pkt_detect.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(e20ee2bdabdf1d86f7714fe777cb1ff9) */
+/* BINDTOOL_HEADER_FILE(sync_all.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(ab0e2942f484f68b65e0a01dbf5bfa3b) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,19 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/pkt_detect.h>
+#include <gnuradio/ncjt/sync_all.h>
 // pydoc.h is automatically generated in the build directory
-#include <pkt_detect_pydoc.h>
+#include <sync_all_pydoc.h>
 
-void bind_pkt_detect(py::module &m) {
+void bind_sync_all(py::module &m) {
 
-  using pkt_detect = ::gr::ncjt::pkt_detect;
+  using sync_all = ::gr::ncjt::sync_all;
 
-  py::class_<pkt_detect, gr::block, gr::basic_block,
-             std::shared_ptr<pkt_detect>>(m, "pkt_detect", D(pkt_detect))
+  py::class_<sync_all, gr::block, gr::basic_block, std::shared_ptr<sync_all>>(
+      m, "sync_all", D(sync_all))
 
-      .def(py::init(&pkt_detect::make), py::arg("nchans"),
-           py::arg("preamblelen"), py::arg("dataframelen"),
-           py::arg("samplerate"), py::arg("pktspersec"), py::arg("acorr_thrd"),
-           py::arg("xcorr_thrd"), py::arg("max_corr_len"), py::arg("sync_all"),
-           py::arg("debug") = false, D(pkt_detect, make))
+      .def(py::init(&sync_all::make), py::arg("num_rx"),
+           py::arg("debug") = false, D(sync_all, make))
 
       ;
 }

@@ -8,4 +8,5 @@
 
 install(FILES
     ncjt_burst_tx.block.yml
-    ncjt_pkt_detect.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_pkt_detect.block.yml
+    ncjt_sync_all.block.yml DESTINATION share/gnuradio/grc/blocks)

@@ -11,4 +11,5 @@
 ########################################################################
 install(FILES api.h
     burst_tx.h
-    pkt_detect.h DESTINATION include/gnuradio/ncjt)
+    pkt_detect.h
+    sync_all.h DESTINATION include/gnuradio/ncjt)

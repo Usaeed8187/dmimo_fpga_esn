@@ -1,0 +1,33 @@
+id: ncjt_sync_all
+label: Sync Rx
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.sync_all(${num_rx}, ${debug})
+
+
+parameters:
+  - id: num_rx
+    label: Number of Receivers
+    dtype: int
+    default: 2
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: syncst
+    domain: message
+    optional: true
+
+outputs:
+  - label: allsync
+    domain: message
+    optional: true
+
+file_format: 1

@@ -13,30 +13,33 @@
 
 using namespace std;
 
-namespace gr::ncjt {
+namespace gr::ncjt
+{
 
 static const pmt::pmt_t TIME_KEY = pmt::string_to_symbol("rx_time");
 static const pmt::pmt_t RATE_KEY = pmt::string_to_symbol("rx_rate");
 static const pmt::pmt_t FREQ_KEY = pmt::string_to_symbol("rx_freq");
 
-pkt_detect::sptr pkt_detect::make(int nchans, int preamblelen, int dataframelen,
-                                  double samplerate, int pktspersec,
-                                  double acorr_thrd, double xcorr_thrd,
-                                  int max_corr_len, bool debug) {
-  return gnuradio::make_block_sptr<pkt_detect_impl>(
-      nchans, preamblelen, dataframelen, samplerate, pktspersec, acorr_thrd,
-      xcorr_thrd, max_corr_len, debug);
+pkt_detect::sptr
+pkt_detect::make(int nchans, int preamblelen, int dataframelen,
+                 double samplerate, int pktspersec,
+                 double acorr_thrd, double xcorr_thrd,
+                 int max_corr_len, bool sync_all, bool debug)
+{
+    return gnuradio::make_block_sptr<pkt_detect_impl>(
+        nchans, preamblelen, dataframelen, samplerate, pktspersec, acorr_thrd,
+        xcorr_thrd, max_corr_len, sync_all, debug);
 }
 
 pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
                                  double samplerate, int pktspersec,
                                  double acorr_thrd, double xcorr_thrd,
-                                 int max_corr_len, bool debug)
+                                 int max_corr_len, bool sync_all, bool debug)
     : gr::block("pkt_detect",
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex)),
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex))),
       d_sampling_freq(samplerate), d_acorr_thrd(acorr_thrd),
-      d_xcorr_thrd(xcorr_thrd), d_max_corr_len(max_corr_len), d_rx_ready_cnt(0), d_fine_foe_cnt(1),
+      d_xcorr_thrd(xcorr_thrd), d_max_corr_len(max_corr_len), d_rx_ready_cnt(0), d_sync_all(sync_all), d_fine_foe_cnt(1),
       d_xcorr_fir(gr::filter::kernel::fir_filter_ccc(LTF_SEQ)), d_debug(debug)
 {
     if (nchans < 1 || nchans > MAX_CHANS)
@@ -50,11 +53,11 @@ pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
 
     if (preamblelen < 0 || preamblelen >= SYM_LEN * MAX_PREAMBLE_SYMS)
         throw std::runtime_error("invalid HT preamble length specified");
-    if (preamblelen < 0 || preamblelen > int(samplerate/pktspersec))
+    if (preamblelen < 0 || preamblelen > int(samplerate / pktspersec))
         throw std::runtime_error("invalid data frame length specified");
 
     // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF
-    d_frame_len = dataframelen + preamblelen - 3*SYM_LEN; // 3*SYM_LEN;
+    d_frame_len = dataframelen + preamblelen - 3 * SYM_LEN; // 3*SYM_LEN;
 
     d_pkt_interval = 1.0 / (double) pktspersec;
     // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG)
@@ -71,12 +74,21 @@ pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
     d_state = SEARCH;
     d_wait_count = 0;
     d_rx_demod_en = false;
+    d_rx_all_sync = false;
+    d_rx_all_ready = false;
 
     // message_port_register_out(pmt::mp("uhdcmd"));
     // message_port_register_out(pmt::mp("rxtime"));
-    // message_port_register_out(pmt::mp("rxrdy"));
+    message_port_register_out(pmt::mp("rxrdy"));
+
+    message_port_register_in(pmt::mp("allrdy"));
+    set_msg_handler(pmt::mp("allrdy"), [this](const pmt::pmt_t &msg) { process_allsync_message(msg); });
 
     set_tag_propagation_policy(block::TPP_DONT);
+
+    std::stringstream str;
+    str << name() << unique_id();
+    _id = pmt::string_to_symbol(str.str());
 }
 
 pkt_detect_impl::~pkt_detect_impl()
@@ -119,6 +131,21 @@ pkt_detect_impl::forecast(int noutput_items, gr_vector_int &ninput_items_require
             break;
         }
     } // d_state
+}
+
+void
+pkt_detect_impl::process_allsync_message(const pmt::pmt_t &msg)
+{
+    bool all_sync = pmt::to_bool(msg);
+    if (all_sync)
+        d_rx_all_sync = true;
+}
+
+void
+pkt_detect_impl::send_rxstate_message(bool ready) {
+    pmt::pmt_t dict = pmt::make_dict();
+    dict = pmt::dict_add(dict, pmt::mp("rxrdy"), _id);
+    message_port_pub(pmt::mp("rxrdy"), dict);
 }
 
 int
@@ -188,7 +215,8 @@ pkt_detect_impl::general_work(int noutput_items,
             }
 
             // skip initial frames with unstable FOE
-            if (d_rx_ready_cnt <= 20)
+            // wait for all other receiver all synced
+            if (d_rx_ready_cnt <= 20 || (d_sync_all && !d_rx_all_sync))
             {
                 d_data_samples += noutput_samples;
                 consume_each(noutput_samples);
@@ -235,6 +263,7 @@ pkt_detect_impl::general_work(int noutput_items,
             if (!d_rx_demod_en && d_rx_ready_cnt >= 20)
             {
                 d_rx_demod_en = true;
+                send_rxstate_message(true);
                 std::cout << "Synchronization acquired" << std::endl;
                 std::cout << "Fine frequency offset compensation: " << d_current_foe_comp << "    ("
                           << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << endl;
@@ -247,6 +276,8 @@ pkt_detect_impl::general_work(int noutput_items,
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
                 d_state = FINESYNC; // SEARCH;
+                if (d_rx_demod_en && d_rx_all_sync)
+                    d_rx_all_ready = true;
             }
             consume_each(min_input_items);
             break;
@@ -352,7 +383,7 @@ pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int b
         d_current_foe_comp = arg(corr_foe) / (float) CORR_DELAY; // FOE compensation in radians
         float foe_comp_hz = d_current_foe_comp * d_sampling_freq / (2.0 * M_PI);
         dout << "Coarse frequency offset compensation: " << d_current_foe_comp << " (" << foe_comp_hz << " Hz)" << endl;
-        d_current_foe_comp = 0.0;
+        // d_current_foe_comp = 0.0;
     }
 
     // return start position of the L-STF (with guard interval)
@@ -445,7 +476,7 @@ pkt_detect_impl::fine_sync(const gr_vector_const_void_star &input_items, int buf
         // start of the HT preambles (HT-SIGs)
         // sig_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;
         // start of the HT-LTF
-        sig_start = first_peak_pos + 2 * FFT_LEN + 4*SYM_LEN;
+        sig_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
     }
     else
     {
@@ -468,7 +499,7 @@ pkt_detect_impl::fine_sync(const gr_vector_const_void_star &input_items, int buf
             d_fine_foe_comp = fine_foe_comp;
         else
         {
-            // d_current_foe_comp += 0.1 * (d_fine_foe_comp + fine_foe_comp);
+            d_current_foe_comp += 0.1 * (d_fine_foe_comp + fine_foe_comp);
             dout << "Fine frequency offset compensation: " << d_current_foe_comp << "    ("
                  << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << endl;
         }

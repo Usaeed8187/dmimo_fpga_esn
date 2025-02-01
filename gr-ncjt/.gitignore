@@ -1,4 +1,5 @@
 backup
+data
 data*/
 demo/*.py
 tests/*.py
