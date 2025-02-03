@@ -1,0 +1,62 @@
+id: ncjt_tx_framing
+label: Tx Framing
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.tx_framing(${nstrm}, ${ndatasyms}, ${filename}, ${fs}, ${duration}, ${starttime}, ${padding}, ${debug})
+
+
+parameters:
+  - id: nstrm
+    label: Number of Streams
+    dtype: int
+    default: 1
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: ndatasyms
+    label: Data Symobols
+    dtype: int
+  - id: filename
+    label: Beacon Data
+    dtype: file_open
+    hide: part
+  - id: fs
+    label: Sampling Freq.
+    dtype: real
+    default: '1e6'
+  - id: duration
+    label: Repeat Duration
+    dtype: real
+    default: '1.0'
+  - id: starttime
+    label: Start Time
+    dtype: int
+    default: '2'
+    hide: part
+  - id: padding
+    label: Padding
+    dtype: int
+    default: 500
+    hide: part
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: complex
+    multiplicity: ${nstrm}
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    multiplicity: ${nstrm}
+
+file_format: 1

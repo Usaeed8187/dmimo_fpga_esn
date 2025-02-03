@@ -12,4 +12,14 @@
 install(FILES api.h
     burst_tx.h
     pkt_detect.h
-    sync_all.h DESTINATION include/gnuradio/ncjt)
+    sync_all.h
+    ofdm_mod.h
+    ofdm_demod.h
+    ltf_chanest.h
+    qam_demapper.h
+    soft_demapper.h
+    pkt_err.h
+    tx_framing.h
+    rg_mapper.h
+    rg_demapper.h
+    ul_precoding.h DESTINATION include/gnuradio/ncjt)

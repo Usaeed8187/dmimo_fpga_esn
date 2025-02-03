@@ -1,0 +1,76 @@
+id: ncjt_ltf_chanest
+label: Chan Est
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.ltf_chanest(${fftsize}, ${ntx}, ${nrx}, ${npreamblesyms}, ${ndatasyms}, ${docsi}, ${logfreq}, ${debug})
+
+parameters:
+- id: fftsize
+  label: FFT Size
+  dtype: int
+  default: '64'
+  hide: part
+- id: ntx
+  label: Num Tx Antennas
+  dtype: int
+  default: '2'
+- id: nrx
+  label: Num Rx Antennas
+  dtype: int
+  default: '2'
+- id: npreamblesyms
+  label: HT Preamble Symbols
+  dtype: int
+  default: '5'
+- id: ndatasyms
+  label: Data Symobols
+  dtype: int
+- id: docsi
+  label: CSI Output
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: logfreq
+  label: Log Frequency
+  dtype: int
+  default: '10'
+  hide: part
+- id: debug
+  label: Debug
+  dtype: bool
+  default: 'False'
+  options: ['True', 'False']
+  option_labels: [Enable, Disable]
+  hide: part
+
+inputs:
+- label: in
+  domain: stream
+  dtype: complex
+  multiplicity: ${nrx}
+- label: reset
+  domain: message
+  optional: true
+
+outputs:
+- label: out
+  domain: stream
+  dtype: complex
+  multiplicity: ${nrx}
+- label: cpe
+  domain: message
+  optional: true
+- label: csi
+  domain: message
+  optional: true
+
+asserts:
+  - ${ fftsize == 64 or fftsize == 256 }
+  - ${ ntx <= 8 and nrx <= 8}
+  - ${ npreamblesyms > 0 }
+  - ${ ndatasyms > 0 }
+
+file_format: 1

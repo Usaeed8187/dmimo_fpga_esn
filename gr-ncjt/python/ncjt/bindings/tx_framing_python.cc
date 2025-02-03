@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(pkt_detect.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(e20ee2bdabdf1d86f7714fe777cb1ff9) */
+/* BINDTOOL_HEADER_FILE(tx_framing.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(50bbf047a6e5212ae86c5e89d1c3ff3a) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,21 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/pkt_detect.h>
+#include <gnuradio/ncjt/tx_framing.h>
 // pydoc.h is automatically generated in the build directory
-#include <pkt_detect_pydoc.h>
+#include <tx_framing_pydoc.h>
 
-void bind_pkt_detect(py::module &m) {
+void bind_tx_framing(py::module &m) {
 
-  using pkt_detect = ::gr::ncjt::pkt_detect;
+  using tx_framing = ::gr::ncjt::tx_framing;
 
-  py::class_<pkt_detect, gr::block, gr::basic_block,
-             std::shared_ptr<pkt_detect>>(m, "pkt_detect", D(pkt_detect))
+  py::class_<tx_framing, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<tx_framing>>(m, "tx_framing", D(tx_framing))
 
-      .def(py::init(&pkt_detect::make), py::arg("nchans"),
-           py::arg("preamblelen"), py::arg("dataframelen"),
-           py::arg("samplerate"), py::arg("pktspersec"), py::arg("acorr_thrd"),
-           py::arg("xcorr_thrd"), py::arg("max_corr_len"), py::arg("sync_all"),
-           py::arg("debug") = false, D(pkt_detect, make))
+      .def(py::init(&tx_framing::make), py::arg("nstrm"), py::arg("ndatasyms"),
+           py::arg("filename"), py::arg("fs"), py::arg("interval"),
+           py::arg("starttime"), py::arg("padding"), py::arg("debug"),
+           D(tx_framing, make))
 
       ;
 }

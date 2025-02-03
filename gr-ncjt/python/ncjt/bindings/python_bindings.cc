@@ -24,6 +24,16 @@ namespace py = pybind11;
     void bind_burst_tx(py::module& m);
     void bind_pkt_detect(py::module& m);
     void bind_sync_all(py::module& m);
+    void bind_ofdm_mod(py::module& m);
+    void bind_ofdm_demod(py::module& m);
+    void bind_ltf_chanest(py::module& m);
+    void bind_qam_demapper(py::module& m);
+    void bind_soft_demapper(py::module& m);
+    void bind_pkt_err(py::module& m);
+    void bind_tx_framing(py::module& m);
+    void bind_rg_mapper(py::module& m);
+    void bind_rg_demapper(py::module& m);
+    void bind_ul_precoding(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -55,5 +65,15 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_burst_tx(m);
     bind_pkt_detect(m);
     bind_sync_all(m);
+    bind_ofdm_mod(m);
+    bind_ofdm_demod(m);
+    bind_ltf_chanest(m);
+    bind_qam_demapper(m);
+    bind_soft_demapper(m);
+    bind_pkt_err(m);
+    bind_tx_framing(m);
+    bind_rg_mapper(m);
+    bind_rg_demapper(m);
+    bind_ul_precoding(m);
     // ) END BINDING_FUNCTION_CALLS
 }

@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(pkt_detect.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(e20ee2bdabdf1d86f7714fe777cb1ff9) */
+/* BINDTOOL_HEADER_FILE(soft_demapper.h) */
+/* BINDTOOL_HEADER_FILE_HASH(7e7f8e2bffc5deadf17dceb76780d537) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,21 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/pkt_detect.h>
+#include <gnuradio/ncjt/soft_demapper.h>
 // pydoc.h is automatically generated in the build directory
-#include <pkt_detect_pydoc.h>
+#include <soft_demapper_pydoc.h>
 
-void bind_pkt_detect(py::module &m) {
+void bind_soft_demapper(py::module &m) {
 
-  using pkt_detect = ::gr::ncjt::pkt_detect;
+  using soft_demapper = ::gr::ncjt::soft_demapper;
 
-  py::class_<pkt_detect, gr::block, gr::basic_block,
-             std::shared_ptr<pkt_detect>>(m, "pkt_detect", D(pkt_detect))
+  py::class_<soft_demapper, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<soft_demapper>>(m, "soft_demapper",
+                                             D(soft_demapper))
 
-      .def(py::init(&pkt_detect::make), py::arg("nchans"),
-           py::arg("preamblelen"), py::arg("dataframelen"),
-           py::arg("samplerate"), py::arg("pktspersec"), py::arg("acorr_thrd"),
-           py::arg("xcorr_thrd"), py::arg("max_corr_len"), py::arg("sync_all"),
-           py::arg("debug") = false, D(pkt_detect, make))
+      .def(py::init(&soft_demapper::make), py::arg("nstrm"),
+           py::arg("framelen"), py::arg("modtype"), py::arg("usecsi"),
+           py::arg("debug"), D(soft_demapper, make))
 
       ;
 }

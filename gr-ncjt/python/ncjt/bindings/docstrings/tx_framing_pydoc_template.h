@@ -14,8 +14,8 @@
   and will be overwritten during the build process
  */
 
-static const char *__doc_gr_ncjt_sync_all = R"doc()doc";
+static const char *__doc_gr_ncjt_tx_framing = R"doc()doc";
 
-static const char *__doc_gr_ncjt_sync_all_sync_all_0 = R"doc()doc";
+static const char *__doc_gr_ncjt_tx_framing_tx_framing_0 = R"doc()doc";
 
-static const char *__doc_gr_ncjt_sync_all_make = R"doc()doc";
+static const char *__doc_gr_ncjt_tx_framing_make = R"doc()doc";

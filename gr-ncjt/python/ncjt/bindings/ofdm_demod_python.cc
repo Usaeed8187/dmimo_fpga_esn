@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(pkt_detect.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(e20ee2bdabdf1d86f7714fe777cb1ff9) */
+/* BINDTOOL_HEADER_FILE(ofdm_demod.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(e842c54accfa569c28d492b165890be6) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,19 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/pkt_detect.h>
+#include <gnuradio/ncjt/ofdm_demod.h>
 // pydoc.h is automatically generated in the build directory
-#include <pkt_detect_pydoc.h>
+#include <ofdm_demod_pydoc.h>
 
-void bind_pkt_detect(py::module &m) {
+void bind_ofdm_demod(py::module &m) {
 
-  using pkt_detect = ::gr::ncjt::pkt_detect;
+  using ofdm_demod = ::gr::ncjt::ofdm_demod;
 
-  py::class_<pkt_detect, gr::block, gr::basic_block,
-             std::shared_ptr<pkt_detect>>(m, "pkt_detect", D(pkt_detect))
+  py::class_<ofdm_demod, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<ofdm_demod>>(m, "ofdm_demod", D(ofdm_demod))
 
-      .def(py::init(&pkt_detect::make), py::arg("nchans"),
-           py::arg("preamblelen"), py::arg("dataframelen"),
-           py::arg("samplerate"), py::arg("pktspersec"), py::arg("acorr_thrd"),
-           py::arg("xcorr_thrd"), py::arg("max_corr_len"), py::arg("sync_all"),
-           py::arg("debug") = false, D(pkt_detect, make))
+      .def(py::init(&ofdm_demod::make), py::arg("fftsize"), py::arg("cplen"),
+           py::arg("symoffset") = 12, D(ofdm_demod, make))
 
       ;
 }

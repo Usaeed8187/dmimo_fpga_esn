@@ -1,0 +1,38 @@
+id: ncjt_ofdm_demod
+label: OFDM Demod
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.ofdm_demod(${fftsize}, ${cplen}, ${symoffset})
+
+parameters:
+- id: fftsize
+  label: FFT Size
+  dtype: int
+  default: '64'
+  hide: part
+- id: cplen
+  label: CP Length
+  dtype: int
+  default: '16'
+  hide: part
+- id: symoffset
+  label: Symbol Offset
+  dtype: int
+  default: "12"
+  hide: part
+
+inputs:
+- label: in
+  domain: stream
+  dtype: complex
+  multiplicity: '1'
+
+outputs:
+- label: out
+  domain: stream
+  dtype: complex
+  multiplicity: '1'
+
+file_format: 1

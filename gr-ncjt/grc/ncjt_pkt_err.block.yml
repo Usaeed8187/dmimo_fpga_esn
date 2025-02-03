@@ -1,0 +1,59 @@
+id: ncjt_pkt_err
+label: Pkt Err
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.pkt_err(${nstrms}, ${filename}, ${logfreq}, ${berout}, ${debug})
+
+parameters:
+  - id: nstrm
+    label: Number of Streams
+    dtype: int
+    default: 1
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: filename
+    label: Data File
+    dtype: file_open
+    hide: part
+  - id: logfreq
+    label: Log Frequency
+    dtype: int
+    default: 10
+    hide: part
+  - id: berout
+    label: BER outputs
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - domain: stream
+    dtype: byte
+    multiplicity: ${nstrm}
+
+outputs:
+  - domain: stream
+    dtype: ${int}
+    vlen: ${nstrms}
+  - domain: stream
+    dtype: float
+    multiplicity: "1"
+    optional: true
+    hide: ${not berout}
+
+asserts:
+  - ${ nstrm >= 1 and nstrm <= 8}
+  - ${ logfreq > 0 }
+
+file_format: 1

@@ -1,0 +1,56 @@
+id: ncjt_soft_demapper
+label: Soft Demapper
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.soft_demapper(${nstrm}, ${framelen}, ${modtype}, ${usecsi}, ${debug})
+
+parameters:
+  - id: nstrm
+    label: Number of Streams
+    dtype: int
+    default: 1
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: framelen
+    label: Frame Length
+    dtype: int
+  - id: modtype
+    label: Modulation
+    dtype: int
+    default: 2
+    options: [ 2, 4, 6 ]
+    option_labels: [ 'QPSK', '16QAM', '64QAM' ]
+  - id: usecsi
+    label: CSI
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: complex
+    multiplicity: ${nstrm}
+  - label: csi
+    domain: stream
+    dtype: complex
+    multiplicity: ${nstrm}
+    optional: true
+    hide: ${not usecsi}
+
+outputs:
+  - domain: stream
+    dtype: float
+    vlen: 1
+
+file_format: 1

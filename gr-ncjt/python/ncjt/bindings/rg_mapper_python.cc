@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(pkt_detect.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(e20ee2bdabdf1d86f7714fe777cb1ff9) */
+/* BINDTOOL_HEADER_FILE(rg_mapper.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(f716424d7a4f3bd12dc516a101dcb3ae) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,20 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/pkt_detect.h>
+#include <gnuradio/ncjt/rg_mapper.h>
 // pydoc.h is automatically generated in the build directory
-#include <pkt_detect_pydoc.h>
+#include <rg_mapper_pydoc.h>
 
-void bind_pkt_detect(py::module &m) {
+void bind_rg_mapper(py::module &m) {
 
-  using pkt_detect = ::gr::ncjt::pkt_detect;
+  using rg_mapper = ::gr::ncjt::rg_mapper;
 
-  py::class_<pkt_detect, gr::block, gr::basic_block,
-             std::shared_ptr<pkt_detect>>(m, "pkt_detect", D(pkt_detect))
+  py::class_<rg_mapper, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<rg_mapper>>(m, "rg_mapper", D(rg_mapper))
 
-      .def(py::init(&pkt_detect::make), py::arg("nchans"),
-           py::arg("preamblelen"), py::arg("dataframelen"),
-           py::arg("samplerate"), py::arg("pktspersec"), py::arg("acorr_thrd"),
-           py::arg("xcorr_thrd"), py::arg("max_corr_len"), py::arg("sync_all"),
-           py::arg("debug") = false, D(pkt_detect, make))
+      .def(py::init(&rg_mapper::make), py::arg("nstrm"), py::arg("framelen"),
+           py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("modtype"),
+           py::arg("debug") = false, D(rg_mapper, make))
 
       ;
 }

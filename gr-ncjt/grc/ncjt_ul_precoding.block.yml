@@ -1,0 +1,40 @@
+id: ncjt_ul_precoding
+label: UL Precoding
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.ul_precoding(${nstrms}, ${numsyms}, ${debug})
+
+parameters:
+  - id: nstrms
+    label: Number of Streams
+    dtype: int
+    default: 1
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: ndatasyms
+    label: Data Symobols
+    dtype: int
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: complex
+    vlen: ${nstrms}
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    multiplicity: ${nstrms}
+
+
+file_format: 1

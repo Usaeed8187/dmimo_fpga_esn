@@ -15,7 +15,17 @@ list(APPEND ncjt_sources
     utils.cc
     burst_tx_impl.cc
     pkt_detect_impl.cc
-    sync_all_impl.cc)
+    sync_all_impl.cc
+    ofdm_mod_impl.cc
+    ofdm_demod_impl.cc
+    ltf_chanest_impl.cc
+    qam_demapper_impl.cc
+    soft_demapper_impl.cc
+    pkt_err_impl.cc
+    tx_framing_impl.cc
+    rg_mapper_impl.cc
+    rg_demapper_impl.cc
+    ul_precoding_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"

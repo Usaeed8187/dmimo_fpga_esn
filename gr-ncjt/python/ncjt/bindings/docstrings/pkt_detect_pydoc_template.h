@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Free Software Foundation, Inc.
+ * Copyright 2025 Free Software Foundation, Inc.
  *
  * This file is part of GNU Radio
  *
@@ -16,6 +16,6 @@
 
 static const char *__doc_gr_ncjt_pkt_detect = R"doc()doc";
 
-static const char *__doc_gr_ncjt_pkt_detect_pkt_detect = R"doc()doc";
+static const char *__doc_gr_ncjt_pkt_detect_pkt_detect_0 = R"doc()doc";
 
 static const char *__doc_gr_ncjt_pkt_detect_make = R"doc()doc";
