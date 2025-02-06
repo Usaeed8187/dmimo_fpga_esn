@@ -7,7 +7,7 @@ templates:
   make: ncjt.pkt_err(${nstrms}, ${filename}, ${logfreq}, ${berout}, ${debug})
 
 parameters:
-  - id: nstrm
+  - id: nstrms
     label: Number of Streams
     dtype: int
     default: 1
@@ -40,7 +40,7 @@ parameters:
 inputs:
   - domain: stream
     dtype: byte
-    multiplicity: ${nstrm}
+    multiplicity: ${nstrms}
 
 outputs:
   - domain: stream
@@ -53,7 +53,7 @@ outputs:
     hide: ${not berout}
 
 asserts:
-  - ${ nstrm >= 1 and nstrm <= 8}
+  - ${ nstrms >= 1 and nstrms <= 8}
   - ${ logfreq > 0 }
 
 file_format: 1

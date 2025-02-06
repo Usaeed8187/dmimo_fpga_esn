@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <volk/volk.h>
 
 #ifndef GR_RCWIFI_UTILS_H
 #define GR_RCWIFI_UTILS_H
@@ -22,8 +23,8 @@ malloc_double(int size);
 gr_complex *
 malloc_complex(int size);
 
-void
-free(void *b);
+// void
+// free(void *b);
 
 unsigned char
 crc8(void const *mem, size_t len);

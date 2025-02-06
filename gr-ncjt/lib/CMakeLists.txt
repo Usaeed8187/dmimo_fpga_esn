@@ -10,9 +10,7 @@
 # Setup library
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
-
 list(APPEND ncjt_sources
-    utils.cc
     burst_tx_impl.cc
     pkt_detect_impl.cc
     sync_all_impl.cc
@@ -25,7 +23,9 @@ list(APPEND ncjt_sources
     tx_framing_impl.cc
     rg_mapper_impl.cc
     rg_demapper_impl.cc
-    ul_precoding_impl.cc)
+    ul_precoding_impl.cc
+    mimo_detect_impl.cc
+    utils.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"
@@ -38,8 +38,7 @@ endif(NOT ncjt_sources)
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 add_library(gnuradio-ncjt SHARED ${ncjt_sources})
-target_link_libraries(gnuradio-ncjt 
-	gnuradio::gnuradio-runtime
+target_link_libraries(gnuradio-ncjt
 	gnuradio-filter
 	gnuradio-fft
 	Eigen3::Eigen)

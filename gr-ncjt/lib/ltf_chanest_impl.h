@@ -24,7 +24,7 @@ private:
     int d_ntx;  // number of transmitter antennas
     int d_nss;  // number of transmitter data streams
     int d_nrx;  // number of receive antennas
-    int d_npt; // number of pilots per symbol
+    int d_npt; // number of tracking pilots per symbol
     int d_preamble_symbols; // total number of HT preamble symbols
     int d_data_symbols;        // total number of data symbols per packet
     int d_last_sym, d_cur_sym; // previous and current OFDM symbol index
@@ -39,7 +39,8 @@ private:
     float d_cur_pilot[8][8]; // pilots for current OFDM symbol (mode 4 or 8)
     gr_complex *d_chan_est; // channel estimate for data reception
     gr_complex *d_chan_csi; // channel estimation for CSI feedback
-    Eigen::MatrixXcf d_Pd;
+    gr_complex *d_cshift; // cyclic shift compensation
+    Eigen::MatrixXcf d_Pd; // P matrix for MMSE detection
     static const gr_vector_float NORM_LTF_SEQ_64; // normalized LTF sequence
     static const gr_vector_float NORM_LTF_SEQ_256; // normalized LTF sequence
     gr_vector_float NORM_LTF_SEQ; // current normalized LTF sequence
@@ -47,6 +48,8 @@ private:
     bool d_csi_en; // enable CSI feedback
     int d_total_frames; // total number of data frames
     int d_reset_frames; // reset frame counter
+
+    pmt::pmt_t _id;
     const int d_logfreq;
     const bool d_debug;
 
@@ -95,7 +98,7 @@ protected:
 
 public:
     ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms,
-                     int ndatasyms, bool docsi, int logfreq, bool debug);
+                     int ndatasyms, bool csi_en, int logfreq, bool debug);
     ~ltf_chanest_impl();
 
     int

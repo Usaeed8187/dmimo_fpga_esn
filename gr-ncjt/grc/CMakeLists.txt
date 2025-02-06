@@ -5,7 +5,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-
 install(FILES
     ncjt_burst_tx.block.yml
     ncjt_pkt_detect.block.yml
@@ -19,4 +18,6 @@ install(FILES
     ncjt_tx_framing.block.yml
     ncjt_rg_mapper.block.yml
     ncjt_rg_demapper.block.yml
-    ncjt_ul_precoding.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_ul_precoding.block.yml
+    ncjt_mimo_detect.block.yml
+    ncjt_mimo_detect.block.yml DESTINATION share/gnuradio/grc/blocks)

@@ -1,5 +1,4 @@
 #include <gnuradio/block.h>
-#include <volk/volk.h>
 #include "utils.h"
 
 float *
@@ -20,8 +19,8 @@ malloc_complex(int size)
     return (gr_complex *) volk_malloc(sizeof(gr_complex) * size, volk_get_alignment());
 }
 
-void
-free(void *b) { volk_free(b); }
+//void
+//free(void *b) { volk_free(b); }
 
 static unsigned char const crc8x_table[] = {
     0x00, 0x31, 0x62, 0x53, 0xc4, 0xf5, 0xa6, 0x97, 0xb9, 0x88, 0xdb, 0xea, 0x7d,

@@ -64,7 +64,7 @@ tx_framing_impl::tx_framing_impl(int nstrm,
 tx_framing_impl::~tx_framing_impl()
 {
     if (d_beacon_data)
-        free(d_beacon_data);
+        volk_free(d_beacon_data);
 }
 
 int
@@ -96,7 +96,7 @@ tx_framing_impl::work(int noutput_items, gr_vector_int &ninput_items,
 
     for (int s = 0; s < d_nstrm; s++)
     {
-        auto in = (gr_complex *) input_items[s];
+        auto in = (const gr_complex *) input_items[s];
         auto out = (gr_complex *) output_items[s];
 
         // Add tags for burst transmission

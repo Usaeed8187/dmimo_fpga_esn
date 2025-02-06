@@ -55,7 +55,7 @@ pkt_err_impl::pkt_err_impl(int nstrms, const char *filename, int logfreq, bool b
 pkt_err_impl::~pkt_err_impl()
 {
     if (d_pkt_data != nullptr)
-        free(d_pkt_data);
+        volk_free(d_pkt_data);
 }
 
 int

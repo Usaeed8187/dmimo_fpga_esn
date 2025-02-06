@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.ltf_chanest(${fftsize}, ${ntx}, ${nrx}, ${npreamblesyms}, ${ndatasyms}, ${docsi}, ${logfreq}, ${debug})
+  make: ncjt.ltf_chanest(${fftsize}, ${ntx}, ${nrx}, ${npreamblesyms}, ${ndatasyms}, ${csi_fb}, ${logfreq}, ${debug})
 
 parameters:
 - id: fftsize
@@ -23,12 +23,11 @@ parameters:
 - id: npreamblesyms
   label: HT Preamble Symbols
   dtype: int
-  default: '5'
 - id: ndatasyms
   label: Data Symobols
   dtype: int
-- id: docsi
-  label: CSI Output
+- id: csi_fb
+  label: CSI Feedback
   dtype: bool
   default: 'False'
   options: [ 'True', 'False' ]

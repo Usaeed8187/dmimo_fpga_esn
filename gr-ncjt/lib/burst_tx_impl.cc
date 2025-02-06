@@ -27,7 +27,7 @@ burst_tx_impl::burst_tx_impl(const char *filename, double samplerate, int pktspe
                               "packet_len"),
       d_first_burst(true), d_debug(debug)
 {
-    if (pktspersec <= 0 || pktspersec > 64)
+    if (pktspersec <= 0 || pktspersec > 100)
         throw std::runtime_error("invalid sampling packet transmission interval specified");
     d_repeat_interval = 1.0 / (double) pktspersec;
 

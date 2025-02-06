@@ -7,7 +7,7 @@ templates:
   make: ncjt.qam_demapper(${nstrms}, ${modtype}, ${usecsi}, ${debug})
 
 parameters:
-  - id: nstrm
+  - id: nstrms
     label: Number of Streams
     dtype: int
     default: 1
@@ -37,11 +37,11 @@ inputs:
   - label: in
     domain: stream
     dtype: complex
-    multiplicity: ${nstrm}
+    multiplicity: ${nstrms}
   - label: csi
     domain: stream
     dtype: complex
-    multiplicity: ${nstrm}
+    multiplicity: ${nstrms}
     optional: true
     hide: ${not usecsi}
 
@@ -49,6 +49,6 @@ outputs:
   - label: out
     domain: stream
     dtype: byte
-    multiplicity: ${nstrm}
+    multiplicity: ${nstrms}
 
 file_format: 1

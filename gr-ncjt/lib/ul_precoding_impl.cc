@@ -46,7 +46,7 @@ ul_precoding_impl::ul_precoding_impl(int nstrms, int numsyms, bool debug)
 ul_precoding_impl::~ul_precoding_impl()
 {
     if (d_map_matrix != nullptr)
-        free(d_map_matrix);
+        volk_free(d_map_matrix);
 }
 
 int
@@ -84,7 +84,7 @@ void
 ul_precoding_impl::apply_direct_mapping(gr_vector_const_void_star &input_items,
                                         gr_vector_void_star &output_items)
 {
-    auto in = (gr_complex *) input_items[0];
+    auto in = (const gr_complex *) input_items[0];
     auto out0 = (gr_complex *) output_items[0];
     auto out1 = (gr_complex *) output_items[1];
 
@@ -103,7 +103,7 @@ void
 ul_precoding_impl::apply_mapping_2tx(gr_vector_const_void_star &input_items,
                                      gr_vector_void_star &output_items)
 {
-    auto in = (gr_complex *) input_items[0];
+    auto in = (const gr_complex *) input_items[0];
     auto out0 = (gr_complex *) output_items[0];
     auto out1 = (gr_complex *) output_items[1];
 
@@ -113,7 +113,7 @@ ul_precoding_impl::apply_mapping_2tx(gr_vector_const_void_star &input_items,
         Eigen::Matrix2cf Y(d_nstrms, 1);  // (Nt, 1)
         for (int k = 0; k < SC_NUM; k++)
         {
-            Eigen::Map<Eigen::Matrix2cf> X(&in[n * d_nstrms * SC_NUM + d_nstrms * k], d_nstrms, 1); // (Nss, 1)
+            Eigen::Map<const Eigen::Matrix2cf> X(&in[n * d_nstrms * SC_NUM + d_nstrms * k], d_nstrms, 1); // (Nss, 1)
             Eigen::Map<Eigen::Matrix2cf> Q(&d_map_matrix[mtx_size * k], d_nstrms, d_nstrms); // (Nt, Nss)
             Y = Q * X;
             out0[n * SC_NUM + k] = Y(0, 0);
@@ -126,7 +126,7 @@ void
 ul_precoding_impl::apply_mapping_4tx(gr_vector_const_void_star &input_items,
                                      gr_vector_void_star &output_items)
 {
-    auto in = (gr_complex *) input_items[0];
+    auto in = (const gr_complex *) input_items[0];
     auto out0 = (gr_complex *) output_items[0];
     auto out1 = (gr_complex *) output_items[1];
     auto out2 = (gr_complex *) output_items[2];
@@ -138,7 +138,7 @@ ul_precoding_impl::apply_mapping_4tx(gr_vector_const_void_star &input_items,
         Eigen::Matrix4cf Y(4, 1);  // (Nt, 1)
         for (int k = 0; k < SC_NUM; k++)
         {
-            Eigen::Map<Eigen::Matrix4cf> X(&in[n * d_nstrms * SC_NUM + d_nstrms * k], 4, 1); // (Nss, 1)
+            Eigen::Map<const Eigen::Matrix4cf> X(&in[n * d_nstrms * SC_NUM + d_nstrms * k], 4, 1); // (Nss, 1)
             Eigen::Map<Eigen::Matrix4cf> Q(&d_map_matrix[16 * k], 4, 4); // (Nt, Nss)
             Y = Q * X;  // (Nt,Nss) * (Nss,1)
             out0[n * SC_NUM + k] = Y(0, 0);

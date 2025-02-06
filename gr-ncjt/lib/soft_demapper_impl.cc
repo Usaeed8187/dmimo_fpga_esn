@@ -110,7 +110,7 @@ soft_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float ym = abs(y);
                 float h2 = d_usecsi ? 2.0 / sqrt(42.0) * csi[di].real() : 2.0 / sqrt(42.0);
                 float h4 = d_usecsi ? 4.0 / sqrt(42.0) * csi[di].real() : 4.0 / sqrt(42.0);
-                float h6 = d_usecsi ? 6.0 / sqrt(42.0) * csi[di].real() : 6.0 / sqrt(42.0);
+                // float h6 = d_usecsi ? 6.0 / sqrt(42.0) * csi[di].real() : 6.0 / sqrt(42.0);
                 dout[0] = x; // (x >= 0) ? 1 : 0;
                 dout[d_nstrm] = h4 - xm; // (xm <= h4) ? 1 : 0;
                 dout[2 * d_nstrm] = xm - h2; /// (xm >= h2 && xm <= h6) ? 1 : 0;

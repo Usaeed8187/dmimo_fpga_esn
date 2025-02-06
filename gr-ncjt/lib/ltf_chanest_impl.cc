@@ -16,20 +16,19 @@ namespace gr::ncjt
 ltf_chanest::sptr
 ltf_chanest::make(int fftsize, int ntx, int nrx,
                   int npreamblesyms, int ndatasyms,
-                  bool docsi, int logfreq, bool debug)
+                  bool csi_en, int logfreq, bool debug)
 {
     return gnuradio::make_block_sptr<ltf_chanest_impl>(
-        fftsize, ntx, nrx, npreamblesyms, ndatasyms, docsi, logfreq, debug);
+        fftsize, ntx, nrx, npreamblesyms, ndatasyms, csi_en, logfreq, debug);
 }
 
-ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx,
-                                   int npreamblesyms, int ndatasyms, bool docsi,
-                                   int logfreq, bool debug)
+ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
+                                   bool csi_en, int logfreq, bool debug)
     : gr::tagged_stream_block("ltf_chanest",
                               gr::io_signature::make(1, 8, sizeof(gr_complex)),
                               gr::io_signature::make(1, 8, sizeof(gr_complex)),
                               "packet_len"),
-      d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_csi_en(docsi),
+      d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_csi_en(csi_en),
       d_total_frames(0), d_reset_frames(0), d_logfreq(logfreq), d_debug(debug)
 {
     if (fftsize != 64 && fftsize != 256)
@@ -66,6 +65,17 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx,
 
     d_chan_est = malloc_complex(d_ntx * d_nrx * d_scnum);
     d_chan_csi = malloc_complex(d_ntx * d_nrx * d_scnum);
+    d_cshift = malloc_complex(4 * d_scnum);
+
+    // cyclic shift compensation
+    float cshift[4] = {0, -8, -4, -12};
+    for (int m = 0; m < 4; m++)
+    {
+        for (int k = 0; k < d_scnum / 2; k++)
+            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - 28)));
+        for (int k = d_scnum / 2; k < d_scnum; k++)
+            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - 27)));
+    }
 
     // Pd: nSTS x nLTF
     if (d_ntx == 2 && d_nss == 2) // 2x2, 2x4
@@ -83,6 +93,10 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx,
     const float normfactor = sqrt(d_nss * d_scnum) / (d_nss * d_fftsize);
     d_Pd = normfactor * d_Pd;
 
+    std::stringstream str;
+    str << name() << unique_id();
+    _id = pmt::string_to_symbol(str.str());
+
     message_port_register_in(pmt::mp("reset"));
     set_msg_handler(pmt::mp("reset"), [this](const pmt::pmt_t &msg) { process_reset_message(msg); });
 
@@ -95,21 +109,23 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx,
 ltf_chanest_impl::~ltf_chanest_impl()
 {
     if (d_chan_est != nullptr)
-        free(d_chan_est);
+        volk_free(d_chan_est);
     if (d_chan_csi != nullptr)
-        free(d_chan_csi);
+        volk_free(d_chan_csi);
+    if (d_cshift != nullptr)
+        volk_free(d_cshift);
 }
 
 int
 ltf_chanest_impl::calculate_output_stream_length(
     const gr_vector_int &ninput_items)
 {
-    int min_input_items = ninput_items[0];
+    /* int min_input_items = ninput_items[0];
     for (int n = 1; n < d_nrx; n++)
         min_input_items = std::min(min_input_items, ninput_items[n]);
-    int nblks = min_input_items / d_scnum;
+    int nblks = min_input_items / d_scnum; */
 
-    return nblks * d_scnum;
+    return (d_nss + d_data_symbols) * d_scnum;
 }
 
 int
@@ -213,8 +229,7 @@ ltf_chanest_impl::add_frame_tag(uint64_t offset)
     for (int k = 0; k < d_nrx; k++)
         add_item_tag(k, offset,
                      pmt::string_to_symbol("packet_start"),
-                     pmt::from_long(offset),
-                     pmt::string_to_symbol(name()));
+                     pmt::from_long(offset), _id);
 }
 
 void
@@ -223,8 +238,7 @@ ltf_chanest_impl::add_packet_tag(uint64_t offset, int packet_len)
     for (int k = 0; k < d_nrx; k++)
         add_item_tag(k, offset,
                      pmt::string_to_symbol("packet_len"),
-                     pmt::from_long(packet_len),
-                     pmt::string_to_symbol(name()));
+                     pmt::from_long(packet_len), _id);
 }
 
 void
@@ -234,22 +248,23 @@ ltf_chanest_impl::add_power_noise_tag(uint64_t offset, float signal_pwr, float n
     {
         add_item_tag(k, offset,
                      pmt::string_to_symbol("signal_pwr"),
-                     pmt::from_float(signal_pwr),
-                     pmt::string_to_symbol(name()));
+                     pmt::from_float(signal_pwr), _id);
 
         add_item_tag(k + 1, offset,
                      pmt::string_to_symbol("noise_var"),
-                     pmt::from_float(noise_est),
-                     pmt::string_to_symbol(name()));
+                     pmt::from_float(noise_est), _id);
     }
 }
 
 void
 ltf_chanest_impl::process_reset_message(const pmt::pmt_t &msg)
 {
-    std::cout << ">>>>>>>> Resetting CSI matrix ..." << std::endl;
-    d_reset_frames = 10;
-    send_csi_message();
+    if (d_csi_en)
+    {
+        std::cout << ">>>>>>>> Resetting CSI matrix ..." << std::endl;
+        d_reset_frames = 10;
+        send_csi_message();
+    }
 }
 
 void
@@ -373,7 +388,7 @@ ltf_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
     {
         auto *in = (const gr_complex *) input_items[m];
         auto *out = (gr_complex *) output_items[m];
-        volk_32fc_s32fc_multiply_32fc(&out[output_offset], &in[input_offset], cpe_comp, d_scnum);
+        volk_32fc_s32fc_multiply2_32fc(&out[output_offset], &in[input_offset], &cpe_comp, d_scnum);
     }
 
     // estimate noise and signal power
@@ -469,6 +484,19 @@ ltf_chanest_impl::csi_chan_est_nrx(gr_vector_const_void_star &input_items, int i
         // H: nSTS x nRx, Pd: nSTS x nLTF, Rx: nLTF x nRx
         Eigen::Map<Eigen::MatrixXcf> H(&d_chan_csi[d_ntx * d_nrx * k], d_ntx, d_nrx);
         H = NORM_LTF_SEQ[k] * d_Pd * Rx;
+    }
+    // remove cyclic prefix
+    for (int k = 0; k < d_scnum; k++)  // for all subcarriers
+    {
+        for (int n = 1; n < d_ntx; n++) // for all except 1st tx
+        {
+            for (int m = 0; m < d_nrx; m++) // for all rx
+            {
+                int cidx = d_ntx * d_nrx * k + d_ntx * m + n; // column major indexing
+                int sidx = n * d_scnum + k;
+                d_chan_csi[cidx] *= d_cshift[sidx];
+            }
+        }
     }
 }
 

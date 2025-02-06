@@ -93,11 +93,11 @@ pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
 
 pkt_detect_impl::~pkt_detect_impl()
 {
-    free(d_corr_buf);
-    free(d_pwrest_buf);
-    free(d_input_buf);
-    free(d_xcorr_buf);
-    free(d_xcorr_val);
+    volk_free(d_corr_buf);
+    volk_free(d_pwrest_buf);
+    volk_free(d_input_buf);
+    volk_free(d_xcorr_buf);
+    volk_free(d_xcorr_val);
 }
 
 void
@@ -376,7 +376,7 @@ pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int b
             // sum over all channels, assuming same LO frequency across all receivers
             for (int ch = 0; ch < d_num_chans; ch++)
             {
-                gr_complex *in = (gr_complex *) input_items[ch];
+                const gr_complex *in = (const gr_complex *) input_items[ch];
                 corr_foe += in[k] * conj(in[delay_idx]);
             }
         }
@@ -400,7 +400,7 @@ pkt_detect_impl::fine_sync(const gr_vector_const_void_star &input_items, int buf
         gr_complex comp_val = exp(gr_complex(0, d_current_foe_comp * i));
         for (int ch = 0; ch < d_num_chans; ch++)
         {
-            gr_complex *in = (gr_complex *) input_items[ch];
+            const gr_complex *in = (const gr_complex *) input_items[ch];
             d_input_buf[i + ch * XCORR_DATA_LEN] = in[i] * comp_val;
         }
     }

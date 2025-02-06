@@ -22,4 +22,5 @@ install(FILES api.h
     tx_framing.h
     rg_mapper.h
     rg_demapper.h
-    ul_precoding.h DESTINATION include/gnuradio/ncjt)
+    ul_precoding.h
+    mimo_detect.h DESTINATION include/gnuradio/ncjt)
