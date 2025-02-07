@@ -1,8 +1,7 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2024 gr-ncjt author.
+ * Copyright 2025 Wireless @ Virginia Tech.
  *
- * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #ifndef INCLUDED_NCJT_BURST_TX_IMPL_H

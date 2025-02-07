@@ -1,3 +1,8 @@
+/*
+ * Copyright 2025 Wireless @ Virginia Tech.
+ *
+ */
+
 #include <gnuradio/block.h>
 #include "utils.h"
 

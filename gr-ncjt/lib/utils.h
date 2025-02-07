@@ -1,3 +1,8 @@
+/*
+ * Copyright 2025 Wireless @ Virginia Tech.
+ *
+ */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <volk/volk.h>

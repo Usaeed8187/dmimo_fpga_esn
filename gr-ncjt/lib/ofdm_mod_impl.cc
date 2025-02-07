@@ -1,8 +1,7 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2025 gr-ncjt author.
+ * Copyright 2025 Wireless @ Virginia Tech.
  *
- * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include "ofdm_mod_impl.h"
