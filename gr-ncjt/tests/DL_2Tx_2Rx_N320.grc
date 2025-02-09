@@ -61,7 +61,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '40'
+    value: '70'
   states:
     bus_sink: false
     bus_source: false
@@ -115,9 +115,9 @@ blocks:
     orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
-    step: '0.5'
-    stop: '31.5'
-    value: '3'
+    step: '1.0'
+    stop: '60'
+    value: '40'
     widget: counter_slider
   states:
     bus_sink: false
@@ -130,7 +130,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 20e6
+    value: 25e6
   states:
     bus_sink: false
     bus_source: false
@@ -148,27 +148,15 @@ blocks:
     orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
-    step: '0.5'
-    stop: '31.5'
-    value: '5'
+    step: '1.0'
+    stop: '60'
+    value: '45'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [480, 12.0]
-    rotation: 0
-    state: enabled
-- name: usrp_addr
-  id: variable
-  parameters:
-    comment: ''
-    value: '"addr=192.168.30.2"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 124.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0
@@ -232,7 +220,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/256QAM/txsig_2x2_s1.bin"'
+    filename: '"../data/64QAM/txsig_2x2_s1.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -252,7 +240,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/256QAM/txsig_2x2_s2.bin"'
+    filename: '"../data/64QAM/txsig_2x2_s2.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -377,7 +365,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/256QAM/strm_data_2x2.bin"'
+    filename: '"../data/64QAM/strm_data_2x2.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -398,7 +386,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    modtype: '8'
+    modtype: '6'
     nstrms: '2'
     usecsi: 'False'
   states:
@@ -834,7 +822,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: usrp_addr
+    dev_addr: '"addr=192.168.60.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
@@ -1005,8 +993,8 @@ blocks:
   parameters:
     affinity: '1'
     alias: ''
-    ant0: '"RX2"'
-    ant1: '"RX2"'
+    ant0: '"TX/RX"'
+    ant1: '"TX/RX"'
     ant10: ''
     ant11: ''
     ant12: ''
@@ -1175,7 +1163,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: usrp_addr
+    dev_addr: '"addr=192.168.40.2"'
     dev_args: ''
     gain0: rx_gain
     gain1: rx_gain
@@ -1433,7 +1421,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 324.0]
+    coordinate: [72, 328.0]
     rotation: 0
     state: enabled
 
@@ -1463,4 +1451,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: v3.10.11.0-80-g0e28fd53
