@@ -25,7 +25,7 @@ qam_demapper_impl::qam_demapper_impl(int nstrms, int modtype, bool usecsi, bool 
     if (nstrms < 1 || nstrms > 8)
         throw std::runtime_error("only sport 1 to 8 data channels");
     d_num_strms = nstrms;
-    if (modtype != 2 && modtype != 4 && modtype != 6)
+    if (modtype != 2 && modtype != 4 && modtype != 6 && modtype != 8)
     {
         throw std::runtime_error("unsupported modulation type");
     }
@@ -88,19 +88,38 @@ qam_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 out[4 * i + 2] = (y >= 0) ? 1 : 0;
                 out[4 * i + 3] = (ym <= h2) ? 1 : 0;
             }
-            else // 64QAM
+            else if (d_modtype == 6) // 64QAM
             {
                 float xm = abs(x);
                 float ym = abs(y);
-                float h2 = d_usecsi ? 2.0 / sqrt(42.0) * csi[i].real() : 2.0 / sqrt(42.0);
-                float h4 = d_usecsi ? 4.0 / sqrt(42.0) * csi[i].real() : 4.0 / sqrt(42.0);
-                float h6 = d_usecsi ? 6.0 / sqrt(42.0) * csi[i].real() : 6.0 / sqrt(42.0);
+                float a2 = 2.0 / sqrt(42.0);
+                float h2 = d_usecsi ? a2 * csi[i].real() : a2;
+                float h4 = d_usecsi ? 2.0 * a2 * csi[i].real() : 2.0 * a2;
+                float h6 = d_usecsi ? 3.0 * a2 * csi[i].real() : 3.0 * a2;
                 out[6 * i] = (x >= 0) ? 1 : 0;
                 out[6 * i + 1] = (xm <= h4) ? 1 : 0;
                 out[6 * i + 2] = (xm >= h2 && xm <= h6) ? 1 : 0;
                 out[6 * i + 3] = (y >= 0) ? 1 : 0;
                 out[6 * i + 4] = (ym <= h4) ? 1 : 0;
                 out[6 * i + 5] = (ym >= h2 && ym <= h6) ? 1 : 0;
+            }
+            else if (d_modtype == 8) // 256QAM
+            {
+                float xm = abs(x);
+                float ym = abs(y);
+                float a2 = 2.0 / sqrt(170.0);
+                float h2 = d_usecsi ? a2  * csi[i].real() : a2;
+                float h4 = d_usecsi ? 2.0 * a2 * csi[i].real() : 2.0 * a2;
+                float h8 = d_usecsi ? 4.0 * a2 * csi[i].real() : 4.0 * a2;
+
+                out[8 * i]     = (x >= 0) ? 1 : 0;
+                out[8 * i + 1] = (xm <= h8) ? 1 : 0;
+                out[8 * i + 2] = (abs(xm - h8) <= h4) ? 1 : 0;
+                out[8 * i + 3] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
+                out[8 * i + 4] = (y >= 0) ? 1 : 0;
+                out[8 * i + 5] = (ym > h8) ? 1 : 0;
+                out[8 * i + 6] = (abs(ym - h8) > h4) ? 1 : 0;
+                out[8 * i + 7] = (abs(abs(ym - h8) - h4) > h2) ? 1 : 0;
             }
         }
     }

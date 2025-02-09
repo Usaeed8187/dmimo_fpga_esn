@@ -17,8 +17,8 @@ parameters:
     label: Modulation
     dtype: int
     default: 2
-    options: [ 2, 4, 6 ]
-    option_labels: [ 'QPSK', '16QAM', '64QAM' ]
+    options: [ 2, 4, 6, 8 ]
+    option_labels: [ 'QPSK', '16QAM', '64QAM', '256QAM' ]
   - id: usecsi
     label: CSI
     dtype: bool
