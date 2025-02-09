@@ -34,6 +34,7 @@ private:
     static const std::vector<gr_complex> CONST_QPSK; // QPSK constellation
     static const std::vector<gr_complex> CONST_16QAM; // 16QAM constellation
     static const std::vector<gr_complex> CONST_64QAM; // 64QAM constellation
+    static const std::vector<gr_complex> CONST_256QAM; // 256QAM constellation
 
     bool d_debug;
 

@@ -83,7 +83,7 @@ qam_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float xm = abs(x);
                 float ym = abs(y);
                 float h2 = d_usecsi ? 2.0 / sqrt(10.0) * csi[i].real() : 2.0 / sqrt(10.0);
-                out[4 * i] = (x >= 0) ? 1 : 0;
+                out[4 * i]     = (x >= 0) ? 1 : 0;
                 out[4 * i + 1] = (xm <= h2) ? 1 : 0;
                 out[4 * i + 2] = (y >= 0) ? 1 : 0;
                 out[4 * i + 3] = (ym <= h2) ? 1 : 0;
@@ -96,7 +96,7 @@ qam_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float h2 = d_usecsi ? a2 * csi[i].real() : a2;
                 float h4 = d_usecsi ? 2.0 * a2 * csi[i].real() : 2.0 * a2;
                 float h6 = d_usecsi ? 3.0 * a2 * csi[i].real() : 3.0 * a2;
-                out[6 * i] = (x >= 0) ? 1 : 0;
+                out[6 * i]     = (x >= 0) ? 1 : 0;
                 out[6 * i + 1] = (xm <= h4) ? 1 : 0;
                 out[6 * i + 2] = (xm >= h2 && xm <= h6) ? 1 : 0;
                 out[6 * i + 3] = (y >= 0) ? 1 : 0;
@@ -108,10 +108,9 @@ qam_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float xm = abs(x);
                 float ym = abs(y);
                 float a2 = 2.0 / sqrt(170.0);
-                float h2 = d_usecsi ? a2  * csi[i].real() : a2;
+                float h2 = d_usecsi ? a2 * csi[i].real() : a2;
                 float h4 = d_usecsi ? 2.0 * a2 * csi[i].real() : 2.0 * a2;
                 float h8 = d_usecsi ? 4.0 * a2 * csi[i].real() : 4.0 * a2;
-
                 out[8 * i]     = (x >= 0) ? 1 : 0;
                 out[8 * i + 1] = (xm <= h8) ? 1 : 0;
                 out[8 * i + 2] = (abs(xm - h8) <= h4) ? 1 : 0;

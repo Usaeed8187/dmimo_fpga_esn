@@ -32,7 +32,7 @@ rg_demapper_impl::rg_demapper_impl(int nstrm, int framelen, int ndatasyms,
     if (nstrm < 1 || nstrm > 8)
         throw std::runtime_error("only sport 1 to 8 data channels");
     d_nstrm = nstrm;
-    if (modtype != 2 && modtype != 4 && modtype != 6)
+    if (modtype != 2 && modtype != 4 && modtype != 6 && modtype != 8)
     {
         throw std::runtime_error("unsupported modulation type");
     }
@@ -103,24 +103,42 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float xm = abs(x);
                 float ym = abs(y);
                 float h2 = d_usecsi ? 2.0 / sqrt(10.0) * csi[di].real() : 2.0 / sqrt(10.0);
-                dout[0] = (x >= 0) ? 1 : 0;
-                dout[d_nstrm] = (xm <= h2) ? 1 : 0;
+                dout[0]           = (x >= 0) ? 1 : 0;
+                dout[d_nstrm]     = (xm <= h2) ? 1 : 0;
                 dout[2 * d_nstrm] = (y >= 0) ? 1 : 0;
                 dout[3 * d_nstrm] = (ym <= h2) ? 1 : 0;
             }
-            else // 64QAM
+            else if (d_modtype == 6) // 64QAM
             {
                 float xm = abs(x);
                 float ym = abs(y);
-                float h2 = d_usecsi ? 2.0 / sqrt(42.0) * csi[di].real() : 2.0 / sqrt(42.0);
-                float h4 = d_usecsi ? 4.0 / sqrt(42.0) * csi[di].real() : 4.0 / sqrt(42.0);
-                float h6 = d_usecsi ? 6.0 / sqrt(42.0) * csi[di].real() : 6.0 / sqrt(42.0);
-                dout[0] = (x >= 0) ? 1 : 0;
-                dout[d_nstrm] = (xm <= h4) ? 1 : 0;
+                float a2 = 2.0 / sqrt(42.0);
+                float h2 = d_usecsi ? a2 * csi[di].real() : a2;
+                float h4 = d_usecsi ? 2.0 * a2 * csi[di].real() : 2.0 * a2;
+                float h6 = d_usecsi ? 3.0 * a2 * csi[di].real() : 3.0 * a2;
+                dout[0]           = (x >= 0) ? 1 : 0;
+                dout[d_nstrm]     = (xm <= h4) ? 1 : 0;
                 dout[2 * d_nstrm] = (xm >= h2 && xm <= h6) ? 1 : 0;
                 dout[3 * d_nstrm] = (y >= 0) ? 1 : 0;
                 dout[4 * d_nstrm] = (ym <= h4) ? 1 : 0;
                 dout[5 * d_nstrm] = (ym >= h2 && ym <= h6) ? 1 : 0;
+            }
+            else if (d_modtype == 8) // 256QAM
+            {
+                float xm = abs(x);
+                float ym = abs(y);
+                float a2 = 2.0 / sqrt(170.0);
+                float h2 = d_usecsi ? a2 * csi[di].real() : a2;
+                float h4 = d_usecsi ? 2.0 * a2 * csi[di].real() : 2.0 * a2;
+                float h8 = d_usecsi ? 4.0 * a2 * csi[di].real() : 4.0 * a2;
+                dout[0]           = (x >= 0) ? 1 : 0;
+                dout[d_nstrm]     = (xm <= h8) ? 1 : 0;
+                dout[2 * d_nstrm] = (abs(xm - h8) <= h4) ? 1 : 0;
+                dout[3 * d_nstrm] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
+                dout[4 * d_nstrm] = (y >= 0) ? 1 : 0;
+                dout[5 * d_nstrm] = (ym > h8) ? 1 : 0;
+                dout[6 * d_nstrm] = (abs(ym - h8) > h4) ? 1 : 0;
+                dout[7 * d_nstrm] = (abs(abs(ym - h8) - h4) > h2) ? 1 : 0;
             }
         }
     }
