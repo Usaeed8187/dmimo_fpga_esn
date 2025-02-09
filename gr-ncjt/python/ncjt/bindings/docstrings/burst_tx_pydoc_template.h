@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Free Software Foundation, Inc.
+ * Copyright 2025 Free Software Foundation, Inc.
  *
  * This file is part of GNU Radio
  *
@@ -16,6 +16,6 @@
 
 static const char *__doc_gr_ncjt_burst_tx = R"doc()doc";
 
-static const char *__doc_gr_ncjt_burst_tx_burst_tx = R"doc()doc";
+static const char *__doc_gr_ncjt_burst_tx_burst_tx_0 = R"doc()doc";
 
 static const char *__doc_gr_ncjt_burst_tx_make = R"doc()doc";

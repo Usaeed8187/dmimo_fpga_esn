@@ -62,7 +62,7 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
     d_cur_sym = -npreamblesyms;
     d_last_sym = d_cur_sym;
 
-    d_chan_est = malloc_complex(d_ntx * d_nrx * d_scnum);
+    d_chan_est = malloc_complex(d_nss * d_nrx * d_scnum);
     d_chan_csi = malloc_complex(d_ntx * d_nrx * d_scnum);
     d_cshift = malloc_complex(4 * d_scnum);
 

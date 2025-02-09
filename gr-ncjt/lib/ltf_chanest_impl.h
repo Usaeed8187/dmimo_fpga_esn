@@ -36,8 +36,8 @@ private:
 
     unsigned d_pilot_lsfr; // LSFR state for pilot parity sequence
     float d_cur_pilot[8][8]; // pilots for current OFDM symbol (mode 4 or 8)
-    gr_complex *d_chan_est; // channel estimate for data reception
-    gr_complex *d_chan_csi; // channel estimation for CSI feedback
+    gr_complex *d_chan_est; // channel estimate for data reception (Nt,Nr,Nsc)
+    gr_complex *d_chan_csi; // channel estimation for CSI feedback (Nt,Nr,Nsc)
     gr_complex *d_cshift; // cyclic shift compensation
     Eigen::MatrixXcf d_Pd; // P matrix for MMSE detection
     static const gr_vector_float NORM_LTF_SEQ_64; // normalized LTF sequence

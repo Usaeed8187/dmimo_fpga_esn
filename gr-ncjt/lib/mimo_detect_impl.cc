@@ -47,6 +47,7 @@ mimo_detect_impl::mimo_detect_impl(int fftsize, int nss, int ndatasymbols, int l
     d_mmse_coef = malloc_complex(d_nrx * d_nss * d_scnum);
 
     d_chan_est_ready = false;
+    d_cur_symbol = 0;
     d_total_pkts = 0;
     set_tag_propagation_policy(block::TPP_DONT);
 }
@@ -83,7 +84,7 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
     std::vector<gr::tag_t> d_tags;
     get_tags_in_window(d_tags, 0, 0, 1,
                        pmt::string_to_symbol("packet_start"));
-    if (d_tags.size() > 0)
+    if (!d_tags.empty())
     {
         // save channel estimation (column major storage)
         for (int k = 0; k < d_scnum; k++)
