@@ -25,7 +25,8 @@ list(APPEND ncjt_sources
     rg_demapper_impl.cc
     ul_precoding_impl.cc
     mimo_detect_impl.cc
-    utils.cc)
+    utils.cc
+    rx_mrc_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"

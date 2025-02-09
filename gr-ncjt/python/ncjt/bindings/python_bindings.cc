@@ -35,6 +35,7 @@ namespace py = pybind11;
     void bind_rg_demapper(py::module& m);
     void bind_ul_precoding(py::module& m);
     void bind_mimo_detect(py::module& m);
+    void bind_rx_mrc(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -77,5 +78,6 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_rg_demapper(m);
     bind_ul_precoding(m);
     bind_mimo_detect(m);
+    bind_rx_mrc(m);
     // ) END BINDING_FUNCTION_CALLS
 }

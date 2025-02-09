@@ -13,8 +13,7 @@ namespace gr::ncjt
 {
 
 ltf_chanest::sptr
-ltf_chanest::make(int fftsize, int ntx, int nrx,
-                  int npreamblesyms, int ndatasyms,
+ltf_chanest::make(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
                   bool csi_en, int logfreq, bool debug)
 {
     return gnuradio::make_block_sptr<ltf_chanest_impl>(
@@ -54,10 +53,10 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
         throw std::runtime_error("only support 1 to 8 Rx antennas");
     d_ntx = ntx;
     d_nss = std::min(d_ntx, d_nrx); // number of spatial streams for multiplexing
-    if (d_nss != 2 && d_nss != 4)
-        throw std::runtime_error("currently only support 2 or 4 multiplexing streams");
-    if (d_nrx % d_nss != 0)
-        throw std::runtime_error("number of Rx antennas must be multiples of Tx streams");
+    if (d_nss !=1  && d_nss != 2 && d_nss != 4)
+        throw std::runtime_error("currently only support 1, 2 or 4 multiplexing streams");
+    if (d_nrx < d_nss)
+        throw std::runtime_error("number of Rx antennas must be greater than number of streams");
 
     d_cur_sym = -npreamblesyms;
     d_last_sym = d_cur_sym;
@@ -66,7 +65,7 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
     d_chan_csi = malloc_complex(d_ntx * d_nrx * d_scnum);
     d_cshift = malloc_complex(4 * d_scnum);
 
-    // cyclic shift compensation
+    // cyclic shift compensation for CSI estimation
     float cshift[4] = {0, -8, -4, -12};
     for (int m = 0; m < 4; m++)
     {
@@ -82,13 +81,12 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
         d_Pd.resize(2, 2);
         d_Pd << 1, -1, 1, 1;
     }
-    else if (d_ntx == 4) // 4x4, 4x2
+    else if (d_ntx == 4 && (d_nss == 2 || d_nss == 4)) // 4x4, 4x2
     {
         d_Pd.resize(4, 4);
         d_Pd << 1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1;
     }
-    else
-        throw std::runtime_error("unsupported number of receiver antennas");
+
     const float normfactor = sqrt(d_nss * d_scnum) / (d_nss * d_fftsize);
     d_Pd = normfactor * d_Pd;
 
@@ -146,7 +144,9 @@ ltf_chanest_impl::work(int noutput_items, gr_vector_int &ninput_items,
         if (d_cur_sym == -1) // full HT-LTFs available
         {
             update_pilots(d_cur_sym);
-            if (d_nss == 2 && d_nrx == 2)
+            if (d_nss == 1)
+                ltf_chan_est_1tx(input_items, output_items, noutput_syms * d_scnum);
+            else if (d_nss == 2 && d_nrx == 2)
                 ltf_chan_est_2rx(input_items, output_items, noutput_syms * d_scnum);
             else
                 ltf_chan_est_nrx(input_items, output_items, noutput_syms * d_scnum);
@@ -403,6 +403,27 @@ ltf_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
     }
     d_sigpwr_sum += power_est / (d_npt * d_nrx);
     d_noise_sum += noise_est / (d_npt * d_nrx);
+}
+
+void
+ltf_chanest_impl::ltf_chan_est_1tx(gr_vector_const_void_star &input_items,
+                                   gr_vector_void_star &output_items,
+                                   int output_offset)
+{
+    const int input_offset = d_scnum * (d_preamble_symbols - d_nss);
+    const float normfactor = sqrt( d_scnum) / d_fftsize;
+
+    for (int m = 0; m < d_nrx; m++)  // for all rx antennas
+    {
+        auto *in = (const gr_complex *) input_items[m] + input_offset;
+        auto *out = (gr_complex *) output_items[m];
+        for (int k = 0; k < d_scnum; k++)
+        {
+            auto hest = normfactor * NORM_LTF_SEQ[k] * in[k];
+            d_chan_est[d_nrx * k + m] = hest;  // 1 stream only
+            out[output_offset + k] = hest;
+        }
+    }
 }
 
 void

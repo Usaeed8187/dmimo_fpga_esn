@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(rg_mapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(eaec33a3ce0effad610205af771eb3b7) */
+/* BINDTOOL_HEADER_FILE(rx_mrc.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(dc328f7a0357880a03ad1f5cf8979f48) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,20 +25,19 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/rg_mapper.h>
+#include <gnuradio/ncjt/rx_mrc.h>
 // pydoc.h is automatically generated in the build directory
-#include <rg_mapper_pydoc.h>
+#include <rx_mrc_pydoc.h>
 
-void bind_rg_mapper(py::module &m) {
+void bind_rx_mrc(py::module &m) {
 
-  using rg_mapper = ::gr::ncjt::rg_mapper;
+  using rx_mrc = ::gr::ncjt::rx_mrc;
 
-  py::class_<rg_mapper, gr::tagged_stream_block, gr::block, gr::basic_block,
-             std::shared_ptr<rg_mapper>>(m, "rg_mapper", D(rg_mapper))
+  py::class_<rx_mrc, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<rx_mrc>>(m, "rx_mrc", D(rx_mrc))
 
-      .def(py::init(&rg_mapper::make), py::arg("nstrm"), py::arg("framelen"),
-           py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("modtype"),
-           py::arg("debug") = false, D(rg_mapper, make))
+      .def(py::init(&rx_mrc::make), py::arg("fft_size"), py::arg("nrx"),
+           py::arg("nsymbols"), py::arg("debug"), D(rx_mrc, make))
 
       ;
 }

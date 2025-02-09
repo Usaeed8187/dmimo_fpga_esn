@@ -53,6 +53,9 @@ private:
     const bool d_debug;
 
     void
+    ltf_chan_est_1tx(gr_vector_const_void_star &input_items, gr_vector_void_star &output_items, int output_offset);
+
+    void
     ltf_chan_est_2rx(gr_vector_const_void_star &input_items, gr_vector_void_star &output_items, int output_offset);
 
     void
