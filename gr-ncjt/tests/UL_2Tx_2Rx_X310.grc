@@ -57,18 +57,6 @@ blocks:
     coordinate: [328, 164.0]
     rotation: 0
     state: enabled
-- name: lo_off
-  id: variable
-  parameters:
-    comment: ''
-    value: 10e6
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [400, 12.0]
-    rotation: 0
-    state: enabled
 - name: num_data_syms
   id: variable
   parameters:
@@ -109,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.45e9
+    value: 3.55e9
   states:
     bus_sink: false
     bus_source: false
@@ -162,7 +150,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '3'
+    value: '5'
     widget: counter_slider
   states:
     bus_sink: false
@@ -198,7 +186,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [976, 300.0]
+    coordinate: [976, 284.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0
@@ -216,7 +204,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [976, 420.0]
+    coordinate: [976, 452.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0
@@ -255,7 +243,7 @@ blocks:
     coordinate: [1208, 628.0]
     rotation: 0
     state: disabled
-- name: blocks_file_sink_0_0_1_0_0_0_1
+- name: blocks_file_sink_0_0_1_0_0_0_1_0
   id: blocks_file_sink
   parameters:
     affinity: ''
@@ -270,9 +258,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1520, 316.0]
+    coordinate: [1544, 316.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_burst_tx_0
   id: ncjt_burst_tx
   parameters:
@@ -313,6 +301,26 @@ blocks:
     coordinate: [768, 44.0]
     rotation: 0
     state: enabled
+- name: ncjt_mimo_detect_0
+  id: ncjt_mimo_detect
+  parameters:
+    affinity: '5'
+    alias: ''
+    comment: ''
+    debug: 'False'
+    fftsize: fft_size
+    logfreq: '50'
+    maxoutbuf: '0'
+    minoutbuf: '32768'
+    ndatasymbols: num_data_syms
+    nrx: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [984, 376.0]
+    rotation: 0
+    state: enabled
 - name: ncjt_mu_chanest_0
   id: ncjt_mu_chanest
   parameters:
@@ -321,7 +329,7 @@ blocks:
     comment: ''
     debug: 'True'
     fftsize: fft_size
-    logfreq: '10'
+    logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
     ndatasyms: num_data_syms
@@ -346,7 +354,7 @@ blocks:
     fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '0'
-    symoffset: '15'
+    symoffset: '12'
   states:
     bus_sink: false
     bus_source: false
@@ -364,7 +372,7 @@ blocks:
     fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '0'
-    symoffset: '15'
+    symoffset: '12'
   states:
     bus_sink: false
     bus_source: false
@@ -395,6 +403,45 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [320, 380.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_pkt_err_0
+  id: ncjt_pkt_err
+  parameters:
+    affinity: ''
+    alias: ''
+    berout: 'True'
+    comment: ''
+    debug: 'True'
+    filename: '"../data/2x4/64QAM/strm_data_2x2.bin"'
+    logfreq: '50'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nstrms: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1400, 376.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_qam_demapper_0
+  id: ncjt_qam_demapper
+  parameters:
+    affinity: '5'
+    alias: ''
+    comment: ''
+    debug: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '32768'
+    modtype: '6'
+    nstrms: '2'
+    usecsi: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1232, 376.0]
     rotation: 0
     state: enabled
 - name: pdu_pdu_to_tagged_stream_0
@@ -431,99 +478,7 @@ blocks:
     coordinate: [1008, 644.0]
     rotation: 0
     state: disabled
-- name: qtgui_const_sink_x_0
-  id: qtgui_const_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'False'
-    axislabels: 'True'
-    color1: '"blue"'
-    color10: '"red"'
-    color2: '"red"'
-    color3: '"red"'
-    color4: '"red"'
-    color5: '"red"'
-    color6: '"red"'
-    color7: '"red"'
-    color8: '"red"'
-    color9: '"red"'
-    comment: ''
-    grid: 'True'
-    gui_hint: (0,0)
-    label1: ''
-    label10: ''
-    label2: ''
-    label3: ''
-    label4: ''
-    label5: ''
-    label6: ''
-    label7: ''
-    label8: ''
-    label9: ''
-    legend: 'False'
-    marker1: '0'
-    marker10: '0'
-    marker2: '0'
-    marker3: '0'
-    marker4: '0'
-    marker5: '0'
-    marker6: '0'
-    marker7: '0'
-    marker8: '0'
-    marker9: '0'
-    name: '""'
-    nconnections: '1'
-    size: '512'
-    style1: '0'
-    style10: '0'
-    style2: '0'
-    style3: '0'
-    style4: '0'
-    style5: '0'
-    style6: '0'
-    style7: '0'
-    style8: '0'
-    style9: '0'
-    tr_chan: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: '""'
-    type: complex
-    update_time: '0.5'
-    width1: '1'
-    width10: '1'
-    width2: '1'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    xmax: '1.5'
-    xmin: '-1.5'
-    ymax: '1.5'
-    ymin: '-1.5'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1200, 292.0]
-    rotation: 0
-    state: disabled
-- name: qtgui_const_sink_x_0_0
+- name: qtgui_const_sink_x_0_0_0
   id: qtgui_const_sink_x
   parameters:
     affinity: ''
@@ -612,10 +567,102 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1200, 452.0]
+    coordinate: [1216, 460.0]
     rotation: 0
-    state: disabled
-- name: qtgui_time_sink_x_0
+    state: true
+- name: qtgui_const_sink_x_0_1
+  id: qtgui_const_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: '"blue"'
+    color10: '"red"'
+    color2: '"red"'
+    color3: '"red"'
+    color4: '"red"'
+    color5: '"red"'
+    color6: '"red"'
+    color7: '"red"'
+    color8: '"red"'
+    color9: '"red"'
+    comment: ''
+    grid: 'True'
+    gui_hint: (0,0)
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    marker1: '0'
+    marker10: '0'
+    marker2: '0'
+    marker3: '0'
+    marker4: '0'
+    marker5: '0'
+    marker6: '0'
+    marker7: '0'
+    marker8: '0'
+    marker9: '0'
+    name: '""'
+    nconnections: '1'
+    size: '512'
+    style1: '0'
+    style10: '0'
+    style2: '0'
+    style3: '0'
+    style4: '0'
+    style5: '0'
+    style6: '0'
+    style7: '0'
+    style8: '0'
+    style9: '0'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.5'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    xmax: '1.5'
+    xmin: '-1.5'
+    ymax: '1.5'
+    ymin: '-1.5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1216, 308.0]
+    rotation: 0
+    state: true
+- name: qtgui_time_sink_x_0_0
   id: qtgui_time_sink_x
   parameters:
     affinity: ''
@@ -709,9 +756,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1520, 412.0]
+    coordinate: [1544, 420.0]
     rotation: 0
-    state: disabled
+    state: true
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:
@@ -1422,19 +1469,31 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [88, 328.0]
+    coordinate: [96, 328.0]
     rotation: 0
     state: enabled
 
 connections:
 - [ncjt_burst_tx_0, '0', uhd_usrp_sink_0, '1']
 - [ncjt_burst_tx_0_0, '0', uhd_usrp_sink_0, '0']
+- [ncjt_mimo_detect_0, '0', ncjt_qam_demapper_0, '0']
+- [ncjt_mimo_detect_0, '0', qtgui_const_sink_x_0_1, '0']
+- [ncjt_mimo_detect_0, '1', ncjt_qam_demapper_0, '1']
+- [ncjt_mimo_detect_0, '1', qtgui_const_sink_x_0_0_0, '0']
 - [ncjt_mu_chanest_0, '0', blocks_file_sink_0_0_0_0_0, '0']
+- [ncjt_mu_chanest_0, '0', ncjt_mimo_detect_0, '0']
 - [ncjt_mu_chanest_0, '1', blocks_file_sink_0_0_1_0, '0']
+- [ncjt_mu_chanest_0, '1', ncjt_mimo_detect_0, '1']
+- [ncjt_mu_chanest_0, cpe, pdu_pdu_to_tagged_stream_0, pdus]
+- [ncjt_mu_chanest_0, csi, pdu_pdu_to_tagged_stream_0_0, pdus]
 - [ncjt_ofdm_demod_0, '0', ncjt_mu_chanest_0, '0']
 - [ncjt_ofdm_demod_1, '0', ncjt_mu_chanest_0, '1']
 - [ncjt_pkt_detect_0, '0', ncjt_ofdm_demod_0, '0']
 - [ncjt_pkt_detect_0, '1', ncjt_ofdm_demod_1, '0']
+- [ncjt_pkt_err_0, '0', blocks_file_sink_0_0_1_0_0_0_1_0, '0']
+- [ncjt_pkt_err_0, '1', qtgui_time_sink_x_0_0, '0']
+- [ncjt_qam_demapper_0, '0', ncjt_pkt_err_0, '0']
+- [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
 - [pdu_pdu_to_tagged_stream_0, '0', blocks_file_sink_0_0_1_0_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0_0, '0', blocks_file_sink_0_0_1_0_0_0_0, '0']
 - [uhd_usrp_source_0, '0', ncjt_pkt_detect_0, '0']

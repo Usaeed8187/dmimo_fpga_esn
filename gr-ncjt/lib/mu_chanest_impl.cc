@@ -116,7 +116,7 @@ mu_chanest_impl::~mu_chanest_impl()
 int
 mu_chanest_impl::calculate_output_stream_length(const gr_vector_int &ninput_items)
 {
-    return (d_nue * d_nss + d_data_symbols) * d_scnum;
+    return (d_ntx + d_data_symbols) * d_scnum;
 }
 
 int
@@ -306,13 +306,13 @@ mu_chanest_impl::update_pilots(int symidx)
                                      {1, 1, 1, -1, -1, 1, 1, 1},
                                      {1, 1, 1, -1, -1, 1, 1, 1}};
 
-    auto basePilot = (d_fftsize == 64) ? ((d_nss == 2) ? basePilots4 : basePilots4 + 2) : basePilots8;
+    auto basePilot = (d_fftsize == 64) ? ((d_ntx == 2) ? basePilots4 : basePilots4 + 2) : basePilots8;
 
     // generate current pilots
     for (int i = 0; i < d_npt; i++) // for all pilot positions
     {
         unsigned int idx = (symidx + i) % d_npt;
-        for (int k = 0; k < d_nss; k++)  // for all streams
+        for (int k = 0; k < d_ntx; k++)  // for all streams
             d_cur_pilot[k][i] = pilot_parity * basePilot[k][idx];
     }
 }
@@ -338,8 +338,8 @@ mu_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
         for (int k = 0; k < d_nrx; k++)  // loop for all receiver antennas
         {
             est_pilots[k][i] = 0;  // estimate received pilots
-            for (int n = 0; n < d_nss; n++)  // combining all streams
-                est_pilots[k][i] += d_chan_est[d_nss * d_nrx * pidx + d_nss * k + n] * d_cur_pilot[n][i];
+            for (int n = 0; n < d_ntx; n++)  // combining all Tx streams
+                est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * k + n] * d_cur_pilot[n][i];
             // sum over all pilots and receiver antennas
             auto *in = (const gr_complex *) input_items[k];
             cpe_sum += in[input_offset + pidx] * std::conj(est_pilots[k][i]);
@@ -349,7 +349,7 @@ mu_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
     // dout << "CPE estimate: " << d_cpe_phi << std::endl;
 
     // CPE compensation for received pilots and data
-    const float normfactor = sqrt(float(d_nss * d_scnum)) / float(d_fftsize);
+    const float normfactor = sqrt(d_ntx * d_scnum) / d_fftsize; // TODO: check scaling
     gr_complex cpe_comp = normfactor * std::exp(gr_complex(0, d_cpe_phi));
     for (int m = 0; m < d_nrx; m++)
     {
@@ -389,7 +389,8 @@ mu_chanest_impl::ltf_chan_est_1tx(gr_vector_const_void_star &input_items,
         for (int m = 0; m < d_nrx; m++)  // for all rx antennas
         {
             auto *in = (const gr_complex *) input_items[m] + input_offset;
-            auto *out = (gr_complex *) output_items[m];
+            // auto *out = (gr_complex *) output_items[m];
+            auto *out = (gr_complex *) output_items[sidx]; // separate stream in each port
             for (int cidx = 0; cidx < d_scnum; cidx++) // carrier index
             {
                 auto hest = normfactor * NORM_LTF_SEQ[cidx] * in[cidx];
@@ -397,7 +398,8 @@ mu_chanest_impl::ltf_chan_est_1tx(gr_vector_const_void_star &input_items,
                 int caddr = d_ntx * d_nrx * cidx + d_ntx * m + sidx; // 1 stream only
                 d_chan_est[caddr] = hest;
                 // row major layout: (nss, num_sc)
-                out[output_offset + d_scnum * sidx + cidx] = hest;
+                // out[output_offset + d_scnum * sidx + cidx] = hest;
+                out[output_offset + d_nrx * cidx  +  m] = hest;
             }
         }
     }
