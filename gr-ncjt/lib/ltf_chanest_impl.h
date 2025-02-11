@@ -8,8 +8,7 @@
 #define INCLUDED_NCJT_LTF_CHANEST_IMPL_H
 
 #include <gnuradio/ncjt/ltf_chanest.h>
-#include <Eigen/Core>
-#include <Eigen/Dense>
+#include "cmatrix.h"
 
 namespace gr::ncjt
 {
@@ -39,7 +38,7 @@ private:
     gr_complex *d_chan_est; // channel estimate for data reception (Nt,Nr,Nsc)
     gr_complex *d_chan_csi; // channel estimation for CSI feedback (Nt,Nr,Nsc)
     gr_complex *d_cshift; // cyclic shift compensation
-    Eigen::MatrixXcf d_Pd; // P matrix for MMSE detection
+    CMatrixX d_Pd; // P matrix for MMSE detection
     static const gr_vector_float NORM_LTF_SEQ_64; // normalized LTF sequence
     static const gr_vector_float NORM_LTF_SEQ_256; // normalized LTF sequence
     gr_vector_float NORM_LTF_SEQ; // current normalized LTF sequence

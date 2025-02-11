@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.mimo_detect(${fftsize}, ${nrx}, ${ndatasymbols}, ${logfreq}, ${debug})
+  make: ncjt.mimo_detect(${fftsize}, ${nrx}, ${nss}, ${ndatasymbols}, ${logfreq}, ${debug})
 
 parameters:
   - id: fftsize
@@ -14,6 +14,10 @@ parameters:
     hide: part
   - id: nrx
     label: Num Rx Antennas
+    dtype: int
+    default: '2'
+  - id: nss
+    label: Num Streams
     dtype: int
     default: '2'
   - id: ndatasymbols
@@ -42,6 +46,6 @@ outputs:
   - label: out
     domain: stream
     dtype: complex
-    multiplicity: ${nrx}
+    multiplicity: ${nss}
 
 file_format: 1

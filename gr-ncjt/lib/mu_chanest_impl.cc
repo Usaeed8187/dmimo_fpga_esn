@@ -43,9 +43,7 @@ mu_chanest_impl::mu_chanest_impl(int fftsize, int ntx, int nrx, int nue,
         NORM_LTF_SEQ = NORM_LTF_SEQ_256;
     }
     else
-    {
         throw std::runtime_error("Unsupported OFDM FFT size");
-    }
     d_fftsize = fftsize;
 
     if (ntx < 1 || ntx > MAX_NSS)
@@ -84,15 +82,17 @@ mu_chanest_impl::mu_chanest_impl(int fftsize, int ntx, int nrx, int nue,
     if (d_nss == 2) // 2Tx2Rx, 2Tx4Rx
     {
         d_Pd.resize(2, 2);
-        d_Pd << 1, -1, 1, 1;
+        // d_Pd << 1, -1, 1, 1; // column major
+        d_Pd << 1, 1, -1, 1; // row-major
     }
     else if (d_nss == 4) // 4Tx4Rx
     {
         d_Pd.resize(4, 4);
-        d_Pd << 1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1;
+        // d_Pd << 1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1; // column major
+        d_Pd << 1, 1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, -1, 1; // row major
     }
 
-    const float normfactor = sqrt(float(d_nss * d_scnum)) / float(d_nss * d_fftsize);
+    const float normfactor = sqrt(d_scnum / float(d_ntx * d_fftsize));
     d_Pd = normfactor * d_Pd;
 
     std::stringstream str;
@@ -339,7 +339,8 @@ mu_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
         {
             est_pilots[k][i] = 0;  // estimate received pilots
             for (int n = 0; n < d_ntx; n++)  // combining all Tx streams
-                est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * k + n] * d_cur_pilot[n][i];
+                // est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * k + n] * d_cur_pilot[n][i];
+                est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * n + k] * d_cur_pilot[n][i];
             // sum over all pilots and receiver antennas
             auto *in = (const gr_complex *) input_items[k];
             cpe_sum += in[input_offset + pidx] * std::conj(est_pilots[k][i]);
@@ -349,7 +350,7 @@ mu_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
     // dout << "CPE estimate: " << d_cpe_phi << std::endl;
 
     // CPE compensation for received pilots and data
-    const float normfactor = sqrt(d_ntx * d_scnum) / d_fftsize; // TODO: check scaling
+    const float normfactor = sqrt(float(d_ntx  * d_scnum) / d_fftsize);
     gr_complex cpe_comp = normfactor * std::exp(gr_complex(0, d_cpe_phi));
     for (int m = 0; m < d_nrx; m++)
     {
@@ -378,7 +379,7 @@ mu_chanest_impl::ltf_chan_est_1tx(gr_vector_const_void_star &input_items,
                                   gr_vector_void_star &output_items,
                                   int output_offset)
 {
-    const float normfactor = sqrt(float(d_scnum)) / float(d_fftsize);
+    const float normfactor = sqrt(float(d_scnum) / float(d_fftsize));
 
     for (int n = 0; n < d_nue; n++)
     {
@@ -389,17 +390,18 @@ mu_chanest_impl::ltf_chan_est_1tx(gr_vector_const_void_star &input_items,
         for (int m = 0; m < d_nrx; m++)  // for all rx antennas
         {
             auto *in = (const gr_complex *) input_items[m] + input_offset;
-            // auto *out = (gr_complex *) output_items[m];
-            auto *out = (gr_complex *) output_items[sidx]; // separate stream in each port
+            // auto *out = (gr_complex *) output_items[sidx]; // separate stream in each port
+            auto *out = (gr_complex *) output_items[m];
             for (int cidx = 0; cidx < d_scnum; cidx++) // carrier index
             {
                 auto hest = normfactor * NORM_LTF_SEQ[cidx] * in[cidx];
                 // row major layout: (num_sc, nrx, nss)
-                int caddr = d_ntx * d_nrx * cidx + d_ntx * m + sidx; // 1 stream only
+                int caddr = d_ntx * d_nrx * cidx + d_ntx * sidx + m; // 1 stream only
                 d_chan_est[caddr] = hest;
+                // out[output_offset + d_nrx * cidx + m] = hest; // separate stream in each port
                 // row major layout: (nss, num_sc)
-                // out[output_offset + d_scnum * sidx + cidx] = hest;
-                out[output_offset + d_nrx * cidx  +  m] = hest;
+                out[output_offset + d_ntx * cidx + sidx] = hest;
+
             }
         }
     }
@@ -415,21 +417,23 @@ mu_chanest_impl::ltf_chan_est_2rx(gr_vector_const_void_star &input_items,
     auto *out0 = (gr_complex *) output_items[0];
     auto *out1 = (gr_complex *) output_items[1];
 
-    Eigen::Matrix2cf Pd, Rx;
-    const float normfactor = sqrt(float(d_nss * d_scnum)) / float(d_nss * d_fftsize);
+    CMatrix2 Pd, Rx;
+    const float normfactor = sqrt(d_scnum / float(d_nss * d_fftsize));
     Pd << normfactor, -normfactor, normfactor, normfactor;
     for (int k = 0; k < d_scnum; k++)
     {
-        Rx(0, 0) = in0[k], Rx(1, 0) = in0[k + d_scnum];  // Rx1
-        Rx(0, 1) = in1[k], Rx(1, 1) = in1[k + d_scnum];  // Rx2
+        Rx(0, 0) = in0[k], Rx(1, 0) = in0[k + d_scnum];  // (s0,r0), (s1,r0)
+        Rx(0, 1) = in1[k], Rx(1, 1) = in1[k + d_scnum];  // (s0,r1) (s1,r1)
         // channel estimation H = Pd * Rx, Pd = {1, -1; 1, 1} for 2x2 case
         // H: nSTS x nRx, Pd: nSTS x nLTF, Rx: nLTF x nRx
-        Eigen::Map<Eigen::Matrix2cf> H(&d_chan_est[4 * k], 2, 2);
+        Eigen::Map<CMatrix2> H(&d_chan_est[4 * k], 2, 2);
         H = NORM_LTF_SEQ[k] * Pd * Rx;
-        // copy channel estimation for each stream to individual output port
+        // copy channel estimation for all streams per receiver antennas to individual output port
+        // (s0,r0),(s1,r0) -> ch0,  (s0,r1),(s1,r1) -> ch1
+        // using column-major memory layout
         out0[output_offset + 2 * k] = H(0, 0);  // s0,r0
-        out0[output_offset + 2 * k + 1] = H(0, 1);  // s0,r1
-        out1[output_offset + 2 * k] = H(1, 0);  // s1,r0
+        out0[output_offset + 2 * k + 1] = H(1, 0);  // s1,r0
+        out1[output_offset + 2 * k] = H(0, 1);  // s0,r1
         out1[output_offset + 2 * k + 1] = H(1, 1); // s1,r1
     }
 }
@@ -439,7 +443,7 @@ mu_chanest_impl::ltf_chan_est_nrx(gr_vector_const_void_star &input_items,
                                   gr_vector_void_star &output_items,
                                   int output_offset)
 {
-    Eigen::MatrixXcf Rx(d_nss, d_nrx);  // nLTF = nSTS for normal full multiplexing
+    CMatrixX Rx(d_nss, d_nrx);  // nLTF = nSTS for normal full multiplexing
     for (int k = 0; k < d_scnum; k++)  // for all subcarriers
     {
         // copy LTF inputs
@@ -451,7 +455,7 @@ mu_chanest_impl::ltf_chan_est_nrx(gr_vector_const_void_star &input_items,
         }
         // channel estimation H = Pd * Rx, Pd = {1, -1; 1, 1} for 2x2 case
         // H: nSTS x nRx, Pd: nSTS x nLTF, Rx: nLTF x nRx
-        Eigen::Map<Eigen::MatrixXcf> H(&d_chan_est[d_nss * d_nrx * k], d_nss, d_nrx);
+        Eigen::Map<CMatrixX> H(&d_chan_est[d_nss * d_nrx * k], d_nss, d_nrx);
         H = NORM_LTF_SEQ[k] * d_Pd * Rx;
         // copy channel estimation for each stream to individual output port
         // support multiple rx antennas sets (nRx = k * nSTS)

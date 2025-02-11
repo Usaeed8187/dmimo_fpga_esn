@@ -13,35 +13,38 @@ namespace gr::ncjt
 {
 
 mimo_detect::sptr
-mimo_detect::make(int fftsize, int nss, int ndatasymbols, int logfreq, bool debug)
+mimo_detect::make(int fftsize, int nrx, int nss, int ndatasymbols, int logfreq, bool debug)
 {
-    return gnuradio::make_block_sptr<mimo_detect_impl>(fftsize, nss, ndatasymbols, logfreq, debug);
+    return gnuradio::make_block_sptr<mimo_detect_impl>(fftsize, nrx, nss, ndatasymbols, logfreq, debug);
 }
 
-mimo_detect_impl::mimo_detect_impl(int fftsize, int nss, int ndatasymbols, int logfreq, bool debug)
+mimo_detect_impl::mimo_detect_impl(int fftsize, int nrx, int nss, int ndatasymbols, int logfreq, bool debug)
     : gr::tagged_stream_block("mimo_detect",
-                              gr::io_signature::make(nss, nss, sizeof(gr_complex)),
+                              gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
                               gr::io_signature::make(nss, nss, sizeof(gr_complex)),
                               "packet_len"),
       d_num_symbols(ndatasymbols), d_logfreq(logfreq), d_debug(debug)
 {
-    if (fftsize != 64 && fftsize != 256)
-        throw std::runtime_error("Unsupported OFDM FFT size");
     if (fftsize == 64)
     {
         d_scnum = 56;
         d_scdata = 52;
     }
-    else
+    else if (fftsize == 256)
     {
         d_scnum = 242;
         d_scdata = 234;
     }
+    else
+        throw std::runtime_error("Unsupported OFDM FFT size");
 
+    if (nrx < 1 || nrx > 8)
+        throw std::runtime_error("only support 1 to 8 Rx antennas");
     if (nss < 1 || nss > 8)
         throw std::runtime_error("only support 1 to 8 streams");
-    // assuming nrx == nss
-    d_nrx = nss, d_nss = nss;
+    if (nss > nrx)
+        throw std::runtime_error("invalid number of streams");
+    d_nrx = nrx, d_nss = nss;
 
     d_chan_est_buf = malloc_complex(d_nrx * d_nss * d_scnum);
     d_mmse_coef = malloc_complex(d_nrx * d_nss * d_scnum);
@@ -49,6 +52,7 @@ mimo_detect_impl::mimo_detect_impl(int fftsize, int nss, int ndatasymbols, int l
     d_chan_est_ready = false;
     d_cur_symbol = 0;
     d_total_pkts = 0;
+
     set_tag_propagation_policy(block::TPP_DONT);
 }
 
@@ -86,15 +90,18 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
                        pmt::string_to_symbol("packet_start"));
     if (!d_tags.empty())
     {
-        // save channel estimation (column major storage)
+        // save channel estimation
         for (int k = 0; k < d_scnum; k++)
-            for (int m = 0; m < d_nss; m++) // for all streams
+            for (int n = 0; n < d_nrx; n++) // for all rx
             {
-                const gr_complex *in = (const gr_complex *) input_items[m];
-                for (int n = 0; n < d_nrx; n++) // for all rx
+                const gr_complex *in = (const gr_complex *) input_items[n];
+
+                for (int m = 0; m < d_nss; m++) // for all streams
                 {
+                    // matrix shape (num_ss, num_rx, num_sc)
+                    // column major memory layout for Eigen
                     int offset = k * d_nrx * d_nrx + n * d_nrx + m;
-                    d_chan_est_buf[offset] = in[k * d_nrx + n];
+                    d_chan_est_buf[offset] = in[k * d_nss + m];
                 }
             }
         d_chan_est_ready = true;

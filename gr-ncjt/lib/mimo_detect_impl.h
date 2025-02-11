@@ -48,7 +48,7 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    mimo_detect_impl(int fftsize, int nss, int ndatasymbols, int logfreq, bool debug);
+    mimo_detect_impl(int fftsize, int nrx, int nss, int ndatasymbols, int logfreq, bool debug);
     ~mimo_detect_impl();
 
     int

@@ -8,8 +8,7 @@
 #define INCLUDED_NCJT_MU_CHANEST_IMPL_H
 
 #include <gnuradio/ncjt/mu_chanest.h>
-#include <Eigen/Core>
-#include <Eigen/Dense>
+#include "cmatrix.h"
 
 namespace gr::ncjt
 {
