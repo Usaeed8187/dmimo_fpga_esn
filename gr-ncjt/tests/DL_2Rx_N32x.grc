@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: dl_2rx_n320
+    id: dl_2rx_n32x
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -142,7 +142,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr=192.168.60.2"'
+    value: '"addr0=192.168.60.2,addr1=192.168.40.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -765,7 +765,7 @@ blocks:
     center_freq9: '0'
     clock_rate: 200e6
     clock_source0: gpsdo
-    clock_source1: ''
+    clock_source1: gpsdo
     clock_source2: ''
     clock_source3: ''
     clock_source4: ''
@@ -838,7 +838,7 @@ blocks:
     dc_offs_enb8: default
     dc_offs_enb9: default
     dev_addr: usrp_addr
-    dev_args: ''
+    dev_args: '"A:0 A:0"'
     gain0: rx_gain
     gain1: rx_gain
     gain10: '0'
@@ -1034,7 +1034,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nchan: '2'
-    num_mboards: '1'
+    num_mboards: '2'
     otw: sc16
     rx_agc0: Default
     rx_agc1: Default
@@ -1083,7 +1083,7 @@ blocks:
     stream_chans: '[]'
     sync: sync
     time_source0: gpsdo
-    time_source1: ''
+    time_source1: gpsdo
     time_source2: ''
     time_source3: ''
     time_source4: ''
@@ -1095,7 +1095,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [88, 284.0]
+    coordinate: [88, 260.0]
     rotation: 0
     state: enabled
 
