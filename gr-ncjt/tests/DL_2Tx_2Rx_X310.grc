@@ -85,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '50'
+    value: '20'
   states:
     bus_sink: false
     bus_source: false
@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.45e9
+    value: 3.55e9
   states:
     bus_sink: false
     bus_source: false
@@ -171,6 +171,42 @@ blocks:
     coordinate: [8, 124.0]
     rotation: 0
     state: enabled
+- name: blocks_file_sink_0_0_0_0_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: /tmp/rxsig_chest1.bin
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [944, 276.0]
+    rotation: 0
+    state: disabled
+- name: blocks_file_sink_0_0_1_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: /tmp/rxsig_chest2.bin
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [952, 452.0]
+    rotation: 0
+    state: disabled
 - name: blocks_file_sink_0_0_1_0_0_0
   id: blocks_file_sink
   parameters:
@@ -232,7 +268,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/256QAM/txsig_2x2_s1.bin"'
+    filename: '"../data/16QAM/txsig_2x2_s1.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -252,7 +288,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/256QAM/txsig_2x2_s2.bin"'
+    filename: '"../data/16QAM/txsig_2x2_s2.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -274,7 +310,7 @@ blocks:
     csi_fb: 'False'
     debug: 'True'
     fftsize: fft_size
-    logfreq: '50'
+    logfreq: '20'
     maxoutbuf: '0'
     minoutbuf: '32768'
     ndatasyms: num_data_syms
@@ -301,11 +337,12 @@ blocks:
     minoutbuf: '32768'
     ndatasymbols: num_data_syms
     nrx: '2'
+    nss: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 376.0]
+    coordinate: [944, 372.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -377,7 +414,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/256QAM/strm_data_2x2.bin"'
+    filename: '"../data/16QAM/strm_data_2x2.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -398,7 +435,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    modtype: '8'
+    modtype: '4'
     nstrms: '2'
     usecsi: 'False'
   states:
@@ -1433,14 +1470,16 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 324.0]
+    coordinate: [88, 328.0]
     rotation: 0
     state: enabled
 
 connections:
 - [ncjt_burst_tx_0, '0', uhd_usrp_sink_0, '0']
 - [ncjt_burst_tx_0_0, '0', uhd_usrp_sink_0, '1']
+- [ncjt_ltf_chanest_0, '0', blocks_file_sink_0_0_0_0_0, '0']
 - [ncjt_ltf_chanest_0, '0', ncjt_mimo_detect_0, '0']
+- [ncjt_ltf_chanest_0, '1', blocks_file_sink_0_0_1_0, '0']
 - [ncjt_ltf_chanest_0, '1', ncjt_mimo_detect_0, '1']
 - [ncjt_ltf_chanest_0, cpe, pdu_pdu_to_tagged_stream_0, pdus]
 - [ncjt_ltf_chanest_0, csi, pdu_pdu_to_tagged_stream_0_0, pdus]
