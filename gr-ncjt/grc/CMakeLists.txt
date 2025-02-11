@@ -21,4 +21,5 @@ install(FILES
     ncjt_ul_precoding.block.yml
     ncjt_mimo_detect.block.yml
     ncjt_mimo_detect.block.yml
-    ncjt_rx_mrc.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_rx_mrc.block.yml
+    ncjt_mu_chanest.block.yml DESTINATION share/gnuradio/grc/blocks)

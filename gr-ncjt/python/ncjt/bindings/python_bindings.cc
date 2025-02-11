@@ -36,6 +36,7 @@ namespace py = pybind11;
     void bind_ul_precoding(py::module& m);
     void bind_mimo_detect(py::module& m);
     void bind_rx_mrc(py::module& m);
+    void bind_mu_chanest(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -79,5 +80,6 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_ul_precoding(m);
     bind_mimo_detect(m);
     bind_rx_mrc(m);
+    bind_mu_chanest(m);
     // ) END BINDING_FUNCTION_CALLS
 }

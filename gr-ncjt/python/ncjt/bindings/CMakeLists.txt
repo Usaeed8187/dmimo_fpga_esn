@@ -38,7 +38,8 @@ list(APPEND ncjt_python_files
     rg_demapper_python.cc
     ul_precoding_python.cc
     mimo_detect_python.cc
-    rx_mrc_python.cc python_bindings.cc)
+    rx_mrc_python.cc
+    mu_chanest_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(ncjt ../../.. gr::ncjt "${ncjt_python_files}")
 
