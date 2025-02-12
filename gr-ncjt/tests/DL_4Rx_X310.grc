@@ -300,6 +300,7 @@ blocks:
     minoutbuf: '32768'
     ndatasymbols: num_data_syms
     nrx: '2'
+    nss: '2'
   states:
     bus_sink: false
     bus_source: false
@@ -1191,7 +1192,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 252.0]
+    coordinate: [80, 248.0]
     rotation: 0
     state: enabled
 

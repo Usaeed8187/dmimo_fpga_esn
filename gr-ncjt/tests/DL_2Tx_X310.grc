@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '50'
+    value: '20'
   states:
     bus_sink: false
     bus_source: false
@@ -49,7 +49,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.45e9
+    value: 3.55e9
   states:
     bus_sink: false
     bus_source: false
@@ -61,7 +61,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 25e6
+    value: 20e6
   states:
     bus_sink: false
     bus_source: false
@@ -81,25 +81,13 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '25'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [440, 12.0]
-    rotation: 0
-    state: enabled
-- name: usrp_addr
-  id: variable
-  parameters:
-    comment: ''
-    value: '"addr=192.168.60.2"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 140.0]
     rotation: 0
     state: enabled
 - name: ncjt_burst_tx_0
@@ -109,7 +97,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/64QAM/txsig_2x2_s1.bin"'
+    filename: '"../data/16QAM/txsig_2x2_s1.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -129,7 +117,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/64QAM/txsig_2x2_s2.bin"'
+    filename: '"../data/16QAM/txsig_2x2_s2.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -244,7 +232,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: ''
+    clock_source0: external
     clock_source1: mimo
     clock_source2: ''
     clock_source3: ''
@@ -253,7 +241,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: usrp_addr
+    dev_addr: '"addr=192.168.30.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
@@ -403,7 +391,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: ''
+    time_source0: external
     time_source1: mimo
     time_source2: ''
     time_source3: ''

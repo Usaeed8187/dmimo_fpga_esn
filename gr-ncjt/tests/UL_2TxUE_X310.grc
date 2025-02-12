@@ -49,7 +49,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.45e9
+    value: 3.55e9
   states:
     bus_sink: false
     bus_source: false
@@ -241,8 +241,8 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.30.2,addr1=192.168.60.2"'
-    dev_args: '"A:0 A:0"'
+    dev_addr: '"addr0=192.168.60.2"'
+    dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
     gain10: '0'
@@ -375,7 +375,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nchan: '2'
-    num_mboards: '2'
+    num_mboards: '1'
     otw: ''
     samp_rate: samp_rate
     sd_spec0: ''
@@ -404,7 +404,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 236.0]
+    coordinate: [544, 204.0]
     rotation: 0
     state: true
 

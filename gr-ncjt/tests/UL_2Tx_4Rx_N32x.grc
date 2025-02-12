@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.45e9
+    value: 3.55e9
   states:
     bus_sink: false
     bus_source: false
@@ -404,7 +404,7 @@ blocks:
     ant17: ''
     ant18: ''
     ant19: ''
-    ant2: ''
+    ant2: '"TX/RX"'
     ant20: ''
     ant21: ''
     ant22: ''
@@ -415,7 +415,7 @@ blocks:
     ant27: ''
     ant28: ''
     ant29: ''
-    ant3: ''
+    ant3: '"TX/RX"'
     ant30: ''
     ant31: ''
     ant4: ''
@@ -468,7 +468,7 @@ blocks:
     center_freq17: '0'
     center_freq18: '0'
     center_freq19: '0'
-    center_freq2: '0'
+    center_freq2: rf_freq
     center_freq20: '0'
     center_freq21: '0'
     center_freq22: '0'
@@ -479,7 +479,7 @@ blocks:
     center_freq27: '0'
     center_freq28: '0'
     center_freq29: '0'
-    center_freq3: '0'
+    center_freq3: rf_freq
     center_freq30: '0'
     center_freq31: '0'
     center_freq4: '0'
@@ -576,7 +576,7 @@ blocks:
     gain17: '0'
     gain18: '0'
     gain19: '0'
-    gain2: '0'
+    gain2: rx_gain
     gain20: '0'
     gain21: '0'
     gain22: '0'
@@ -587,7 +587,7 @@ blocks:
     gain27: '0'
     gain28: '0'
     gain29: '0'
-    gain3: '0'
+    gain3: rx_gain
     gain30: '0'
     gain31: '0'
     gain4: '0'
@@ -736,7 +736,7 @@ blocks:
     lo_source17: internal
     lo_source18: internal
     lo_source19: internal
-    lo_source2: internal
+    lo_source2: external
     lo_source20: internal
     lo_source21: internal
     lo_source22: internal
@@ -747,7 +747,7 @@ blocks:
     lo_source27: internal
     lo_source28: internal
     lo_source29: internal
-    lo_source3: internal
+    lo_source3: external
     lo_source30: internal
     lo_source31: internal
     lo_source4: internal
@@ -820,7 +820,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [120, 272.0]
+    coordinate: [120, 240.0]
     rotation: 0
     state: enabled
 

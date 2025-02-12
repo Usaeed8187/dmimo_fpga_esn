@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.45e9
+    value: 3.55e9
   states:
     bus_sink: false
     bus_source: false
@@ -117,7 +117,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '5'
+    value: '3'
     widget: counter_slider
   states:
     bus_sink: false
@@ -150,7 +150,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '5'
+    value: '3'
     widget: counter_slider
   states:
     bus_sink: false
@@ -1044,7 +1044,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [984, 48.0]
+    coordinate: [976, 44.0]
     rotation: 0
     state: true
 - name: uhd_usrp_source_0
@@ -1225,7 +1225,7 @@ blocks:
     dev_addr: usrp_addr
     dev_args: ''
     gain0: rx_gain
-    gain1: rx_gain+3
+    gain1: rx_gain+5
     gain10: '0'
     gain11: '0'
     gain12: '0'
@@ -1480,7 +1480,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [32, 296.0]
+    coordinate: [24, 292.0]
     rotation: 0
     state: enabled
 

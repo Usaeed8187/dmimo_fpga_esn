@@ -637,7 +637,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 260.0]
+    coordinate: [184, 228.0]
     rotation: 0
     state: enabled
 
@@ -651,4 +651,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.9.2
+  grc_version: 3.10.11.0
