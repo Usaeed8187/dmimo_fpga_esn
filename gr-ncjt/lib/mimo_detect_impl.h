@@ -16,16 +16,16 @@ class mimo_detect_impl : public mimo_detect
 {
 private:
     int d_nss; // number of spatial streams
-    int d_nrx; // number of receiver antennas
-    int d_num_symbols; // number of symbols per packet
-    int d_cur_symbol; // current OFDM symbol
+    int d_nrx; // number of receive antennas
+    int d_num_symbols; // number of symbols per frame/packet
+    int d_cur_symbol; // current OFDM symbol index
     int d_total_pkts; // total number of packets received
 
     int d_scnum; // number of valid subcarriers
     int d_scdata; // number data subcarriers
 
     gr_complex *d_chan_est_buf; // channel estimation using H-LTFs
-    gr_complex *d_mmse_coef; // MMSE channel estimation
+    gr_complex *d_mmse_coef; // MMSE channel equalization coefficients
     bool d_chan_est_ready;
 
     const int d_logfreq;

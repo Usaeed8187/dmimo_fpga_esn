@@ -23,8 +23,8 @@ ltf_chanest::make(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasym
 ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
                                    bool csi_en, int logfreq, bool debug)
     : gr::tagged_stream_block("ltf_chanest",
-                              gr::io_signature::make(1, 8, sizeof(gr_complex)),
-                              gr::io_signature::make(1, 8, sizeof(gr_complex)),
+                              gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
+                              gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
                               "packet_len"),
       d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_csi_en(csi_en),
       d_total_frames(0), d_reset_frames(0), d_logfreq(logfreq), d_debug(debug)
@@ -76,17 +76,15 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
     }
 
     // Pd: nSTS x nLTF
-    if (d_ntx == 2 && d_nss == 2) // 2x2, 2x4
+    if (d_nss == 2) // 2x2, 2x4
     {
         d_Pd.resize(2, 2);
-        // d_Pd << 1, -1, 1, 1; // column major
-        d_Pd << 1, 1, -1, 1; // row-major
+        d_Pd << 1, -1, 1, 1;
     }
-    else if (d_ntx == 4 && (d_nss == 2 || d_nss == 4)) // 4x4, 4x2
+    else if (d_ntx == 4 || d_nss == 4) // 4x4, 4x2
     {
         d_Pd.resize(4, 4);
-        // d_Pd << 1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1; // column major
-        d_Pd << 1, 1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, -1, 1; // row major
+        d_Pd << 1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1;
     }
 
     const float normfactor = sqrt(d_scnum / float(d_nss * d_fftsize));
@@ -230,7 +228,7 @@ ltf_chanest_impl::add_frame_tag(uint64_t offset)
     for (int k = 0; k < d_nrx; k++)
         add_item_tag(k, offset,
                      pmt::string_to_symbol("packet_start"),
-                     pmt::from_long(offset), _id);
+                     pmt::from_uint64(offset), _id);
 }
 
 void
@@ -384,7 +382,7 @@ ltf_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
     // dout << "CPE estimate: " << d_cpe_phi << std::endl;
 
     // CPE compensation for received pilots and data
-    const float normfactor = sqrt(float(d_nss * d_scnum) / d_fftsize);
+    const float normfactor = sqrt(float(d_nss * d_scnum) / float(d_fftsize));
     gr_complex cpe_comp = normfactor * std::exp(gr_complex(0, d_cpe_phi));
     for (int m = 0; m < d_nrx; m++)
     {
@@ -452,7 +450,7 @@ ltf_chanest_impl::ltf_chan_est_2rx(gr_vector_const_void_star &input_items,
         H = NORM_LTF_SEQ[k] * Pd * Rx;
         // copy channel estimation for all streams per receiver antennas to individual output port
         // (s0,r0),(s1,r0) -> ch0,  (s0,r1),(s1,r1) -> ch1
-        // using column-major memory layout
+        // using row-major memory layout
         out0[output_offset + 2 * k] = H(0, 0);  // s0,r0
         out0[output_offset + 2 * k + 1] = H(1, 0);  // s1,r0
         out1[output_offset + 2 * k] = H(0, 1);  // s0,r1
@@ -479,14 +477,14 @@ ltf_chanest_impl::ltf_chan_est_nrx(gr_vector_const_void_star &input_items,
         // H: nSTS x nRx, Pd: nSTS x nLTF, Rx: nLTF x nRx
         Eigen::Map<CMatrixX> H(&d_chan_est[d_nss * d_nrx * k], d_nss, d_nrx);
         H = NORM_LTF_SEQ[k] * d_Pd * Rx;
-        // copy channel estimation for each stream to individual output port
-        // support multiple rx antennas sets (nRx = k * nSTS)
-        for (int m = 0; m < d_nrx; m++) // for all streams
+        // copy channel estimation for all streams per receiver antennas to individual output port
+        // (s0,r0),(s1,r0) -> ch0,  (s0,r1),(s1,r1) -> ch1
+        // using row-major memory layout
+        for (int ri = 0; ri < d_nrx; ri++) // for all rx antennas in a set
         {
-            auto out = (gr_complex *) output_items[m];
-            int ri = (m / d_nss) * d_nss; // receiver antennas base index
-            for (int n = 0; n < d_nss; n++) // for all rx antennas in a set
-                out[output_offset + d_nss * k + n] = H(m % d_nss, ri + n);
+            auto out = (gr_complex *) output_items[ri];
+            for (int m = 0; m < d_nss; m++) // for all streams
+                out[output_offset + d_nss * k + m] = H(m, ri);
         }
     }
 }

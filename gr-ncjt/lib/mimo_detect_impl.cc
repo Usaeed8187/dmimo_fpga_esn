@@ -6,8 +6,8 @@
 
 #include "mimo_detect_impl.h"
 #include <gnuradio/io_signature.h>
+#include "cmatrix.h"
 #include "utils.h"
-#include <Eigen/Dense>
 
 namespace gr::ncjt
 {
@@ -47,7 +47,7 @@ mimo_detect_impl::mimo_detect_impl(int fftsize, int nrx, int nss, int ndatasymbo
     d_nrx = nrx, d_nss = nss;
 
     d_chan_est_buf = malloc_complex(d_nrx * d_nss * d_scnum);
-    d_mmse_coef = malloc_complex(d_nrx * d_nss * d_scnum);
+    d_mmse_coef = malloc_complex(d_nss * d_nrx * d_scnum);
 
     d_chan_est_ready = false;
     d_cur_symbol = 0;
@@ -68,11 +68,12 @@ int
 mimo_detect_impl::calculate_output_stream_length(
     const gr_vector_int &ninput_items)
 {
-    int min_input_items = ninput_items[0];
+    /*int min_input_items = ninput_items[0];
     for (int k = 1; k < d_nrx; k++)
         min_input_items = std::min(min_input_items, ninput_items[k]);
     int noutput_items = d_scdata * (min_input_items / d_scnum);
-    return noutput_items;
+    return noutput_items;*/
+    return d_num_symbols * d_scdata;
 }
 
 int
@@ -80,10 +81,14 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
 {
-    int cur_sym = 0, out_sym = 0;
-    int ninput_syms = std::min(noutput_items / d_scdata, std::min(ninput_items[0], ninput_items[1]) / d_scnum);
+    int min_input_items = ninput_items[0];
+    for (int ch = 1; ch < d_nrx; ch++)
+        min_input_items = std::min(min_input_items, ninput_items[ch]);
+    int ninput_syms = min_input_items / d_scnum;
     if (ninput_syms <= 0)
         return 0;
+
+    int cur_sym = 0, out_sym = 0;
 
     std::vector<gr::tag_t> d_tags;
     get_tags_in_window(d_tags, 0, 0, 1,
@@ -95,18 +100,17 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
             for (int n = 0; n < d_nrx; n++) // for all rx
             {
                 const gr_complex *in = (const gr_complex *) input_items[n];
-
                 for (int m = 0; m < d_nss; m++) // for all streams
                 {
-                    // matrix shape (num_ss, num_rx, num_sc)
-                    // column major memory layout for Eigen
-                    int offset = k * d_nrx * d_nrx + n * d_nrx + m;
+                    // matrix shape (num_sc, num_rx, num_ss)
+                    // row major memory layout for Eigen
+                    int offset = k * d_nss * d_nrx + n * d_nss + m;
                     d_chan_est_buf[offset] = in[k * d_nss + m];
                 }
             }
         d_chan_est_ready = true;
         d_cur_symbol = 0;
-        cur_sym += d_nrx;
+        cur_sym += d_nss;
         d_total_pkts += 1;
         dout << "Total number of packets received: " << d_total_pkts << std::endl;
     }
@@ -124,9 +128,9 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
     float nvar = pmt::to_float(d_tags[0].value);
 
     // MMSE symbol detection and CSI
-    if (d_nrx == 2)
+    if (d_nss == 2 && d_nrx == 2)
         update_mmse_coef_2rx(nvar);
-    else if (d_nrx == 4)
+    else if (d_nss ==4 && d_nrx == 4)
         update_mmse_coef_4rx(nvar);
     else
         update_mmse_coef_nrx(nvar);
@@ -147,18 +151,18 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
             unsigned raddr = cur_sym * d_scnum + i;
             unsigned oaddr = out_sym * d_scdata + sc_cnt;
             unsigned caddr = d_nss * d_nrx * i;
-            Eigen::MatrixXcf X(1, d_nrx), Y(1, d_nrx);
-            Eigen::Map<Eigen::MatrixXcf> H(&d_mmse_coef[caddr], d_nrx, d_nrx);
+            CMatrixX X( d_nrx, 1), Y( d_nss, 1);
+            Eigen::Map<CMatrixX> G(&d_mmse_coef[caddr], d_nss, d_nrx);
             for (int m = 0; m < d_nrx; m++)
             {
                 const gr_complex *in = (const gr_complex *) input_items[m];
-                X(0, m) = in[raddr];
+                X( m, 0) = in[raddr];
             }
-            Y = X * H;
-            for (int n = 0; n < d_nrx; n++)
+            Y = G * X;
+            for (int n = 0; n < d_nss; n++)
             {
                 gr_complex *out = (gr_complex *) output_items[n];
-                out[oaddr] = Y(0, n);
+                out[oaddr] = Y( n,0);
             }
             sc_cnt += 1;
         }
@@ -179,7 +183,7 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
 void
 mimo_detect_impl::add_packet_tag(uint64_t offset, int packet_len)
 {
-    for (int ch = 0; ch < d_nrx; ch++)
+    for (int ch = 0; ch < d_nss; ch++)
         add_item_tag(ch, offset,
                      pmt::string_to_symbol("packet_len"),
                      pmt::from_long(packet_len),
@@ -189,14 +193,14 @@ mimo_detect_impl::add_packet_tag(uint64_t offset, int packet_len)
 void
 mimo_detect_impl::update_mmse_coef_2rx(float nvar)
 {
-    Eigen::Matrix2cf Hc, HH;
-    Eigen::Matrix2cf sigma = 0.5 * nvar * Eigen::Matrix2cf::Identity(2, 2);
+    CMatrix2 Hc, HH;
+    CMatrix2 sigma = 0.5 * nvar * CMatrix2::Identity(2, 2);
 
     for (int k = 0; k < d_scnum; k++)
     {
         // get channel estimation for current subcarrier (nSTS x nRx)
-        Eigen::Map<Eigen::Matrix2cf> H(&d_chan_est_buf[4 * k], 2, 2);
-        Eigen::Map<Eigen::Matrix2cf> G(&d_mmse_coef[4 * k], 2, 2);
+        Eigen::Map<CMatrix2> H(&d_chan_est_buf[4 * k], 2, 2);
+        Eigen::Map<CMatrix2> G(&d_mmse_coef[4 * k], 2, 2);
         // compute HH'+N
         Hc = H.conjugate();
         HH = H * Hc + sigma;
@@ -208,14 +212,14 @@ mimo_detect_impl::update_mmse_coef_2rx(float nvar)
 void
 mimo_detect_impl::update_mmse_coef_4rx(float nvar)
 {
-    Eigen::Matrix4cf Hc, HH;
-    Eigen::Matrix4cf sigma = 0.5 * nvar * Eigen::Matrix4cf::Identity(4, 4);
+    CMatrix4 Hc, HH;
+    CMatrix4 sigma = 0.5 * nvar * CMatrix4::Identity(4, 4);
 
     for (int k = 0; k < d_scnum; k++)
     {
         // get channel estimation for current subcarrier (nSTS x nRx)
-        Eigen::Map<Eigen::Matrix4cf> H(&d_chan_est_buf[16 * k], 4, 4);
-        Eigen::Map<Eigen::Matrix4cf> G(&d_mmse_coef[16 * k], 4, 4);
+        Eigen::Map<CMatrix4> H(&d_chan_est_buf[16 * k], 4, 4);
+        Eigen::Map<CMatrix4> G(&d_mmse_coef[16 * k], 4, 4);
         // compute HH'+N
         Hc = H.conjugate();
         HH = H * Hc + sigma;
@@ -227,19 +231,19 @@ mimo_detect_impl::update_mmse_coef_4rx(float nvar)
 void
 mimo_detect_impl::update_mmse_coef_nrx(float nvar)
 {
-    Eigen::MatrixXcf Ha(d_nrx, d_nss), HH(d_nss, d_nss);
-    Eigen::MatrixXcf sigma = nvar * Eigen::MatrixXcf::Identity(d_nrx, d_nrx);
+    CMatrixX Ha(d_nss, d_nrx), HH(d_nss, d_nss);
+    CMatrixX sigma = nvar * CMatrixX::Identity(d_nss, d_nss);
 
     for (int k = 0; k < d_scnum; k++)
     {
-        // get channel estimation for current subcarrier (nSTS x nRx)
-        Eigen::Map<Eigen::MatrixXcf> H(&d_chan_est_buf[16 * k], d_nss, d_nrx);
-        Eigen::Map<Eigen::Matrix4cf> G(&d_mmse_coef[16 * k], d_nss, d_nrx);
+        // get channel estimation for current subcarrier (nRx x nSTS)
+        Eigen::Map<CMatrixX> H(&d_chan_est_buf[d_nrx * d_nss * k], d_nrx, d_nss);
+        Eigen::Map<CMatrixX> G(&d_mmse_coef[d_nss * d_nrx * k], d_nss, d_nrx);
         // compute HH'+N
-        Ha = H.adjoint();
-        HH = Ha * H + sigma;
+        Ha = H.adjoint();  // nSTS x nRx
+        HH = Ha * H + sigma; // nSTS x nSTS
         // G = inv(HH'+N) * H'
-        G = HH.inverse() * Ha;
+        G = HH.inverse() * Ha; // nSTS x nRx
     }
 }
 

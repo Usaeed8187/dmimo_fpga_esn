@@ -29,7 +29,6 @@ private:
     float d_cpe_phi;           // CPE in radian
     float d_sigpwr_est;        // signal power estimation
     float d_noise_est;         // noise power estimation
-    // float d_noise_est_save; // noise power estimation
     double d_sigpwr_sum;       // signal power sum
     double d_noise_sum;        // noise power sum
 
