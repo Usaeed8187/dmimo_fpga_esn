@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '50'
   states:
     bus_sink: false
     bus_source: false
@@ -97,7 +97,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/16QAM/txsig_2x2_s1.bin"'
+    filename: '"../data/64QAM/txsig_2x2_s1.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -117,7 +117,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/16QAM/txsig_2x2_s2.bin"'
+    filename: '"../data/64QAM/txsig_2x2_s2.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
