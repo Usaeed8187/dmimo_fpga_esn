@@ -241,7 +241,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.60.2"'
+    dev_addr: '"addr0=192.168.30.2,addr1=192.168.40.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
@@ -375,11 +375,11 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nchan: '2'
-    num_mboards: '1'
+    num_mboards: '2'
     otw: ''
     samp_rate: samp_rate
-    sd_spec0: ''
-    sd_spec1: ''
+    sd_spec0: A:0
+    sd_spec1: A:0
     sd_spec2: ''
     sd_spec3: ''
     sd_spec4: ''

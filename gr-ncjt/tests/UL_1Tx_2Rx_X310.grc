@@ -266,7 +266,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [760, 100.0]
+    coordinate: [768, 100.0]
     rotation: 0
     state: enabled
 - name: ncjt_ltf_chanest_0
@@ -1044,7 +1044,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [976, 44.0]
+    coordinate: [984, 48.0]
     rotation: 0
     state: true
 - name: uhd_usrp_source_0
@@ -1480,7 +1480,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 292.0]
+    coordinate: [24, 296.0]
     rotation: 0
     state: enabled
 
@@ -1514,4 +1514,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: v3.10.11.0-80-g0e28fd53

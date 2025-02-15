@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.45e9
+    value: 3.55e9
   states:
     bus_sink: false
     bus_source: false
@@ -240,11 +240,12 @@ blocks:
     minoutbuf: '32768'
     ndatasymbols: num_data_syms
     nrx: '2'
+    nss: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 376.0]
+    coordinate: [936, 372.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -316,7 +317,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/16QAM/strm_data_2x2.bin"'
+    filename: '"../data/64QAM/strm_data_2x2.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -337,7 +338,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    modtype: '4'
+    modtype: '6'
     nstrms: '2'
     usecsi: 'False'
   states:
@@ -838,7 +839,7 @@ blocks:
     dc_offs_enb8: default
     dc_offs_enb9: default
     dev_addr: usrp_addr
-    dev_args: '"A:0 A:0"'
+    dev_args: ''
     gain0: rx_gain
     gain1: rx_gain
     gain10: '0'
@@ -1069,8 +1070,8 @@ blocks:
     rx_agc8: Default
     rx_agc9: Default
     samp_rate: samp_rate
-    sd_spec0: ''
-    sd_spec1: ''
+    sd_spec0: A:0
+    sd_spec1: A:0
     sd_spec2: ''
     sd_spec3: ''
     sd_spec4: ''
@@ -1095,7 +1096,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [88, 260.0]
+    coordinate: [80, 256.0]
     rotation: 0
     state: enabled
 

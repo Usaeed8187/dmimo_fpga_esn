@@ -378,8 +378,8 @@ blocks:
     num_mboards: '2'
     otw: ''
     samp_rate: samp_rate
-    sd_spec0: ''
-    sd_spec1: ''
+    sd_spec0: A:0
+    sd_spec1: A:0
     sd_spec2: ''
     sd_spec3: ''
     sd_spec4: ''
@@ -404,7 +404,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 236.0]
+    coordinate: [560, 180.0]
     rotation: 0
     state: true
 

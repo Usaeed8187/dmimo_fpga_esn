@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: dl_2rx_x310
+    id: dl_2rx_sic_n32x
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: Downlink 2Rx
+    title: Downlink 2Rx SIC
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -114,10 +114,10 @@ blocks:
     min_len: '200'
     orient: QtCore.Qt.Horizontal
     rangeType: float
-    start: '0'
+    start: '1.0'
     step: '0.5'
-    stop: '31.5'
-    value: '20'
+    stop: '60'
+    value: '50'
     widget: counter_slider
   states:
     bus_sink: false
@@ -136,6 +136,18 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [200, 12]
+    rotation: 0
+    state: enabled
+- name: usrp_addr
+  id: variable
+  parameters:
+    comment: ''
+    value: '"addr0=192.168.60.2,addr1=192.168.40.2"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 124.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0
@@ -213,27 +225,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [704, 376.0]
-    rotation: 0
-    state: enabled
-- name: ncjt_mimo_detect_0
-  id: ncjt_mimo_detect
-  parameters:
-    affinity: '5'
-    alias: ''
-    comment: ''
-    debug: 'False'
-    fftsize: fft_size
-    logfreq: '50'
-    maxoutbuf: '0'
-    minoutbuf: '32768'
-    ndatasymbols: num_data_syms
-    nrx: '2'
-    nss: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [944, 372.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -334,6 +325,27 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1176, 376.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_sic_detect_0
+  id: ncjt_sic_detect
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'False'
+    fftsize: fft_size
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    modtype: '6'
+    ndatasymbols: num_data_syms
+    nrx: '2'
+    nss: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [936, 364.0]
     rotation: 0
     state: enabled
 - name: pdu_pdu_to_tagged_stream_0
@@ -754,7 +766,7 @@ blocks:
     center_freq9: '0'
     clock_rate: 200e6
     clock_source0: gpsdo
-    clock_source1: ''
+    clock_source1: gpsdo
     clock_source2: ''
     clock_source3: ''
     clock_source4: ''
@@ -826,7 +838,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"addr=192.168.40.2"'
+    dev_addr: usrp_addr
     dev_args: ''
     gain0: rx_gain
     gain1: rx_gain
@@ -956,7 +968,7 @@ blocks:
     iq_imbal_enb7: default
     iq_imbal_enb8: default
     iq_imbal_enb9: default
-    lo_export0: 'False'
+    lo_export0: 'True'
     lo_export1: 'False'
     lo_export10: 'False'
     lo_export11: 'False'
@@ -988,8 +1000,8 @@ blocks:
     lo_export7: 'False'
     lo_export8: 'False'
     lo_export9: 'False'
-    lo_source0: internal
-    lo_source1: internal
+    lo_source0: external
+    lo_source1: external
     lo_source10: internal
     lo_source11: internal
     lo_source12: internal
@@ -1023,7 +1035,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nchan: '2'
-    num_mboards: '1'
+    num_mboards: '2'
     otw: sc16
     rx_agc0: Default
     rx_agc1: Default
@@ -1058,21 +1070,21 @@ blocks:
     rx_agc8: Default
     rx_agc9: Default
     samp_rate: samp_rate
-    sd_spec0: ''
-    sd_spec1: ''
+    sd_spec0: A:0
+    sd_spec1: A:0
     sd_spec2: ''
     sd_spec3: ''
     sd_spec4: ''
     sd_spec5: ''
     sd_spec6: ''
     sd_spec7: ''
-    show_lo_controls: 'False'
+    show_lo_controls: 'True'
     start_time: '-1.0'
     stream_args: ''
     stream_chans: '[]'
     sync: sync
     time_source0: gpsdo
-    time_source1: ''
+    time_source1: gpsdo
     time_source2: ''
     time_source3: ''
     time_source4: ''
@@ -1084,19 +1096,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 312.0]
+    coordinate: [80, 256.0]
     rotation: 0
     state: enabled
 
 connections:
-- [ncjt_ltf_chanest_0, '0', ncjt_mimo_detect_0, '0']
-- [ncjt_ltf_chanest_0, '1', ncjt_mimo_detect_0, '1']
+- [ncjt_ltf_chanest_0, '0', ncjt_sic_detect_0, '0']
+- [ncjt_ltf_chanest_0, '1', ncjt_sic_detect_0, '1']
 - [ncjt_ltf_chanest_0, cpe, pdu_pdu_to_tagged_stream_0, pdus]
 - [ncjt_ltf_chanest_0, csi, pdu_pdu_to_tagged_stream_0_0, pdus]
-- [ncjt_mimo_detect_0, '0', ncjt_qam_demapper_0, '0']
-- [ncjt_mimo_detect_0, '0', qtgui_const_sink_x_0, '0']
-- [ncjt_mimo_detect_0, '1', ncjt_qam_demapper_0, '1']
-- [ncjt_mimo_detect_0, '1', qtgui_const_sink_x_0_0, '0']
 - [ncjt_ofdm_demod_0, '0', ncjt_ltf_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_ltf_chanest_0, '1']
 - [ncjt_pkt_detect_0, '0', ncjt_ofdm_demod_0, '0']
@@ -1105,6 +1113,10 @@ connections:
 - [ncjt_pkt_err_0, '1', qtgui_time_sink_x_0, '0']
 - [ncjt_qam_demapper_0, '0', ncjt_pkt_err_0, '0']
 - [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
+- [ncjt_sic_detect_0, '0', ncjt_qam_demapper_0, '0']
+- [ncjt_sic_detect_0, '0', qtgui_const_sink_x_0, '0']
+- [ncjt_sic_detect_0, '1', ncjt_qam_demapper_0, '1']
+- [ncjt_sic_detect_0, '1', qtgui_const_sink_x_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0, '0', blocks_file_sink_0_0_1_0_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0_0, '0', blocks_file_sink_0_0_1_0_0_0_0, '0']
 - [uhd_usrp_source_0, '0', ncjt_pkt_detect_0, '0']
