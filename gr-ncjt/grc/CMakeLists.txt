@@ -22,4 +22,5 @@ install(FILES
     ncjt_mimo_detect.block.yml
     ncjt_mimo_detect.block.yml
     ncjt_rx_mrc.block.yml
-    ncjt_mu_chanest.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_mu_chanest.block.yml
+    ncjt_sic_detect.block.yml DESTINATION share/gnuradio/grc/blocks)

@@ -17,6 +17,7 @@ list(APPEND ncjt_sources
     ofdm_mod_impl.cc
     ofdm_demod_impl.cc
     ltf_chanest_impl.cc
+    qam_constellation.cc
     qam_demapper_impl.cc
     soft_demapper_impl.cc
     pkt_err_impl.cc
@@ -27,7 +28,8 @@ list(APPEND ncjt_sources
     mimo_detect_impl.cc
     utils.cc
     rx_mrc_impl.cc
-    mu_chanest_impl.cc)
+    mu_chanest_impl.cc
+    sic_detect_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"

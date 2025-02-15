@@ -38,9 +38,9 @@ mimo_detect_impl::mimo_detect_impl(int fftsize, int nrx, int nss, int ndatasymbo
     else
         throw std::runtime_error("Unsupported OFDM FFT size");
 
-    if (nrx < 1 || nrx > 8)
+    if (nrx < 1 || nrx > MAX_NSS)
         throw std::runtime_error("only support 1 to 8 Rx antennas");
-    if (nss < 1 || nss > 8)
+    if (nss < 1 || nss > MAX_NSS)
         throw std::runtime_error("only support 1 to 8 streams");
     if (nss > nrx)
         throw std::runtime_error("invalid number of streams");

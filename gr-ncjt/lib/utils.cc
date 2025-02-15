@@ -6,6 +6,12 @@
 #include <gnuradio/block.h>
 #include "utils.h"
 
+int *
+malloc_int(int size)
+{
+    return (int *) volk_malloc(sizeof(int) * size, volk_get_alignment());
+}
+
 float *
 malloc_float(int size)
 {

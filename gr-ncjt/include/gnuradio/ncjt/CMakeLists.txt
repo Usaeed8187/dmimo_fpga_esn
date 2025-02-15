@@ -25,4 +25,5 @@ install(FILES api.h
     ul_precoding.h
     mimo_detect.h
     rx_mrc.h
-    mu_chanest.h DESTINATION include/gnuradio/ncjt)
+    mu_chanest.h
+    sic_detect.h DESTINATION include/gnuradio/ncjt)

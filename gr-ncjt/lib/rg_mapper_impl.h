@@ -31,11 +31,6 @@ private:
     unsigned d_pilot_lsfr; // LSFR state for pilot parity sequence
     float d_cur_pilot[8][8]; // pilots for current OFDM symbol (mode 4 or 8)
 
-    static const std::vector<gr_complex> CONST_QPSK; // QPSK constellation
-    static const std::vector<gr_complex> CONST_16QAM; // 16QAM constellation
-    static const std::vector<gr_complex> CONST_64QAM; // 64QAM constellation
-    static const std::vector<gr_complex> CONST_256QAM; // 256QAM constellation
-
     bool d_debug;
 
 protected:

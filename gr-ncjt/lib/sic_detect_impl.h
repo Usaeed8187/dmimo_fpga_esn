@@ -4,15 +4,15 @@
  *
  */
 
-#ifndef INCLUDED_NCJT_MIMO_DETECT_IMPL_H
-#define INCLUDED_NCJT_MIMO_DETECT_IMPL_H
+#ifndef INCLUDED_NCJT_SIC_DETECT_IMPL_H
+#define INCLUDED_NCJT_SIC_DETECT_IMPL_H
 
-#include <gnuradio/ncjt/mimo_detect.h>
+#include <gnuradio/ncjt/sic_detect.h>
 
 namespace gr::ncjt
 {
 
-class mimo_detect_impl : public mimo_detect
+class sic_detect_impl : public sic_detect
 {
 private:
     const int MAX_NSS = 8; // maximum number of streams/antennas supported
@@ -24,33 +24,33 @@ private:
 
     int d_scnum; // number of valid subcarriers
     int d_scdata; // number data subcarriers
+    int d_modtype; // modulation order (2-QPSK, 4-16QAM, 6-64QAm, 8-256QAM)
+    std::vector<gr_complex> QAM_CONST;
 
     gr_complex *d_chan_est_buf; // channel estimation using H-LTFs
-    gr_complex *d_mmse_coef; // MMSE channel equalization coefficients
+    gr_complex *d_mmse_weight; // MMSE channel equalization coefficients
+    gr_complex *d_chan_coef; // channel coefficients for canceling streams
+    int *d_sic_order; // SIC processing order for all subcarriers
     bool d_chan_est_ready;
 
-    const int d_logfreq;
     const bool d_debug;
-
-    void
-    update_mmse_coef_2rx(float nvar);
-
-    void
-    update_mmse_coef_4rx(float nvar);
-
-    void
-    update_mmse_coef_nrx(float nvar);
-
-    void
-    add_packet_tag(uint64_t offset, int packet_len);
 
 protected:
     int
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
+    void
+    update_mmse_sic_coef(float nvar);
+
+    gr_complex
+    qam_detect(const gr_complex yh);
+
+    void
+    add_packet_tag(uint64_t offset, int packet_len);
+
 public:
-    mimo_detect_impl(int fftsize, int nrx, int nss, int ndatasymbols, int logfreq, bool debug);
-    ~mimo_detect_impl();
+    sic_detect_impl(int fftsize, int nrx, int nss, int modtype, int ndatasymbols, bool debug);
+    ~sic_detect_impl();
 
     int
     work(int noutput_items, gr_vector_int &ninput_items,
@@ -60,4 +60,4 @@ public:
 
 } // namespace gr::ncjt
 
-#endif /* INCLUDED_NCJT_MIMO_DETECT_IMPL_H */
+#endif /* INCLUDED_NCJT_SIC_DETECT_IMPL_H */

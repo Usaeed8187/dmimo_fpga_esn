@@ -19,6 +19,9 @@
 #define dout d_debug && std::cout
 #define mylog(msg) do { if(d_log) { GR_LOG_INFO(d_logger, msg); }} while(0);
 
+int *
+malloc_int(int size);
+
 float *
 malloc_float(int size);
 
