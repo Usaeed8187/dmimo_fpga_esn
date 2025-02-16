@@ -97,8 +97,8 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms,
-                     int ndatasyms, bool csi_en, int logfreq, bool debug);
+    ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
+                     bool csifb, int logfreq, bool debug);
     ~ltf_chanest_impl();
 
     int

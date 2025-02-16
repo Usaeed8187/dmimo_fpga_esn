@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(ltf_chanest.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(a1bb39c70ef4d2c21b17633f9b3c9bde) */
+/* BINDTOOL_HEADER_FILE_HASH(5590bc8223f7dfe6ae19558dbcf58907) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -38,7 +38,7 @@ void bind_ltf_chanest(py::module &m) {
 
       .def(py::init(&ltf_chanest::make), py::arg("fftsize"), py::arg("ntx"),
            py::arg("nrx"), py::arg("npreamblesyms"), py::arg("ndatasyms"),
-           py::arg("docsi"), py::arg("logfreq") = 10, py::arg("debug") = false,
+           py::arg("csifb"), py::arg("logfreq") = 10, py::arg("debug") = false,
            D(ltf_chanest, make))
 
       ;

@@ -14,19 +14,19 @@ namespace gr::ncjt
 
 ltf_chanest::sptr
 ltf_chanest::make(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
-                  bool csi_en, int logfreq, bool debug)
+                  bool csifb, int logfreq, bool debug)
 {
     return gnuradio::make_block_sptr<ltf_chanest_impl>(
-        fftsize, ntx, nrx, npreamblesyms, ndatasyms, csi_en, logfreq, debug);
+        fftsize, ntx, nrx, npreamblesyms, ndatasyms, csifb, logfreq, debug);
 }
 
 ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
-                                   bool csi_en, int logfreq, bool debug)
+                                   bool csifb, int logfreq, bool debug)
     : gr::tagged_stream_block("ltf_chanest",
                               gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
                               gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
                               "packet_len"),
-      d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_csi_en(csi_en),
+      d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_csi_en(csifb),
       d_total_frames(0), d_reset_frames(0), d_logfreq(logfreq), d_debug(debug)
 {
     if (fftsize != 64 && fftsize != 256)

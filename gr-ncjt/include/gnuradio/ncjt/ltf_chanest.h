@@ -10,16 +10,18 @@
 #include <gnuradio/ncjt/api.h>
 #include <gnuradio/tagged_stream_block.h>
 
-namespace gr::ncjt {
+namespace gr::ncjt
+{
 
 /*!
  * \brief <+description of block+>
  * \ingroup ncjt
  *
  */
-class NCJT_API ltf_chanest : virtual public gr::tagged_stream_block {
+class NCJT_API ltf_chanest : virtual public gr::tagged_stream_block
+{
 public:
-  typedef std::shared_ptr<ltf_chanest> sptr;
+    typedef std::shared_ptr<ltf_chanest> sptr;
 
     /*!
      * \brief Return a shared_ptr to a new instance of ncjt::ltf_chanest.
@@ -29,9 +31,9 @@ public:
      * class. ncjt::ltf_chanest::make is the public interface for
      * creating new instances.
      */
-  static sptr make(int fftsize, int ntx, int nrx, int npreamblesyms,
-                   int ndatasyms, bool docsi, int logfreq = 10,
-                   bool debug = false);
+    static sptr
+    make(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
+         bool csifb, int logfreq = 10, bool debug = false);
 };
 
 } // namespace gr::ncjt
