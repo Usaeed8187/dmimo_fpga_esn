@@ -75,18 +75,18 @@ qam_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
             float y = in[i].imag();
             if (d_modtype == 2) // QPSK
             {
-                out[2 * i] = (x >= 0) ? 1 : 0;
-                out[2 * i + 1] = (y >= 0) ? 1 : 0;
+                out[2 * i] = (y < 0) ? 1 : 0;
+                out[2 * i + 1] = (x >= 0) ? 1 : 0;
             }
             else if (d_modtype == 4) // 16QAM
             {
                 float xm = abs(x);
                 float ym = abs(y);
                 float h2 = d_usecsi ? 2.0 / sqrt(10.0) * csi[i].real() : 2.0 / sqrt(10.0);
-                out[4 * i]     = (x >= 0) ? 1 : 0;
-                out[4 * i + 1] = (xm <= h2) ? 1 : 0;
-                out[4 * i + 2] = (y >= 0) ? 1 : 0;
-                out[4 * i + 3] = (ym <= h2) ? 1 : 0;
+                out[4 * i]     = (ym <= h2) ? 1 : 0;
+                out[4 * i + 1] = (y < 0) ? 1 : 0;
+                out[4 * i + 2] = (xm <= h2) ? 1 : 0;
+                out[4 * i + 3] = (x >= 0) ? 1 : 0;
             }
             else if (d_modtype == 6) // 64QAM
             {
@@ -96,12 +96,12 @@ qam_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float h2 = d_usecsi ? a2 * csi[i].real() : a2;
                 float h4 = d_usecsi ? 2.0 * a2 * csi[i].real() : 2.0 * a2;
                 float h6 = d_usecsi ? 3.0 * a2 * csi[i].real() : 3.0 * a2;
-                out[6 * i]     = (x >= 0) ? 1 : 0;
-                out[6 * i + 1] = (xm <= h4) ? 1 : 0;
-                out[6 * i + 2] = (xm >= h2 && xm <= h6) ? 1 : 0;
-                out[6 * i + 3] = (y >= 0) ? 1 : 0;
-                out[6 * i + 4] = (ym <= h4) ? 1 : 0;
-                out[6 * i + 5] = (ym >= h2 && ym <= h6) ? 1 : 0;
+                out[6 * i]     = (ym >= h2 && ym <= h6) ? 1 : 0;
+                out[6 * i + 1] = (ym <= h4) ? 1 : 0;
+                out[6 * i + 2] = (y < 0) ? 1 : 0;
+                out[6 * i + 3] = (xm >= h2 && xm <= h6) ? 1 : 0;
+                out[6 * i + 4] = (xm <= h4) ? 1 : 0;
+                out[6 * i + 5] = (x >= 0) ? 1 : 0;
             }
             else if (d_modtype == 8) // 256QAM
             {
@@ -111,14 +111,14 @@ qam_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float h2 = d_usecsi ? a2 * csi[i].real() : a2;
                 float h4 = d_usecsi ? 2.0 * a2 * csi[i].real() : 2.0 * a2;
                 float h8 = d_usecsi ? 4.0 * a2 * csi[i].real() : 4.0 * a2;
-                out[8 * i]     = (x >= 0) ? 1 : 0;
-                out[8 * i + 1] = (xm <= h8) ? 1 : 0;
-                out[8 * i + 2] = (abs(xm - h8) <= h4) ? 1 : 0;
-                out[8 * i + 3] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
-                out[8 * i + 4] = (y >= 0) ? 1 : 0;
-                out[8 * i + 5] = (ym > h8) ? 1 : 0;
-                out[8 * i + 6] = (abs(ym - h8) > h4) ? 1 : 0;
-                out[8 * i + 7] = (abs(abs(ym - h8) - h4) > h2) ? 1 : 0;
+                out[8 * i]     = (abs(abs(ym - h8) - h4) <= h2) ? 1 : 0;
+                out[8 * i + 1] = (abs(ym - h8) <= h4) ? 1 : 0;
+                out[8 * i + 2] = (ym <= h8) ? 1 : 0;
+                out[8 * i + 3] = (y <= 0) ? 1 : 0;
+                out[8 * i + 4] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
+                out[8 * i + 5] = (abs(xm - h8) <= h4) ? 1 : 0;
+                out[8 * i + 6] = (xm <= h8) ? 1 : 0;
+                out[8 * i + 7] = (x >= 0) ? 1 : 0;
             }
         }
     }

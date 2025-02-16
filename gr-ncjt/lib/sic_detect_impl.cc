@@ -276,20 +276,20 @@ sic_detect_impl::qam_detect(const gr_complex yh) {
     float y = yh.imag();
     if (d_modtype == 2) // QPSK
     {
-        bits[0] = (x >= 0) ? 1 : 0;
-        bits[1] = (y >= 0) ? 1 : 0;
-        si = bits[1] + (bits[0] << 1);
+        bits[0] = (y < 0) ? 1 : 0;
+        bits[1] = (x >= 0) ? 1 : 0;
+        si = bits[0] + (bits[1] << 1);
     }
     else if (d_modtype == 4) // 16QAM
     {
         float xm = abs(x);
         float ym = abs(y);
         float h2 = 2.0 / sqrt(10.0);
-        bits[0] = (x >= 0) ? 1 : 0;
-        bits[1] = (xm <= h2) ? 1 : 0;
-        bits[2] = (y >= 0) ? 1 : 0;
-        bits[3] = (ym <= h2) ? 1 : 0;
-        si = bits[3] + (bits[2] << 1) + (bits[1] << 2) + (bits[0] << 3);
+        bits[0] = (ym <= h2) ? 1 : 0;
+        bits[1] = (y < 0) ? 1 : 0;
+        bits[2] = (xm <= h2) ? 1 : 0;
+        bits[3] = (x >= 0) ? 1 : 0;
+        si = bits[0] + (bits[1] << 1) + (bits[2] << 2) + (bits[3] << 3);
     }
     else if (d_modtype == 6) // 64QAM
     {
@@ -298,14 +298,14 @@ sic_detect_impl::qam_detect(const gr_complex yh) {
         float h2 = 2.0 / sqrt(42.0);
         float h4 = 2.0 * h2;
         float h6 = 3.0 * h2;
-        bits[0] = (x >= 0) ? 1 : 0;
-        bits[1] = (xm <= h4) ? 1 : 0;
-        bits[2] = (xm >= h2 && xm <= h6) ? 1 : 0;
-        bits[3] = (y >= 0) ? 1 : 0;
-        bits[4] = (ym <= h4) ? 1 : 0;
-        bits[5] = (ym >= h2 && ym <= h6) ? 1 : 0;
-        si = bits[5] + (bits[4] << 1) + (bits[3] << 2)
-            + (bits[2] << 3) + (bits[1] << 4) + (bits[0] << 5);
+        bits[0] = (ym >= h2 && ym <= h6) ? 1 : 0;
+        bits[1] = (ym <= h4) ? 1 : 0;
+        bits[2] = (y < 0) ? 1 : 0;
+        bits[3] = (xm >= h2 && xm <= h6) ? 1 : 0;
+        bits[4] = (xm <= h4) ? 1 : 0;
+        bits[5] = (x >= 0) ? 1 : 0;
+        si = bits[0] + (bits[1] << 1) + (bits[2] << 2)
+            + (bits[3] << 3) + (bits[4] << 4) + (bits[5] << 5);
     }
     else if (d_modtype == 8) // 256QAM
     {
@@ -314,16 +314,16 @@ sic_detect_impl::qam_detect(const gr_complex yh) {
         float h2 = 2.0 / sqrt(170.0);
         float h4 = 2.0 * h2;
         float h8 = 4.0 * h2;
-        bits[0]     = (x >= 0) ? 1 : 0;
-        bits[1] = (xm <= h8) ? 1 : 0;
-        bits[2] = (abs(xm - h8) <= h4) ? 1 : 0;
-        bits[3] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
-        bits[4] = (y >= 0) ? 1 : 0;
-        bits[5] = (ym > h8) ? 1 : 0;
-        bits[6] = (abs(ym - h8) > h4) ? 1 : 0;
-        bits[7] = (abs(abs(ym - h8) - h4) > h2) ? 1 : 0;
-        si = bits[7] + (bits[6] << 1) + (bits[5] << 2) + (bits[4] << 3)
-            + (bits[3] << 4) + (bits[2] << 5) + (bits[1] << 6) + (bits[0] << 7);
+        bits[0] = (abs(abs(ym - h8) - h4) <= h2) ? 1 : 0;
+        bits[1] = (abs(ym - h8) <= h4) ? 1 : 0;
+        bits[2] = (ym <= h8) ? 1 : 0;
+        bits[3] = (y <= 0) ? 1 : 0;
+        bits[4] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
+        bits[5] = (abs(xm - h8) <= h4) ? 1 : 0;
+        bits[6] = (xm <= h8) ? 1 : 0;
+        bits[7] = (x >= 0) ? 1 : 0;
+        si = bits[0] + (bits[1] << 1) + (bits[2] << 2) + (bits[3] << 3)
+            + (bits[4] << 4) + (bits[5] << 5) + (bits[6] << 6) + (bits[7] << 7);
     }
 
     return QAM_CONST[si];

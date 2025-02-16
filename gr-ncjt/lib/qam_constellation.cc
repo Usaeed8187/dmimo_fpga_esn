@@ -11,22 +11,22 @@ namespace gr::ncjt
 
 const
 std::vector<gr_complex> CONST_QPSK = {
-    gr_complex(-0.707106781186547, -0.707106781186547), gr_complex(-0.707106781186547, 0.707106781186547),
-    gr_complex(0.707106781186547, -0.707106781186547), gr_complex(0.707106781186547, 0.707106781186547)
+    gr_complex(-0.707106781186547, 0.707106781186547), gr_complex(-0.707106781186547, -0.707106781186547),
+    gr_complex(0.707106781186547, 0.707106781186547), gr_complex(0.707106781186547, -0.707106781186547)
 };
 
 #define Q16V3   0.948683298050514
 #define Q16V1   0.316227766016838
 const
 std::vector<gr_complex> CONST_16QAM = {
-    gr_complex(-Q16V3, -Q16V3), gr_complex(-Q16V3, -Q16V1),
     gr_complex(-Q16V3, Q16V3), gr_complex(-Q16V3, Q16V1),
-    gr_complex(-Q16V1, -Q16V3), gr_complex(-Q16V1, -Q16V1),
+    gr_complex(-Q16V3, -Q16V3), gr_complex(-Q16V3, -Q16V1),
     gr_complex(-Q16V1, Q16V3), gr_complex(-Q16V1, Q16V1),
-    gr_complex(Q16V3, -Q16V3), gr_complex(Q16V3, -Q16V1),
+    gr_complex(-Q16V1, -Q16V3), gr_complex(-Q16V1, -Q16V1),
     gr_complex(Q16V3, Q16V3), gr_complex(Q16V3, Q16V1),
-    gr_complex(Q16V1, -Q16V3), gr_complex(Q16V1, -Q16V1),
-    gr_complex(Q16V1, Q16V3), gr_complex(Q16V1, Q16V1)
+    gr_complex(Q16V3, -Q16V3), gr_complex(Q16V3, -Q16V1),
+    gr_complex(Q16V1, Q16V3), gr_complex(Q16V1, Q16V1),
+    gr_complex(Q16V1, -Q16V3), gr_complex(Q16V1, -Q16V1)
 };
 
 #define Q64V7   1.080123449734643
@@ -36,22 +36,22 @@ std::vector<gr_complex> CONST_16QAM = {
 
 const
 std::vector<gr_complex> CONST_64QAM = {
-    gr_complex(-Q64V7, -Q64V7), gr_complex(-Q64V7, -Q64V5), gr_complex(-Q64V7, -Q64V1), gr_complex(-Q64V7, -Q64V3),
     gr_complex(-Q64V7, Q64V7), gr_complex(-Q64V7, Q64V5), gr_complex(-Q64V7, Q64V1), gr_complex(-Q64V7, Q64V3),
-    gr_complex(-Q64V5, -Q64V7), gr_complex(-Q64V5, -Q64V5), gr_complex(-Q64V5, -Q64V1), gr_complex(-Q64V5, -Q64V3),
+    gr_complex(-Q64V7, -Q64V7), gr_complex(-Q64V7, -Q64V5), gr_complex(-Q64V7, -Q64V1), gr_complex(-Q64V7, -Q64V3),
     gr_complex(-Q64V5, Q64V7), gr_complex(-Q64V5, Q64V5), gr_complex(-Q64V5, Q64V1), gr_complex(-Q64V5, Q64V3),
-    gr_complex(-Q64V1, -Q64V7), gr_complex(-Q64V1, -Q64V5), gr_complex(-Q64V1, -Q64V1), gr_complex(-Q64V1, -Q64V3),
+    gr_complex(-Q64V5, -Q64V7), gr_complex(-Q64V5, -Q64V5), gr_complex(-Q64V5, -Q64V1), gr_complex(-Q64V5, -Q64V3),
     gr_complex(-Q64V1, Q64V7), gr_complex(-Q64V1, Q64V5), gr_complex(-Q64V1, Q64V1), gr_complex(-Q64V1, Q64V3),
-    gr_complex(-Q64V3, -Q64V7), gr_complex(-Q64V3, -Q64V5), gr_complex(-Q64V3, -Q64V1), gr_complex(-Q64V3, -Q64V3),
+    gr_complex(-Q64V1, -Q64V7), gr_complex(-Q64V1, -Q64V5), gr_complex(-Q64V1, -Q64V1), gr_complex(-Q64V1, -Q64V3),
     gr_complex(-Q64V3, Q64V7), gr_complex(-Q64V3, Q64V5), gr_complex(-Q64V3, Q64V1), gr_complex(-Q64V3, Q64V3),
-    gr_complex(Q64V7, -Q64V7), gr_complex(Q64V7, -Q64V5), gr_complex(Q64V7, -Q64V1), gr_complex(Q64V7, -Q64V3),
+    gr_complex(-Q64V3, -Q64V7), gr_complex(-Q64V3, -Q64V5), gr_complex(-Q64V3, -Q64V1), gr_complex(-Q64V3, -Q64V3),
     gr_complex(Q64V7, Q64V7), gr_complex(Q64V7, Q64V5), gr_complex(Q64V7, Q64V1), gr_complex(Q64V7, Q64V3),
-    gr_complex(Q64V5, -Q64V7), gr_complex(Q64V5, -Q64V5), gr_complex(Q64V5, -Q64V1), gr_complex(Q64V5, -Q64V3),
+    gr_complex(Q64V7, -Q64V7), gr_complex(Q64V7, -Q64V5), gr_complex(Q64V7, -Q64V1), gr_complex(Q64V7, -Q64V3),
     gr_complex(Q64V5, Q64V7), gr_complex(Q64V5, Q64V5), gr_complex(Q64V5, Q64V1), gr_complex(Q64V5, Q64V3),
-    gr_complex(Q64V1, -Q64V7), gr_complex(Q64V1, -Q64V5), gr_complex(Q64V1, -Q64V1), gr_complex(Q64V1, -Q64V3),
+    gr_complex(Q64V5, -Q64V7), gr_complex(Q64V5, -Q64V5), gr_complex(Q64V5, -Q64V1), gr_complex(Q64V5, -Q64V3),
     gr_complex(Q64V1, Q64V7), gr_complex(Q64V1, Q64V5), gr_complex(Q64V1, Q64V1), gr_complex(Q64V1, Q64V3),
-    gr_complex(Q64V3, -Q64V7), gr_complex(Q64V3, -Q64V5), gr_complex(Q64V3, -Q64V1), gr_complex(Q64V3, -Q64V3),
-    gr_complex(Q64V3, Q64V7), gr_complex(Q64V3, Q64V5), gr_complex(Q64V3, Q64V1), gr_complex(Q64V3, Q64V3)
+    gr_complex(Q64V1, -Q64V7), gr_complex(Q64V1, -Q64V5), gr_complex(Q64V1, -Q64V1), gr_complex(Q64V1, -Q64V3),
+    gr_complex(Q64V3, Q64V7), gr_complex(Q64V3, Q64V5), gr_complex(Q64V3, Q64V1), gr_complex(Q64V3, Q64V3),
+    gr_complex(Q64V3, -Q64V7), gr_complex(Q64V3, -Q64V5), gr_complex(Q64V3, -Q64V1), gr_complex(Q64V3, -Q64V3)
 };
 
 #define Q256V15  1.150447483271056
@@ -65,126 +65,85 @@ std::vector<gr_complex> CONST_64QAM = {
 
 const
 std::vector<gr_complex> CONST_256QAM = {
-    gr_complex(-Q256V15, -Q256V5), gr_complex(-Q256V15, -Q256V7), gr_complex(-Q256V15, -Q256V3),
-    gr_complex(-Q256V15, -Q256V1),
-    gr_complex(-Q256V15, -Q256V11), gr_complex(-Q256V15, -Q256V9), gr_complex(-Q256V15, -Q256V13),
-    gr_complex(-Q256V15, -Q256V15),
-    gr_complex(-Q256V15, Q256V5), gr_complex(-Q256V15, Q256V7), gr_complex(-Q256V15, Q256V3),
-    gr_complex(-Q256V15, Q256V1),
-    gr_complex(-Q256V15, Q256V11), gr_complex(-Q256V15, Q256V9), gr_complex(-Q256V15, Q256V13),
-    gr_complex(-Q256V15, Q256V15),
+    gr_complex(-Q256V15,Q256V15), gr_complex(-Q256V15,Q256V13), gr_complex(-Q256V15,Q256V9), gr_complex(-Q256V15,Q256V11),
+    gr_complex(-Q256V15,Q256V1), gr_complex(-Q256V15,Q256V3), gr_complex(-Q256V15,Q256V7), gr_complex(-Q256V15,Q256V5),
+    gr_complex(-Q256V15,-Q256V15), gr_complex(-Q256V15,-Q256V13), gr_complex(-Q256V15,-Q256V9), gr_complex(-Q256V15,-Q256V11),
+    gr_complex(-Q256V15,-Q256V1), gr_complex(-Q256V15,-Q256V3), gr_complex(-Q256V15,-Q256V7), gr_complex(-Q256V15,-Q256V5),
 
-    gr_complex(-Q256V13, -Q256V5), gr_complex(-Q256V13, -Q256V7), gr_complex(-Q256V13, -Q256V3),
-    gr_complex(-Q256V13, -Q256V1),
-    gr_complex(-Q256V13, -Q256V11), gr_complex(-Q256V13, -Q256V9), gr_complex(-Q256V13, -Q256V13),
-    gr_complex(-Q256V13, -Q256V15),
-    gr_complex(-Q256V13, Q256V5), gr_complex(-Q256V13, Q256V7), gr_complex(-Q256V13, Q256V3),
-    gr_complex(-Q256V13, Q256V1),
-    gr_complex(-Q256V13, Q256V11), gr_complex(-Q256V13, Q256V9), gr_complex(-Q256V13, Q256V13),
-    gr_complex(-Q256V13, Q256V15),
+    gr_complex(-Q256V13,Q256V15), gr_complex(-Q256V13,Q256V13), gr_complex(-Q256V13,Q256V9), gr_complex(-Q256V13,Q256V11),
+    gr_complex(-Q256V13,Q256V1), gr_complex(-Q256V13,Q256V3), gr_complex(-Q256V13,Q256V7), gr_complex(-Q256V13,Q256V5),
+    gr_complex(-Q256V13,-Q256V15), gr_complex(-Q256V13,-Q256V13), gr_complex(-Q256V13,-Q256V9), gr_complex(-Q256V13,-Q256V11),
+    gr_complex(-Q256V13,-Q256V1), gr_complex(-Q256V13,-Q256V3), gr_complex(-Q256V13,-Q256V7), gr_complex(-Q256V13,-Q256V5),
 
-    gr_complex(-Q256V9, -Q256V5), gr_complex(-Q256V9, -Q256V7), gr_complex(-Q256V9, -Q256V3),
-    gr_complex(-Q256V9, -Q256V1),
-    gr_complex(-Q256V9, -Q256V11), gr_complex(-Q256V9, -Q256V9), gr_complex(-Q256V9, -Q256V13),
-    gr_complex(-Q256V9, -Q256V15),
-    gr_complex(-Q256V9, Q256V5), gr_complex(-Q256V9, Q256V7), gr_complex(-Q256V9, Q256V3), gr_complex(-Q256V9, Q256V1),
-    gr_complex(-Q256V9, Q256V11), gr_complex(-Q256V9, Q256V9), gr_complex(-Q256V9, Q256V13),
-    gr_complex(-Q256V9, Q256V15),
+    gr_complex(-Q256V9,Q256V15), gr_complex(-Q256V9,Q256V13), gr_complex(-Q256V9,Q256V9), gr_complex(-Q256V9,Q256V11),
+    gr_complex(-Q256V9,Q256V1), gr_complex(-Q256V9,Q256V3), gr_complex(-Q256V9,Q256V7), gr_complex(-Q256V9,Q256V5),
+    gr_complex(-Q256V9,-Q256V15), gr_complex(-Q256V9,-Q256V13), gr_complex(-Q256V9,-Q256V9), gr_complex(-Q256V9,-Q256V11),
+    gr_complex(-Q256V9,-Q256V1), gr_complex(-Q256V9,-Q256V3), gr_complex(-Q256V9,-Q256V7), gr_complex(-Q256V9,-Q256V5),
 
-    gr_complex(-Q256V11, -Q256V5), gr_complex(-Q256V11, -Q256V7), gr_complex(-Q256V11, -Q256V3),
-    gr_complex(-Q256V11, -Q256V1),
-    gr_complex(-Q256V11, -Q256V11), gr_complex(-Q256V11, -Q256V9), gr_complex(-Q256V11, -Q256V13),
-    gr_complex(-Q256V11, -Q256V15),
-    gr_complex(-Q256V11, Q256V5), gr_complex(-Q256V11, Q256V7), gr_complex(-Q256V11, Q256V3),
-    gr_complex(-Q256V11, Q256V1),
-    gr_complex(-Q256V11, Q256V11), gr_complex(-Q256V11, Q256V9), gr_complex(-Q256V11, Q256V13),
-    gr_complex(-Q256V11, Q256V15),
+    gr_complex(-Q256V11,Q256V15), gr_complex(-11,Q256V13), gr_complex(-Q256V11,Q256V9), gr_complex(-Q256V11,Q256V11),
+    gr_complex(-Q256V11,Q256V1), gr_complex(-Q256V11,Q256V3), gr_complex(-Q256V11,Q256V7), gr_complex(-Q256V11,Q256V5),
+    gr_complex(-Q256V11,-Q256V15), gr_complex(-11,-Q256V13), gr_complex(-Q256V11,-Q256V9), gr_complex(-Q256V11,-Q256V11),
+    gr_complex(-Q256V11,-Q256V1), gr_complex(-Q256V11,-Q256V3), gr_complex(-Q256V11,-Q256V7), gr_complex(-Q256V11,-Q256V5),
 
-    gr_complex(-Q256V1, -Q256V5), gr_complex(-Q256V1, -Q256V7), gr_complex(-Q256V1, -Q256V3),
-    gr_complex(-Q256V1, -Q256V1),
-    gr_complex(-Q256V1, -Q256V11), gr_complex(-Q256V1, -Q256V9), gr_complex(-Q256V1, -Q256V13),
-    gr_complex(-Q256V1, -Q256V15),
-    gr_complex(-Q256V1, Q256V5), gr_complex(-Q256V1, Q256V7), gr_complex(-Q256V1, Q256V3), gr_complex(-Q256V1, Q256V1),
-    gr_complex(-Q256V1, Q256V11), gr_complex(-Q256V1, Q256V9), gr_complex(-Q256V1, Q256V13),
-    gr_complex(-Q256V1, Q256V15),
+    gr_complex(-Q256V1,Q256V15), gr_complex(-1,Q256V13), gr_complex(-Q256V1,Q256V9), gr_complex(-Q256V1,Q256V11),
+    gr_complex(-Q256V1,Q256V1), gr_complex(-Q256V1,Q256V3), gr_complex(-Q256V1,Q256V7), gr_complex(-Q256V1,Q256V5),
+    gr_complex(-Q256V1,-Q256V15), gr_complex(-1,-Q256V13), gr_complex(-Q256V1,-Q256V9), gr_complex(-Q256V1,-Q256V11),
+    gr_complex(-Q256V1,-Q256V1), gr_complex(-Q256V1,-Q256V3), gr_complex(-Q256V1,-Q256V7), gr_complex(-Q256V1,-Q256V5),
 
-    gr_complex(-Q256V3, -Q256V5), gr_complex(-Q256V3, -Q256V7), gr_complex(-Q256V3, -Q256V3),
-    gr_complex(-Q256V3, -Q256V1),
-    gr_complex(-Q256V3, -Q256V11), gr_complex(-Q256V3, -Q256V9), gr_complex(-Q256V3, -Q256V13),
-    gr_complex(-Q256V3, -Q256V15),
-    gr_complex(-Q256V3, Q256V5), gr_complex(-Q256V3, Q256V7), gr_complex(-Q256V3, Q256V3), gr_complex(-Q256V3, Q256V1),
-    gr_complex(-Q256V3, Q256V11), gr_complex(-Q256V3, Q256V9), gr_complex(-Q256V3, Q256V13),
-    gr_complex(-Q256V3, Q256V15),
+    gr_complex(-Q256V3,Q256V15), gr_complex(-3,Q256V13), gr_complex(-Q256V3,Q256V9), gr_complex(-Q256V3,Q256V11),
+    gr_complex(-Q256V3,Q256V1), gr_complex(-Q256V3,Q256V3), gr_complex(-Q256V3,Q256V7), gr_complex(-Q256V3,Q256V5),
+    gr_complex(-Q256V3,-Q256V15), gr_complex(-3,-Q256V13), gr_complex(-Q256V3,-Q256V9), gr_complex(-Q256V3,-Q256V11),
+    gr_complex(-Q256V3,-Q256V1), gr_complex(-Q256V3,-Q256V3), gr_complex(-Q256V3,-Q256V7), gr_complex(-Q256V3,-Q256V5),
 
-    gr_complex(-Q256V7, -Q256V5), gr_complex(-Q256V7, -Q256V7), gr_complex(-Q256V7, -Q256V3),
-    gr_complex(-Q256V7, -Q256V1),
-    gr_complex(-Q256V7, -Q256V11), gr_complex(-Q256V7, -Q256V9), gr_complex(-Q256V7, -Q256V13),
-    gr_complex(-Q256V7, -Q256V15),
-    gr_complex(-Q256V7, Q256V5), gr_complex(-Q256V7, Q256V7), gr_complex(-Q256V7, Q256V3), gr_complex(-Q256V7, Q256V1),
-    gr_complex(-Q256V7, Q256V11), gr_complex(-Q256V7, Q256V9), gr_complex(-Q256V7, Q256V13),
-    gr_complex(-Q256V7, Q256V15),
+    gr_complex(-Q256V7,Q256V15), gr_complex(-7,Q256V13), gr_complex(-Q256V7,Q256V9), gr_complex(-Q256V7,Q256V11),
+    gr_complex(-Q256V7,Q256V1), gr_complex(-Q256V7,Q256V3), gr_complex(-Q256V7,Q256V7), gr_complex(-Q256V7,Q256V5),
+    gr_complex(-Q256V7,-Q256V15), gr_complex(-7,-Q256V13), gr_complex(-Q256V7,-Q256V9), gr_complex(-Q256V7,-Q256V11),
+    gr_complex(-Q256V7,-Q256V1), gr_complex(-Q256V7,-Q256V3), gr_complex(-Q256V7,-Q256V7), gr_complex(-Q256V7,-Q256V5),
 
-    gr_complex(-Q256V5, -Q256V5), gr_complex(-Q256V5, -Q256V7), gr_complex(-Q256V5, -Q256V3),
-    gr_complex(-Q256V5, -Q256V1),
-    gr_complex(-Q256V5, -Q256V11), gr_complex(-Q256V5, -Q256V9), gr_complex(-Q256V5, -Q256V13),
-    gr_complex(-Q256V5, -Q256V15),
-    gr_complex(-Q256V5, Q256V5), gr_complex(-Q256V5, Q256V7), gr_complex(-Q256V5, Q256V3), gr_complex(-Q256V5, Q256V1),
-    gr_complex(-Q256V5, Q256V11), gr_complex(-Q256V5, Q256V9), gr_complex(-Q256V5, Q256V13),
-    gr_complex(-Q256V5, Q256V15),
+    gr_complex(-Q256V5,Q256V15), gr_complex(-5,Q256V13), gr_complex(-Q256V5,Q256V9), gr_complex(-Q256V5,Q256V11),
+    gr_complex(-Q256V5,Q256V1), gr_complex(-Q256V5,Q256V3), gr_complex(-Q256V5,Q256V7), gr_complex(-Q256V5,Q256V5),
+    gr_complex(-Q256V5,-Q256V15), gr_complex(-5,-Q256V13), gr_complex(-Q256V5,-Q256V9), gr_complex(-Q256V5,-Q256V11),
+    gr_complex(-Q256V5,-Q256V1), gr_complex(-Q256V5,-Q256V3), gr_complex(-Q256V5,-Q256V7), gr_complex(-Q256V5,-Q256V5),
 
-    gr_complex(Q256V15, -Q256V5), gr_complex(Q256V15, -Q256V7), gr_complex(Q256V15, -Q256V3),
-    gr_complex(Q256V15, -Q256V1),
-    gr_complex(Q256V15, -Q256V11), gr_complex(Q256V15, -Q256V9), gr_complex(Q256V15, -Q256V13),
-    gr_complex(Q256V15, -Q256V15),
-    gr_complex(Q256V15, Q256V5), gr_complex(Q256V15, Q256V7), gr_complex(Q256V15, Q256V3), gr_complex(Q256V15, Q256V1),
-    gr_complex(Q256V15, Q256V11), gr_complex(Q256V15, Q256V9), gr_complex(Q256V15, Q256V13),
-    gr_complex(Q256V15, Q256V15),
+    gr_complex(Q256V15,Q256V15), gr_complex(15,Q256V13), gr_complex(Q256V15,Q256V9), gr_complex(Q256V15,Q256V11),
+    gr_complex(Q256V15,Q256V1), gr_complex(Q256V15,Q256V3), gr_complex(Q256V15,Q256V7), gr_complex(Q256V15,Q256V5),
+    gr_complex(Q256V15,-Q256V15), gr_complex(15,-Q256V13), gr_complex(Q256V15,-Q256V9), gr_complex(Q256V15,-Q256V11),
+    gr_complex(Q256V15,-Q256V1), gr_complex(Q256V15,-Q256V3), gr_complex(Q256V15,-Q256V7), gr_complex(Q256V15,-Q256V5),
 
-    gr_complex(Q256V13, -Q256V5), gr_complex(Q256V13, -Q256V7), gr_complex(Q256V13, -Q256V3),
-    gr_complex(Q256V13, -Q256V1),
-    gr_complex(Q256V13, -Q256V11), gr_complex(Q256V13, -Q256V9), gr_complex(Q256V13, -Q256V13),
-    gr_complex(Q256V13, -Q256V15),
-    gr_complex(Q256V13, Q256V5), gr_complex(Q256V13, Q256V7), gr_complex(Q256V13, Q256V3), gr_complex(Q256V13, Q256V1),
-    gr_complex(Q256V13, Q256V11), gr_complex(Q256V13, Q256V9), gr_complex(Q256V13, Q256V13),
-    gr_complex(Q256V13, Q256V15),
+    gr_complex(Q256V13,Q256V15), gr_complex(13,Q256V13), gr_complex(Q256V13,Q256V9), gr_complex(Q256V13,Q256V11),
+    gr_complex(Q256V13,Q256V1), gr_complex(Q256V13,Q256V3), gr_complex(Q256V13,Q256V7), gr_complex(Q256V13,Q256V5),
+    gr_complex(Q256V13,-Q256V15), gr_complex(13,-Q256V13), gr_complex(Q256V13,-Q256V9), gr_complex(Q256V13,-Q256V11),
+    gr_complex(Q256V13,-Q256V1), gr_complex(Q256V13,-Q256V3), gr_complex(Q256V13,-Q256V7), gr_complex(Q256V13,-Q256V5),
 
-    gr_complex(Q256V9, -Q256V5), gr_complex(Q256V9, -Q256V7), gr_complex(Q256V9, -Q256V3), gr_complex(Q256V9, -Q256V1),
-    gr_complex(Q256V9, -Q256V11), gr_complex(Q256V9, -Q256V9), gr_complex(Q256V9, -Q256V13),
-    gr_complex(Q256V9, -Q256V15),
-    gr_complex(Q256V9, Q256V5), gr_complex(Q256V9, Q256V7), gr_complex(Q256V9, Q256V3), gr_complex(Q256V9, Q256V1),
-    gr_complex(Q256V9, Q256V11), gr_complex(Q256V9, Q256V9), gr_complex(Q256V9, Q256V13), gr_complex(Q256V9, Q256V15),
+    gr_complex(Q256V9,Q256V15), gr_complex(9,Q256V13), gr_complex(Q256V9,Q256V9), gr_complex(Q256V9,Q256V11),
+    gr_complex(Q256V9,Q256V1), gr_complex(Q256V9,Q256V3), gr_complex(Q256V9,Q256V7), gr_complex(Q256V9,Q256V5),
+    gr_complex(Q256V9,-Q256V15), gr_complex(9,-Q256V13), gr_complex(Q256V9,-Q256V9), gr_complex(Q256V9,-Q256V11),
+    gr_complex(Q256V9,-Q256V1), gr_complex(Q256V9,-Q256V3), gr_complex(Q256V9,-Q256V7), gr_complex(Q256V9,-Q256V5),
 
-    gr_complex(Q256V11, -Q256V5), gr_complex(Q256V11, -Q256V7), gr_complex(Q256V11, -Q256V3),
-    gr_complex(Q256V11, -Q256V1),
-    gr_complex(Q256V11, -Q256V11), gr_complex(Q256V11, -Q256V9), gr_complex(Q256V11, -Q256V13),
-    gr_complex(Q256V11, -Q256V15),
-    gr_complex(Q256V11, Q256V5), gr_complex(Q256V11, Q256V7), gr_complex(Q256V11, Q256V3), gr_complex(Q256V11, Q256V1),
-    gr_complex(Q256V11, Q256V11), gr_complex(Q256V11, Q256V9), gr_complex(Q256V11, Q256V13),
-    gr_complex(Q256V11, Q256V15),
+    gr_complex(Q256V11,Q256V15), gr_complex(11,Q256V13), gr_complex(Q256V11,Q256V9), gr_complex(Q256V11,Q256V11),
+    gr_complex(Q256V11,Q256V1), gr_complex(Q256V11,Q256V3), gr_complex(Q256V11,Q256V7), gr_complex(Q256V11,Q256V5),
+    gr_complex(Q256V11,-Q256V15), gr_complex(11,-Q256V13), gr_complex(Q256V11,-Q256V9), gr_complex(Q256V11,-Q256V11),
+    gr_complex(Q256V11,-Q256V1), gr_complex(Q256V11,-Q256V3), gr_complex(Q256V11,-Q256V7), gr_complex(Q256V11,-Q256V5),
 
-    gr_complex(Q256V1, -Q256V5), gr_complex(Q256V1, -Q256V7), gr_complex(Q256V1, -Q256V3), gr_complex(Q256V1, -Q256V1),
-    gr_complex(Q256V1, -Q256V11), gr_complex(Q256V1, -Q256V9), gr_complex(Q256V1, -Q256V13),
-    gr_complex(Q256V1, -Q256V15),
-    gr_complex(Q256V1, Q256V5), gr_complex(Q256V1, Q256V7), gr_complex(Q256V1, Q256V3), gr_complex(Q256V1, Q256V1),
-    gr_complex(Q256V1, Q256V11), gr_complex(Q256V1, Q256V9), gr_complex(Q256V1, Q256V13), gr_complex(Q256V1, Q256V15),
+    gr_complex(Q256V1,Q256V15), gr_complex(1,Q256V13), gr_complex(Q256V1,Q256V9), gr_complex(Q256V1,Q256V11),
+    gr_complex(Q256V1,Q256V1), gr_complex(Q256V1,Q256V3), gr_complex(Q256V1,Q256V7), gr_complex(Q256V1,Q256V5),
+    gr_complex(Q256V1,-Q256V15), gr_complex(1,-Q256V13), gr_complex(Q256V1,-Q256V9), gr_complex(Q256V1,-Q256V11),
+    gr_complex(Q256V1,-Q256V1), gr_complex(Q256V1,-Q256V3), gr_complex(Q256V1,-Q256V7), gr_complex(Q256V1,-Q256V5),
 
-    gr_complex(Q256V3, -Q256V5), gr_complex(Q256V3, -Q256V7), gr_complex(Q256V3, -Q256V3), gr_complex(Q256V3, -Q256V1),
-    gr_complex(Q256V3, -Q256V11), gr_complex(Q256V3, -Q256V9), gr_complex(Q256V3, -Q256V13),
-    gr_complex(Q256V3, -Q256V15),
-    gr_complex(Q256V3, Q256V5), gr_complex(Q256V3, Q256V7), gr_complex(Q256V3, Q256V3), gr_complex(Q256V3, Q256V1),
-    gr_complex(Q256V3, Q256V11), gr_complex(Q256V3, Q256V9), gr_complex(Q256V3, Q256V13), gr_complex(Q256V3, Q256V15),
+    gr_complex(Q256V3,Q256V15), gr_complex(3,Q256V13), gr_complex(Q256V3,Q256V9), gr_complex(Q256V3,Q256V11),
+    gr_complex(Q256V3,Q256V1), gr_complex(Q256V3,Q256V3), gr_complex(Q256V3,Q256V7), gr_complex(Q256V3,Q256V5),
+    gr_complex(Q256V3,-Q256V15), gr_complex(3,-Q256V13), gr_complex(Q256V3,-Q256V9), gr_complex(Q256V3,-Q256V11),
+    gr_complex(Q256V3,-Q256V1), gr_complex(Q256V3,-Q256V3), gr_complex(Q256V3,-Q256V7), gr_complex(Q256V3,-Q256V5),
 
-    gr_complex(Q256V7, -Q256V5), gr_complex(Q256V7, -Q256V7), gr_complex(Q256V7, -Q256V3), gr_complex(Q256V7, -Q256V1),
-    gr_complex(Q256V7, -Q256V11), gr_complex(Q256V7, -Q256V9), gr_complex(Q256V7, -Q256V13),
-    gr_complex(Q256V7, -Q256V15),
-    gr_complex(Q256V7, Q256V5), gr_complex(Q256V7, Q256V7), gr_complex(Q256V7, Q256V3), gr_complex(Q256V7, Q256V1),
-    gr_complex(Q256V7, Q256V11), gr_complex(Q256V7, Q256V9), gr_complex(Q256V7, Q256V13), gr_complex(Q256V7, Q256V15),
+    gr_complex(Q256V7,Q256V15), gr_complex(7,Q256V13), gr_complex(Q256V7,Q256V9), gr_complex(Q256V7,Q256V11),
+    gr_complex(Q256V7,Q256V1), gr_complex(Q256V7,Q256V3), gr_complex(Q256V7,Q256V7), gr_complex(Q256V7,Q256V5),
+    gr_complex(Q256V7,-Q256V15), gr_complex(7,-Q256V13), gr_complex(Q256V7,-Q256V9), gr_complex(Q256V7,-Q256V11),
+    gr_complex(Q256V7,-Q256V1), gr_complex(Q256V7,-Q256V3), gr_complex(Q256V7,-Q256V7), gr_complex(Q256V7,-Q256V5),
 
-    gr_complex(Q256V5, -Q256V5), gr_complex(Q256V5, -Q256V7), gr_complex(Q256V5, -Q256V3), gr_complex(Q256V5, -Q256V1),
-    gr_complex(Q256V5, -Q256V11), gr_complex(Q256V5, -Q256V9), gr_complex(Q256V5, -Q256V13),
-    gr_complex(Q256V5, -Q256V15),
-    gr_complex(Q256V5, Q256V5), gr_complex(Q256V5, Q256V7), gr_complex(Q256V5, Q256V3), gr_complex(Q256V5, Q256V1),
-    gr_complex(Q256V5, Q256V11), gr_complex(Q256V5, Q256V9), gr_complex(Q256V5, Q256V13), gr_complex(Q256V5, Q256V15)
+    gr_complex(Q256V5,Q256V15), gr_complex(5,Q256V13), gr_complex(Q256V5,Q256V9), gr_complex(Q256V5,Q256V11),
+    gr_complex(Q256V5,Q256V1), gr_complex(Q256V5,Q256V3), gr_complex(Q256V5,Q256V7), gr_complex(Q256V5,Q256V5),
+    gr_complex(Q256V5,-Q256V15), gr_complex(5,-Q256V13), gr_complex(Q256V5,-Q256V9), gr_complex(Q256V5,-Q256V11),
+    gr_complex(Q256V5,-Q256V1), gr_complex(Q256V5,-Q256V3), gr_complex(Q256V5,-Q256V7), gr_complex(Q256V5,-Q256V5)
 };
 
 } /* namespace gr::ncjt */
