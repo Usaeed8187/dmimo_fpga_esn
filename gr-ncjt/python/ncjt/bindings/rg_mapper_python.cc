@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(rg_mapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(eaec33a3ce0effad610205af771eb3b7) */
+/* BINDTOOL_HEADER_FILE_HASH(a323e5fed9f0a7f40759252015403f3a) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -38,7 +38,8 @@ void bind_rg_mapper(py::module &m) {
 
       .def(py::init(&rg_mapper::make), py::arg("nstrm"), py::arg("framelen"),
            py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("modtype"),
-           py::arg("debug") = false, D(rg_mapper, make))
+           py::arg("addcs") = true, py::arg("debug") = false,
+           D(rg_mapper, make))
 
       ;
 }

@@ -26,4 +26,7 @@ install(FILES api.h
     mimo_detect.h
     rx_mrc.h
     mu_chanest.h
-    sic_detect.h DESTINATION include/gnuradio/ncjt)
+    sic_detect.h
+    stbc_encode.h
+    stbc_decode.h
+    add_preamble.h DESTINATION include/gnuradio/ncjt)

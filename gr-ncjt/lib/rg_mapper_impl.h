@@ -27,6 +27,7 @@ private:
 
     int d_fftsize; // FFT size
     int d_npt; // number of pilots
+    bool d_add_cyclic_shift; // add cyclic shift to data streams
     gr_complex d_phaseshift[4][56];
 
     unsigned d_pilot_lsfr; // LSFR state for pilot parity sequence
@@ -42,7 +43,7 @@ protected:
     update_pilots(int symidx);
 
 public:
-    rg_mapper_impl(int nstrm, int framelen, int ndatasyms, int npilotsyms, int modtype, bool debug);
+    rg_mapper_impl(int nstrm, int framelen, int ndatasyms, int npilotsyms, int modtype, bool addcs, bool debug);
     ~rg_mapper_impl();
 
     int

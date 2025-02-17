@@ -1,0 +1,40 @@
+id: ncjt_add_preamble
+label: Add Preamble
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.add_preamble(${nstrms}, ${filename}, ${debug})
+
+parameters:
+  - id: nstrms
+    label: Number of Streams
+    dtype: int
+    default: 1
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: filename
+    label: Beacon Data
+    dtype: file_open
+    hide: part
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: complex
+    multiplicity: ${nstrms}
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    multiplicity: ${nstrms}
+
+file_format: 1

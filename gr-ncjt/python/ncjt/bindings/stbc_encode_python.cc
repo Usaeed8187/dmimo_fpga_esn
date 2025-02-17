@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(ltf_chanest.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(c157bf5b2e6d2b32c7d6d0f82229dd52) */
+/* BINDTOOL_HEADER_FILE(stbc_encode.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(d302085636d2d3f8a5271ac81bd34a23) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,20 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/ltf_chanest.h>
+#include <gnuradio/ncjt/stbc_encode.h>
 // pydoc.h is automatically generated in the build directory
-#include <ltf_chanest_pydoc.h>
+#include <stbc_encode_pydoc.h>
 
-void bind_ltf_chanest(py::module &m) {
+void bind_stbc_encode(py::module &m) {
 
-  using ltf_chanest = ::gr::ncjt::ltf_chanest;
+  using stbc_encode = ::gr::ncjt::stbc_encode;
 
-  py::class_<ltf_chanest, gr::tagged_stream_block, gr::block, gr::basic_block,
-             std::shared_ptr<ltf_chanest>>(m, "ltf_chanest", D(ltf_chanest))
+  py::class_<stbc_encode, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<stbc_encode>>(m, "stbc_encode", D(stbc_encode))
 
-      .def(py::init(&ltf_chanest::make), py::arg("fftsize"), py::arg("ntx"),
-           py::arg("nrx"), py::arg("npreamblesyms"), py::arg("ndatasyms"),
-           py::arg("csifb"), py::arg("removecs") = false,
-           py::arg("logfreq") = 10, py::arg("debug") = false,
-           D(ltf_chanest, make))
+      .def(py::init(&stbc_encode::make), py::arg("fftsize"),
+           py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("debug"),
+           D(stbc_encode, make))
 
       ;
 }

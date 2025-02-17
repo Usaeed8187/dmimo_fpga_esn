@@ -14,19 +14,19 @@ namespace gr::ncjt
 
 ltf_chanest::sptr
 ltf_chanest::make(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
-                  bool csifb, int logfreq, bool debug)
+                  bool csifb, bool removecs, int logfreq, bool debug)
 {
     return gnuradio::make_block_sptr<ltf_chanest_impl>(
-        fftsize, ntx, nrx, npreamblesyms, ndatasyms, csifb, logfreq, debug);
+        fftsize, ntx, nrx, npreamblesyms, ndatasyms, csifb, removecs, logfreq, debug);
 }
 
 ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
-                                   bool csifb, int logfreq, bool debug)
+                                   bool csifb, bool removecs, int logfreq, bool debug)
     : gr::tagged_stream_block("ltf_chanest",
                               gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
                               gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
                               "packet_len"),
-      d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_csi_en(csifb),
+      d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_csi_en(csifb), d_remove_cyclic_shift(removecs),
       d_total_frames(0), d_reset_frames(0), d_logfreq(logfreq), d_debug(debug)
 {
     if (fftsize != 64 && fftsize != 256)
@@ -448,6 +448,19 @@ ltf_chanest_impl::ltf_chan_est_2rx(gr_vector_const_void_star &input_items,
         // H: nSTS x nRx, Pd: nSTS x nLTF, Rx: nLTF x nRx
         Eigen::Map<CMatrix2> H(&d_chan_est[4 * k], 2, 2);
         H = NORM_LTF_SEQ[k] * Pd * Rx;
+
+        // remove cyclic shift
+        if (d_remove_cyclic_shift)
+        {
+            for (int n = 1; n < d_nss; n++) // for all except 1st stream
+                for (int m = 0; m < d_nrx; m++) // for all rx
+                {
+                    int cidx = d_nss * d_nrx * k + d_nrx * n + m; // row major indexing
+                    int sidx = n * d_scnum + k;
+                    d_chan_est[cidx] *= d_cshift[sidx];
+                }
+        }
+
         // copy channel estimation for all streams per receiver antennas to individual output port
         // (s0,r0),(s1,r0) -> ch0,  (s0,r1),(s1,r1) -> ch1
         // using row-major memory layout
@@ -477,6 +490,19 @@ ltf_chanest_impl::ltf_chan_est_nrx(gr_vector_const_void_star &input_items,
         // H: nSTS x nRx, Pd: nSTS x nLTF, Rx: nLTF x nRx
         Eigen::Map<CMatrixX> H(&d_chan_est[d_nss * d_nrx * k], d_nss, d_nrx);
         H = NORM_LTF_SEQ[k] * d_Pd * Rx;
+
+        // remove cyclic shift
+        if (d_remove_cyclic_shift)
+        {
+            for (int n = 1; n < d_nss; n++) // for all except 1st stream
+                for (int m = 0; m < d_nrx; m++) // for all rx
+                {
+                    int cidx = d_nss * d_nrx * k + d_nrx * n + m; // row major indexing
+                    int sidx = n * d_scnum + k;
+                    d_chan_est[cidx] *= d_cshift[sidx];
+                }
+        }
+
         // copy channel estimation for all streams per receiver antennas to individual output port
         // (s0,r0),(s1,r0) -> ch0,  (s0,r1),(s1,r1) -> ch1
         // using row-major memory layout

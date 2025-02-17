@@ -40,7 +40,10 @@ list(APPEND ncjt_python_files
     mimo_detect_python.cc
     rx_mrc_python.cc
     mu_chanest_python.cc
-    sic_detect_python.cc python_bindings.cc)
+    sic_detect_python.cc
+    stbc_encode_python.cc
+    stbc_decode_python.cc
+    add_preamble_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(ncjt ../../.. gr::ncjt "${ncjt_python_files}")
 

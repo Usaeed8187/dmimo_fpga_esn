@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(ltf_chanest.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(c157bf5b2e6d2b32c7d6d0f82229dd52) */
+/* BINDTOOL_HEADER_FILE(add_preamble.h) */
+/* BINDTOOL_HEADER_FILE_HASH(aec1a5b7b55118cab6d70b10ad8fbb8d) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,19 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/ltf_chanest.h>
+#include <gnuradio/ncjt/add_preamble.h>
 // pydoc.h is automatically generated in the build directory
-#include <ltf_chanest_pydoc.h>
+#include <add_preamble_pydoc.h>
 
-void bind_ltf_chanest(py::module &m) {
+void bind_add_preamble(py::module &m) {
 
-  using ltf_chanest = ::gr::ncjt::ltf_chanest;
+  using add_preamble = ::gr::ncjt::add_preamble;
 
-  py::class_<ltf_chanest, gr::tagged_stream_block, gr::block, gr::basic_block,
-             std::shared_ptr<ltf_chanest>>(m, "ltf_chanest", D(ltf_chanest))
+  py::class_<add_preamble, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<add_preamble>>(m, "add_preamble", D(add_preamble))
 
-      .def(py::init(&ltf_chanest::make), py::arg("fftsize"), py::arg("ntx"),
-           py::arg("nrx"), py::arg("npreamblesyms"), py::arg("ndatasyms"),
-           py::arg("csifb"), py::arg("removecs") = false,
-           py::arg("logfreq") = 10, py::arg("debug") = false,
-           D(ltf_chanest, make))
+      .def(py::init(&add_preamble::make), py::arg("nstrm"), py::arg("filename"),
+           py::arg("debug"), D(add_preamble, make))
 
       ;
 }

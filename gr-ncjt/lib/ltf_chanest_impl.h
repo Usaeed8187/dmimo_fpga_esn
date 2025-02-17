@@ -43,6 +43,7 @@ private:
     gr_vector_float NORM_LTF_SEQ; // current normalized LTF sequence
 
     bool d_csi_en; // enable CSI feedback
+    bool d_remove_cyclic_shift; // remove cyclic shift from channel estimation
     int d_total_frames; // total number of data frames
     int d_reset_frames; // reset frame counter
 
@@ -98,7 +99,7 @@ protected:
 
 public:
     ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
-                     bool csifb, int logfreq, bool debug);
+                     bool csifb, bool removecs, int logfreq, bool debug);
     ~ltf_chanest_impl();
 
     int

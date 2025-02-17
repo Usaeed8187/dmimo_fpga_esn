@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rg_mapper(${nstrms}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${debug})
+  make: ncjt.rg_mapper(${nstrms}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${addcs}, ${debug})
 
 parameters:
   - id: nstrms
@@ -30,6 +30,12 @@ parameters:
     default: 2
     options: [ 2, 4, 6, 8 ]
     option_labels: [ 'QPSK', '16QAM', '64QAM', '256QAM' ]
+  - id: addcs
+    label: Add Cyclic Shift
+    dtype: bool
+    default: 'True'
+    options: [ 'True', 'False' ]
+    hide: part
   - id: debug
     label: Debug
     dtype: bool

@@ -38,6 +38,9 @@ namespace py = pybind11;
     void bind_rx_mrc(py::module& m);
     void bind_mu_chanest(py::module& m);
     void bind_sic_detect(py::module& m);
+    void bind_stbc_encode(py::module& m);
+    void bind_stbc_decode(py::module& m);
+    void bind_add_preamble(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -83,5 +86,8 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_rx_mrc(m);
     bind_mu_chanest(m);
     bind_sic_detect(m);
+    bind_stbc_encode(m);
+    bind_stbc_decode(m);
+    bind_add_preamble(m);
     // ) END BINDING_FUNCTION_CALLS
 }

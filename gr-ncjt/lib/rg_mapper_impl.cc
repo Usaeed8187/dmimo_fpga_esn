@@ -13,17 +13,23 @@ namespace gr::ncjt
 {
 
 rg_mapper::sptr
-rg_mapper::make(int nstrm, int framelen, int ndatasyms, int npilotsyms, int modtype, bool debug)
+rg_mapper::make(int nstrm, int framelen, int ndatasyms, int npilotsyms, int modtype, bool addcs, bool debug)
 {
-    return gnuradio::make_block_sptr<rg_mapper_impl>(nstrm, framelen, ndatasyms, npilotsyms, modtype, debug);
+    return gnuradio::make_block_sptr<rg_mapper_impl>(nstrm, framelen, ndatasyms, npilotsyms, modtype, addcs, debug);
 }
 
-rg_mapper_impl::rg_mapper_impl(int nstrm, int framelen, int ndatasyms, int npilotsyms, int modtype, bool debug)
+rg_mapper_impl::rg_mapper_impl(int nstrm,
+                               int framelen,
+                               int ndatasyms,
+                               int npilotsyms,
+                               int modtype,
+                               bool addcs,
+                               bool debug)
     : gr::tagged_stream_block(
     "stream_mapper",
     gr::io_signature::make(1, 1, sizeof(uint8_t)),
     gr::io_signature::make(nstrm, nstrm, sizeof(gr_complex)),
-    "packet_len"), d_debug(debug)
+    "packet_len"), d_add_cyclic_shift(addcs), d_debug(debug)
 {
     if (nstrm < 1 || nstrm > 4)
         throw std::runtime_error("Invalid number of streams");
@@ -166,16 +172,17 @@ rg_mapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
     }
 
     // Apply cyclic shifts
-    for (int ss = 1; ss < d_nstrm; ss++)
-    {
-        auto out = static_cast<gr_complex *>(output_items[ss]);
-        for (int cursym = 0; cursym < d_ndatasyms; cursym++)
-            for (int k = 0; k < SC_NUM; k++)
-            {
-                int offset = cursym * SC_NUM + k;
-                out[offset] *= d_phaseshift[ss][k];
-            }
-    }
+    if (d_add_cyclic_shift)
+        for (int ss = 1; ss < d_nstrm; ss++)
+        {
+            auto out = static_cast<gr_complex *>(output_items[ss]);
+            for (int cursym = 0; cursym < d_ndatasyms; cursym++)
+                for (int k = 0; k < SC_NUM; k++)
+                {
+                    int offset = cursym * SC_NUM + k;
+                    out[offset] *= d_phaseshift[ss][k];
+                }
+        }
 
     return SC_NUM * d_ndatasyms;
 }
