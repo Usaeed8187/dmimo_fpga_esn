@@ -21,11 +21,16 @@ private:
     int d_npilotsyms; // number of pilot OFDM symbols
     int d_numsyms; // total number of OFDM symbols
 
+    gr_complex *d_tracking_pilots; // pilots for CPT tracking (mode 4 or 8)
+
     bool d_debug;
 
 protected:
     int
     calculate_output_stream_length(const gr_vector_int &ninput_items);
+
+    void
+    generate_tracking_pilots();
 
 public:
     stbc_encode_impl(int fftsize, int ndatasyms, int npilotsyms, bool debug);

@@ -21,7 +21,7 @@ stbc_decode_impl::stbc_decode_impl(int fftsize, int ndatasyms, int npilotsyms, b
     : gr::tagged_stream_block(
     "stbc_decode",
     gr::io_signature::make(2, 2, sizeof(gr_complex)),
-    gr::io_signature::make2(1, 2, sizeof(gr_complex), sizeof(float)),
+    gr::io_signature::make(1, 2, sizeof(gr_complex)),
     "packet_len"), d_debug(debug)
 {
     if (fftsize == 64)
@@ -69,7 +69,8 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
 {
     auto in0 = (const gr_complex *) input_items[0];
     auto in1 = (const gr_complex *) input_items[1];
-    auto out = (gr_complex *) output_items[0];
+    auto out0 = (gr_complex *) output_items[0];
+    auto out1 = (gr_complex *) output_items[1];
 
     std::vector<gr::tag_t> d_tags;
     get_tags_in_window(d_tags, 0, 0, 1,
@@ -108,8 +109,8 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     dout << "chanest size: " << ch.dimensions() << std::endl;
 
     // STBC receiver
-    //auto [z, h_eq] = alamouti_decode(ry, ch);
-    //dout << "output size: " << z.dimensions() << std::endl;
+    // auto [z, h_eq] = alamouti_decode(ry, ch);
+    // dout << "output size: " << z.dimensions() << std::endl;
 
     // Split r into r1 and r2
     CTensor3D r1 = ry.chip(0, 2); // Slice [num_rx, num_syms/2, num_subcarriers]
@@ -142,7 +143,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     CTensor2D z_summed = z_combined_reshaped.sum(Eigen::array<int, 1>{0});
 
     // Effective channel gain
-    Tensor3D h_eq = h1.abs().pow(2) + h2.abs().pow(2); // [M_r, num_syms/2, num_subcarriers]
+    Tensor3D h_eq = h1.abs().pow(2) + h2.abs().pow(2); // [num_rx, num_syms/2, num_subcarriers]
     Tensor2D h_eq_summed = h_eq.sum(Eigen::array<int, 1>{0}); // [num_syms/2, num_subcarriers]
 
     // Step 1: Reshape h_eq_summed to [1, num_syms/2, num_subcarriers]
@@ -155,8 +156,9 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     // Step 3: Reshape to final dimensions [num_syms, num_subcarriers]
     Eigen::array<int, 2> h_eq_final_dims = {d_numsyms, d_scnum};
     Tensor2D h_eq_reshaped = Eigen::TensorMap<Tensor2D>(h_eq_duplicated.data(), h_eq_final_dims);
+    dout << "h_eq: " << h_eq_reshaped.dimensions() << std::endl;
 
-    // output
+    // symbols & csi output
     for (int m=0; m < d_numsyms; m++)
     {
         int sc_cnt = 0;
@@ -165,7 +167,8 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
             if ((d_scnum == 56) & (i == 7 || i == 21 || i == 34 || i == 48))
                 continue;
             int offset = m * d_scdata + sc_cnt;
-            out[offset] = z_summed(m,i);
+            out0[offset] = z_summed(m,i);
+            out1[offset] = gr_complex(h_eq_reshaped(m, i), 0.0);
             sc_cnt += 1;
         }
     }
@@ -199,7 +202,7 @@ stbc_decode_impl::alamouti_decode(const CTensor4D& r, const CTensor4D& h)
     // z2 = h2^* * r1 - h1 * r2^*
     CTensor3D z2 = h2.conjugate() * r1 - h1 * r2.conjugate(); // [num_rx, num_syms/2, num_subcarriers]
 
-    // Step 1: Reshape z1 and z2 to [num_rx, 1, num_syms_half, num_subcarriers]
+    // Step 1: Reshape z1 and z2 to [num_rx, num_syms_half, 1, num_subcarriers]
     Eigen::array<int, 4> z_reshaped_dims = {d_nrx, d_numsyms / 2, 1, d_scnum};
     CTensor4D z1_reshaped = Eigen::TensorMap<CTensor4D>(z1.data(), z_reshaped_dims);
     CTensor4D z2_reshaped = Eigen::TensorMap<CTensor4D>(z2.data(), z_reshaped_dims);
