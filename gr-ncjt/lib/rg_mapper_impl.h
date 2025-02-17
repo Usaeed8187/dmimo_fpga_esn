@@ -18,10 +18,11 @@ private:
     const int SC_NUM = 56; // valid number of subcarriers
     const int SD_NUM = 52; // number of data subcarriers
     int d_nstrm; // number of streams
-    int d_framelen; // input data frame length in samples
-    int d_modtype; // modulation type (2-QPSK, 4-16QAM, 6-64QAM)
-    int d_ndatasyms; // total number of OFDM symbols)
-    int d_nsyms_per_stream; // QAM symbols per stream
+    int d_frame_data_len; // input frame data length in samples
+    int d_modtype; // modulation type (2-QPSK, 4-16QAM, 6-64QAM, 8-256QAM)
+    int d_ndatasyms; // total number of OFDM symbols
+    int d_npilotsyms; // number of pilot symbols
+    int d_nqamsyms_per_stream; // QAM symbols per stream
     int d_total_symbols_required; // total number of QAM symbols for each data frame
 
     int d_fftsize; // FFT size

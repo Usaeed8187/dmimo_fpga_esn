@@ -8,15 +8,36 @@ templates:
 
 
 parameters:
-  - id: nstrms
+  - id: nstrm
     label: Number of Streams
     dtype: int
     default: 1
     options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
     hide: part
+  - id: framelen
+    label: Frame Length
+    dtype: int
   - id: ndatasyms
     label: Data Symbols
     dtype: int
+    hide: part
+  - id: npilotsyms
+    label: Pilot Symbols
+    dtype: int
+    default: '0'
+    hide: part
+  - id: modtype
+    label: Modulation
+    dtype: int
+    default: 2
+    options: [ 2, 4, 6, 8 ]
+    option_labels: [ 'QPSK', '16QAM', '64QAM', '256QAM' ]
+  - id: usecsi
+    label: CSI
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
   - id: debug
     label: Debug
     dtype: bool
@@ -29,13 +50,17 @@ inputs:
   - label: in
     domain: stream
     dtype: complex
-    vlen: ${nstrms}
-
-outputs:
-  - label: out
+    multiplicity: ${nstrm}
+  - label: csi
     domain: stream
     dtype: complex
-    multiplicity: ${nstrms}
+    multiplicity: ${nstrm}
+    optional: true
+    hide: ${not usecsi}
 
+outputs:
+  - domain: stream
+    dtype: byte
+    vlen: 1
 
 file_format: 1

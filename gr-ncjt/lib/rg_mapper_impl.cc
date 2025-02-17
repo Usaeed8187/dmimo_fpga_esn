@@ -32,18 +32,19 @@ rg_mapper_impl::rg_mapper_impl(int nstrm, int framelen, int ndatasyms, int npilo
     if (ndatasyms <= 10 || ndatasyms > 200)
         throw std::runtime_error("Invalid number of data OFDM symbols");
     d_ndatasyms = ndatasyms;
-    d_nsyms_per_stream = SD_NUM * d_ndatasyms;
+    d_npilotsyms = npilotsyms;
+    d_nqamsyms_per_stream = SD_NUM * d_ndatasyms;
 
-    if (modtype != 2 && modtype != 4 && modtype != 6)
+    if (modtype != 2 && modtype != 4 && modtype != 6 && modtype != 8)
         throw std::runtime_error("Unsupported modulation mode");
     d_modtype = modtype;
 
     // Check input data frame length
-    d_framelen = framelen;
-    d_total_symbols_required = d_framelen / (d_nstrm * d_modtype);
-    if (d_total_symbols_required > d_nsyms_per_stream)
+    d_frame_data_len = framelen;
+    d_total_symbols_required = d_frame_data_len / (d_nstrm * d_modtype);
+    if (d_total_symbols_required > d_nqamsyms_per_stream)
         throw std::runtime_error("Data frame size too large");
-    else if (d_total_symbols_required < d_nsyms_per_stream - 2 * SD_NUM)
+    else if (d_total_symbols_required < d_nqamsyms_per_stream - 2 * SD_NUM)
         throw std::runtime_error("Data frame require too much padding");
 
     d_fftsize = 64;
@@ -70,7 +71,7 @@ int
 rg_mapper_impl::calculate_output_stream_length(
     const gr_vector_int &ninput_items)
 {
-    int num_blocks = ninput_items[0] / d_framelen;
+    int num_blocks = ninput_items[0] / d_frame_data_len;
     if (num_blocks >= 1)
         return SC_NUM * d_ndatasyms;
     else
@@ -83,43 +84,44 @@ rg_mapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                      gr_vector_void_star &output_items)
 {
     auto in = static_cast<const uint8_t *>(input_items[0]);
-    if (ninput_items[0] != d_framelen)
+    if (ninput_items[0] != d_frame_data_len)
     {
         dout << "incorrect data input length: " << ninput_items[0] << std::endl;
         throw std::runtime_error("Data frame size too small");
     }
 
     // QAM symbols mapping for all streams and insert pilot tones
-    //int max_didx = d_nstrm * d_modtype * d_total_symbols_required + d_nstrm;
+    // int max_didx = d_nstrm * d_modtype * d_total_symbols_required + d_nstrm;
     for (int ss = 0; ss < d_nstrm; ss++)
     {
         auto out = static_cast<gr_complex *>(output_items[ss]);
         int cursym = 0, scidx = 0, ptidx = 0;
         int offset, mi;
         update_pilots(-1);
-        for (int didx = ss; didx < d_framelen; didx += (d_nstrm * d_modtype))
+        for (int didx = ss; didx < d_frame_data_len; didx += (d_nstrm * d_modtype))
         {
             auto dbits = in + didx;
             offset = cursym * SC_NUM + scidx;
             switch (d_modtype)
             {
                 case 2: // QPSK: 4 symbols per byte
-                    mi = dbits[d_nstrm] + 2 * dbits[0]; // MSB first
+                    mi = (dbits[d_nstrm] << 1) + dbits[0]; // LSB first
                     out[offset] = CONST_QPSK[mi];
                     break;
                 case 4: // 16QAM
-                    mi = dbits[3 * d_nstrm] + 2 * dbits[2 * d_nstrm]
-                        + 4 * dbits[d_nstrm] + 8 * dbits[0]; // MSB first
+                    mi = dbits[0] + (dbits[d_nstrm] << 1) + (dbits[2 * d_nstrm] << 2)
+                        + (dbits[3 * d_nstrm] << 3); // LSB first
                     out[offset] = CONST_16QAM[mi];
                     break;
                 case 6: // 64QAM
-                    mi = dbits[5 * d_nstrm] + 2 * dbits[4 * d_nstrm] + 4 * dbits[3 * d_nstrm]
-                        + 8 * dbits[2 * d_nstrm] + 16 * dbits[d_nstrm] + 32 * dbits[0]; // LSB first
+                    mi = dbits[0] + (dbits[d_nstrm] << 1) + (dbits[2 * d_nstrm] << 2)
+                        + (dbits[3 * d_nstrm] << 3) + (dbits[4 * d_nstrm] << 4) + (dbits[5 * d_nstrm] << 5);
                     out[offset] = CONST_64QAM[mi];
                     break;
                 case 8: // 256QAM
-                    mi = dbits[7 * d_nstrm] + 2 * dbits[6 * d_nstrm] + 4 * dbits[5 * d_nstrm] + 8 * dbits[4 * d_nstrm]
-                        + 16 * dbits[3 * d_nstrm] + 32 * dbits[2*d_nstrm] + 64 * dbits[d_nstrm] + 128 * dbits[0]; // LSB first
+                    mi = dbits[0] + (dbits[d_nstrm] << 1) + (dbits[2 * d_nstrm] << 2)
+                        + (dbits[3 * d_nstrm] << 3) + (dbits[4 * d_nstrm] << 4) + (dbits[5 * d_nstrm] << 5)
+                        + (dbits[6 * d_nstrm] << 6) + (dbits[7 * d_nstrm] << 7);
                     out[offset] = CONST_256QAM[mi];
                     break;
             }

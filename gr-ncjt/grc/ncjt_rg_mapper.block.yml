@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rg_mapper(${nstrm}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${debug})
+  make: ncjt.rg_mapper(${nstrms}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${debug})
 
 parameters:
   - id: nstrms
@@ -13,9 +13,23 @@ parameters:
     default: 1
     options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
     hide: part
+  - id: framelen
+    label: Frame Length
+    dtype: int
   - id: ndatasyms
     label: Data Symbols
     dtype: int
+  - id: npilotsyms
+    label: Pilot Symbols
+    dtype: int
+    default: '0'
+    hide: part
+  - id: modtype
+    label: Modulation
+    dtype: int
+    default: 2
+    options: [ 2, 4, 6, 8 ]
+    option_labels: [ 'QPSK', '16QAM', '64QAM', '256QAM' ]
   - id: debug
     label: Debug
     dtype: bool
@@ -25,16 +39,14 @@ parameters:
     hide: part
 
 inputs:
-  - label: in
-    domain: stream
-    dtype: complex
-    vlen: ${nstrms}
+  - domain: stream
+    dtype: byte
+    vlen: 1
 
 outputs:
   - label: out
     domain: stream
     dtype: complex
     multiplicity: ${nstrms}
-
 
 file_format: 1
