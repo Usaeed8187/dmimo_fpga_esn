@@ -7,7 +7,19 @@
 #ifndef GR_NCJT_LIB_STBC_SIC_DECODER_H
 #define GR_NCJT_LIB_STBC_SIC_DECODER_H
 
-#include "qam_modulation.h"
+#include <gnuradio/ncjt/api.h>
+#include <gnuradio/block.h>
+
+#include <unsupported/Eigen/CXX11/Tensor>
+#include <bitset>
+#include <vector>
+#include <string>
+#include <complex>
+#include <cmath>
+#include <algorithm>
+#include <cassert>
+
+#include "cmatrix.h"
 
 CTensor3D
 alamouti_encode(CTensor2D &input);
