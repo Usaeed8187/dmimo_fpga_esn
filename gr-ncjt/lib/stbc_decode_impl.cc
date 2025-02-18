@@ -159,7 +159,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     dout << "h_eq: " << h_eq_reshaped.dimensions() << std::endl;
 
     // symbols & csi output
-    for (int m=0; m < d_numsyms; m++)
+    for (int m = 0; m < d_numsyms; m++)
     {
         int sc_cnt = 0;
         for (int i = 0; i < d_scnum; i++)
@@ -168,12 +168,19 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 continue;
             int offset = m * d_scdata + sc_cnt;
             out0[offset] = z_summed(i, m);
-            out1[offset] = gr_complex(h_eq_reshaped( i, m), 0.0);
+            out1[offset] = gr_complex(h_eq_reshaped(i, m), 0.0);
             sc_cnt += 1;
         }
     }
 
-    return (d_scdata * d_numsyms);
+    noutput_items = (d_scdata * d_numsyms);
+    add_item_tag(0,
+                 nitems_written(0),
+                 pmt::string_to_symbol("packet_len"),
+                 pmt::from_long(noutput_items),
+                 pmt::string_to_symbol(name()));
+
+    return noutput_items;
 }
 
 /* Decodes symbols received from M_r receive antennas using Alamouti decoding.
@@ -186,7 +193,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
  *   h_eq: Effective channel gain of shape [num_syms, num_subcarriers]
  */
 std::tuple<CTensor2D, Tensor2D>
-stbc_decode_impl::alamouti_decode(const CTensor4D& r, const CTensor4D& h)
+stbc_decode_impl::alamouti_decode(const CTensor4D &r, const CTensor4D &h)
 {
     // Split r into r1 and r2
     CTensor3D r1 = r.chip(0, 2); // Slice [num_rx, num_syms/2, num_subcarriers]

@@ -593,10 +593,10 @@ alamouti_decode_zf_double(const CTensor4D &r,
 
 // ZF + SIC function
 /**
- * @brief Alamouti Zero-Forcing Decoder for Double Cluster MIMO.
+ * @brief Alamouti Zero-Forcing and SIC Decoder for Double Cluster MIMO.
  *
  * This function implements the Alamouti decoding with Zero-Forcing (ZF) 
- * to mitigate interference and equalize the received signals in a 
+ * with SIC to mitigate interference and equalize the received signals in a
  * MIMO-OFDM system with double clusters.
  *
  * The function takes in the received signal `r` and the estimated channel `h`, 
@@ -604,7 +604,7 @@ alamouti_decode_zf_double(const CTensor4D &r,
  *
  * ## Input Shape Constraints:
  * 
- * - **r**: `(M_r, 2, num_syms_half, num_subcarriers)`
+ * - **r**: `(M_r, num_syms, num_subcarriers)`
  *   
  *   - `M_r`: Number of receive antennas (must be even).
  *  
@@ -612,13 +612,13 @@ alamouti_decode_zf_double(const CTensor4D &r,
  * 
  *   - `num_subcarriers`: Number of OFDM subcarriers.
  *
- * - ** h **: `(M_r, N_t , num_syms_half, num_subcarriers)` 
- * 
+ * - ** h **: `(M_r, N_t, num_syms, num_subcarriers)`
+ *
  *   - `M_r`: Number of receive antennas.
- * 
+ *
  *   - `N_t = 4`: Represents the 4 transmit antennas, two for each cluster (2+2).
- * 
- *   - `num_syms_half`: Half the total number of OFDM symbols.
+ *
+ *   - `num_syms: total number of OFDM symbols.
  * 
  *   - `num_subcarriers`: Number of OFDM subcarriers.
  *
@@ -653,34 +653,36 @@ alamouti_decode_zf_sic_double(
     int num_syms = r.dimension(1);
     int num_subcarriers = r.dimension(2);
     int num_syms_half = num_syms / 2;
-    assert(M_r % 2 == 0 && "M_r must be even.");
-    assert(h.dimension(0) == 4 && "N_t (fist dimension of h) must be 4.");
-    assert(h.dimension(1) == M_r && "Mismatch between M_r of the received signal and channel.");
-    assert(h.dimension(2) == num_syms && "Mismatch between num_syms of the received signal and channel.");
-    assert(h.dimension(3) == num_subcarriers && "Mismatch between num_subcarriers of the received signal and channel.");
 
-    CTensor4D r_reshaped =
-        Eigen::TensorMap<CTensor4D>(r.data(), Eigen::array<int, 4>{M_r, 2, num_syms_half, num_subcarriers});
+//    assert(M_r % 2 == 0 && "M_r must be even.");
+//    assert(h.dimension(0) == M_r && "Mismatch between M_r of the received signal and channel.");
+//    assert(h.dimension(1) == 4 && "N_t (2nd dimension of h) must be 4.");
+//    assert(h.dimension(2) == num_syms && "Mismatch between num_syms of the received signal and channel.");
+//    assert(h.dimension(3) == num_subcarriers && "Mismatch between num_subcarriers of the received signal and channel.");
+
+    CTensor4D r_reshaped = Eigen::TensorMap<CTensor4D>(
+        r.data(), Eigen::array<int, 4>{M_r, 2, num_syms_half, num_subcarriers});
 
     Eigen::array<int, 4> transpose_dims = {1, 0, 2, 3}; // Transpose to [N_t, M_r, num_syms, num_subcarriers]
     CTensor4D h_transposed = h.shuffle(transpose_dims);
-    Eigen::array<int, 5> reshape_dims =
-        {4, M_r, 2, num_syms_half, num_subcarriers}; // Reshape to [N_t, M_r, 2, num_syms/2, num_subcarriers]
+
+    // Reshape to [N_t, M_r, 2, num_syms/2, num_subcarriers]
+    Eigen::array<int, 5> reshape_dims = {4, M_r, 2, num_syms_half, num_subcarriers};
     CTensor5D h_reshaped = Eigen::TensorMap<CTensor5D>(h_transposed.data(), reshape_dims);
-    CTensor4D h_avg = (h_reshaped.chip(0, 2) + h_reshaped.chip(1, 2))
-        / gr_complex(2.0f, 0.0f); //[N_t, M_r, num_syms/2, num_subcarriers]
+    // h_avg has shape [N_t, M_r, num_syms/2, num_subcarriers]
+    CTensor4D h_avg = (h_reshaped.chip(0, 2) + h_reshaped.chip(1, 2)) / gr_complex(2.0f, 0.0f);
 
     // the input r should be of shape (M_r, num_syms, num_subcarriers) where 2 represents consecutive symbols
     // the input h should be of shape (4, M_r, num_syms_half, num_subcarriers) where 4 represents N_t
-    auto [y, gains] = alamouti_decode_zf_double(r_reshaped,
-                                                h_avg); // y: [2, num_syms, num_subcarriers], gains: [2, num_syms, num_subcarriers]
+    // y: [2, num_syms, num_subcarriers], gains: [2, num_syms, num_subcarriers]
+    auto [y, gains] = alamouti_decode_zf_double(r_reshaped, h_avg);
 
     CTensor2D comparison = (gains.chip(0, 0) >= gains.chip(1, 0)).cast<gr_complex>();
-    CTensor4D cluster0isbetter =
-        Eigen::TensorMap<CTensor4D>(comparison.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
+    CTensor4D cluster0isbetter = Eigen::TensorMap<CTensor4D>(
+        comparison.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
     comparison = (gains.chip(0, 0) < gains.chip(1, 0)).cast<gr_complex>();
-    CTensor4D cluster1isbetter =
-        Eigen::TensorMap<CTensor4D>(comparison.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
+    CTensor4D cluster1isbetter = Eigen::TensorMap<CTensor4D>(
+        comparison.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
     // shape = (num_syms_half * 2, num_subcarriers)
 
     // QAMModulator modulator(num_bits_per_symbol);
@@ -704,8 +706,8 @@ alamouti_decode_zf_sic_double(
     offsets = {0, 2, 0, 0};
     CTensor4D channel1 = h.slice(offsets, extents);
 
-    CTensor2D better_x_reshaped =
-        Eigen::TensorMap<CTensor2D>(better_x.data(), Eigen::array<int, 2>{num_syms, num_subcarriers});
+    CTensor2D better_x_reshaped = Eigen::TensorMap<CTensor2D>(
+        better_x.data(), Eigen::array<int, 2>{num_syms, num_subcarriers});
     CTensor4D better_x_alamouti = Eigen::TensorMap<CTensor4D>(
         alamouti_encode(better_x_reshaped).data(),
         Eigen::array<int, 4>{2, 1, num_syms, num_subcarriers}); // {2, 1 , num_syms , num_subcarriers}
@@ -749,6 +751,4 @@ alamouti_decode_zf_sic_double(
     equalized_x.chip(1, 0) = x1.chip(0, 0).chip(0, 0);
 
     return {equalized_x, gains};
-    // Demodulate
-
 }

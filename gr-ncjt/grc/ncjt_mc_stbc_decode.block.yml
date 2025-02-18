@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.mc_stbc_decode(${fftsize}, ${ndatasyms}, ${npilotsyms}, ${debug})
+  make: ncjt.mc_stbc_decode(${fftsize}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${debug})
 
 parameters:
   - id: fftsize
@@ -20,6 +20,12 @@ parameters:
     dtype: int
     default: '0'
     hide: part
+  - id: modtype
+    label: Modulation
+    dtype: int
+    default: 2
+    options: [ 2, 4, 6, 8 ]
+    option_labels: [ 'QPSK', '16QAM', '64QAM', '256QAM' ]
   - id: debug
     label: Debug
     dtype: bool

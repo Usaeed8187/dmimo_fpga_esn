@@ -21,6 +21,12 @@
 
 #include "cmatrix.h"
 
+CTensor4D
+remap_4d(const CTensor4D &input_tensor, int mod_ord);
+
+CTensor4D
+matmul_4d(const CTensor4D &A, const CTensor4D &B);
+
 CTensor3D
 alamouti_encode(CTensor2D &input);
 

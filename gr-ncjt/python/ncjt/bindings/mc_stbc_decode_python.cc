@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(mc_stbc_decode.h) */
-/* BINDTOOL_HEADER_FILE_HASH(9ed474ad010e959846720ed8cdd24424) */
+/* BINDTOOL_HEADER_FILE_HASH(f5dc4eb14d85899a6973ccfeb3288bc2) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -38,8 +38,8 @@ void bind_mc_stbc_decode(py::module &m) {
       m, "mc_stbc_decode", D(mc_stbc_decode))
 
       .def(py::init(&mc_stbc_decode::make), py::arg("fftsize"),
-           py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("debug"),
-           D(mc_stbc_decode, make))
+           py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("modtype"),
+           py::arg("debug"), D(mc_stbc_decode, make))
 
       ;
 }

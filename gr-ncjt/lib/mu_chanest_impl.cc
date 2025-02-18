@@ -138,14 +138,17 @@ mu_chanest_impl::work(int noutput_items, gr_vector_int &ninput_items,
         if (d_cur_sym == -1) // full HT-LTFs available
         {
             update_pilots(d_cur_sym);
-            if (d_nss == 1)
+            if (d_nss == 1) // d_nue >= 1
                 ltf_chan_est_1tx(input_items, output_items, noutput_syms * d_scnum);
+            else if (d_nss == 2 && d_nue > 1)
+                ltf_chan_est_2tx(input_items, output_items, noutput_syms * d_scnum);
             else if (d_nss == 2 && d_nrx == 2)
                 ltf_chan_est_2rx(input_items, output_items, noutput_syms * d_scnum);
             else
                 ltf_chan_est_nrx(input_items, output_items, noutput_syms * d_scnum);
             uint64_t offset = nitems_written(0) + noutput_syms * d_scnum;
-            add_packet_tag(offset, d_ntx * d_scnum);
+            // add_packet_tag(offset, d_ntx * d_scnum);
+            add_packet_tag(offset, (d_ntx + d_data_symbols) * d_scnum);
             add_frame_tag(offset);
             noutput_syms += d_ntx; // d_nue * d_nss;
             d_sigpwr_sum = 0.0;
@@ -153,14 +156,14 @@ mu_chanest_impl::work(int noutput_items, gr_vector_int &ninput_items,
         }
 
         // add packet_len tags for tagged stream block
-        if (d_cur_sym >= 0 && d_cur_sym % 5 == 0)
+        /*if (d_cur_sym >= 0 && d_cur_sym % 5 == 0)
         {
             auto offset = nitems_written(0) + noutput_syms * d_scnum;
             int packet_len = (d_cur_sym < d_data_symbols - 8) ? 5 * d_scnum : (d_data_symbols - d_last_sym) * d_scnum;
             add_packet_tag(offset, packet_len);
             // dout << "Packet from symbol " << (d_cur_sym + 1) << ", length " << packet_len <<
             //     " offset " << offset << std::endl;
-        }
+        }*/
 
         if (d_cur_sym >= 0)
         {
@@ -350,7 +353,7 @@ mu_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
     // dout << "CPE estimate: " << d_cpe_phi << std::endl;
 
     // CPE compensation for received pilots and data
-    const float normfactor = sqrt(float(d_ntx  * d_scnum) / d_fftsize);
+    const float normfactor = sqrt(float(d_ntx * d_scnum) / d_fftsize);
     gr_complex cpe_comp = normfactor * std::exp(gr_complex(0, d_cpe_phi));
     for (int m = 0; m < d_nrx; m++)
     {
@@ -401,7 +404,48 @@ mu_chanest_impl::ltf_chan_est_1tx(gr_vector_const_void_star &input_items,
                 // out[output_offset + d_nrx * cidx + m] = hest; // separate stream in each port
                 // row major layout: (nss, num_sc)
                 out[output_offset + d_ntx * cidx + sidx] = hest;
+            }
+        }
+    }
+}
 
+void
+mu_chanest_impl::ltf_chan_est_2tx(gr_vector_const_void_star &input_items,
+                                  gr_vector_void_star &output_items,
+                                  int output_offset)
+{
+    const float normfactor = sqrt(float(d_scnum) / float(d_nss * d_fftsize));
+    CMatrix2 Pd, Rx;
+    Pd << normfactor, -normfactor, normfactor, normfactor;
+
+    for (int uidx = 0; uidx < d_nue; uidx++)
+    {
+        // LTF for n-th UE is in n-th block in n-th receive antenna block
+        const int input_offset = d_scnum * (d_preamble_symbols - (d_nue - uidx) * d_nss);
+
+        for (int m = 0; m < d_nrx; m += d_nss)  // for all rx antennas
+        {
+            // channel estimation for 2 rx antennas
+            auto *in0 = (const gr_complex *) input_items[m] + input_offset;
+            auto *in1 = (const gr_complex *) input_items[m + 1] + input_offset;
+            auto *out0 = (gr_complex *) output_items[m];
+            auto *out1 = (gr_complex *) output_items[m + 1];
+            for (int cidx = 0; cidx < d_scnum; cidx++) // subcarrier index
+            {
+                Rx(0, 0) = in0[cidx], Rx(1, 0) = in0[cidx + d_scnum];  // (s0,r0), (s1,r0)
+                Rx(0, 1) = in1[cidx], Rx(1, 1) = in1[cidx + d_scnum];  // (s0,r1) (s1,r1)
+                // channel estimation H = Pd * Rx, Pd = {1, -1; 1, 1} for 2x2 case
+                // H: nSTS x nRx, Pd: nSTS x nLTF, Rx: nLTF x nRx
+                Eigen::Map<CMatrix2> H(&d_chan_est[d_nss * d_ntx * cidx], 2, 2);
+                H = NORM_LTF_SEQ[cidx] * Pd * Rx;
+                // copy channel estimation for all streams per receiver antennas to individual output port
+                // (s0,r0),(s1,r0) -> ch0,  (s0,r1),(s1,r1) -> ch1
+                // using column-major memory layout, shape ()
+                int chanest_offset = output_offset +  d_ntx * cidx + d_nss * uidx;
+                out0[chanest_offset] = H(0, 0);  // s0,r0
+                out0[chanest_offset + 1] = H(1, 0);  // s1,r0
+                out1[chanest_offset] = H(0, 1);  // s0,r1
+                out1[chanest_offset + 1] = H(1, 1); // s1,r1
             }
         }
     }
