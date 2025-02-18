@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 172.0]
+    coordinate: [376, 12.0]
     rotation: 0
     state: enabled
 - name: fft_size
@@ -54,9 +54,33 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [328, 172.0]
+    coordinate: [296, 12.0]
     rotation: 0
     state: enabled
+- name: mod_order
+  id: variable
+  parameters:
+    comment: ''
+    value: '8'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [296, 156.0]
+    rotation: 0
+    state: true
+- name: modtype
+  id: variable
+  parameters:
+    comment: ''
+    value: '"256QAM"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 156.0]
+    rotation: 0
+    state: true
 - name: num_data_syms
   id: variable
   parameters:
@@ -66,7 +90,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [344, 92.0]
+    coordinate: [440, 84.0]
     rotation: 0
     state: true
 - name: num_preamble_syms
@@ -78,7 +102,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 92.0]
+    coordinate: [304, 84.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -90,7 +114,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 172.0]
+    coordinate: [200, 84.0]
     rotation: 0
     state: true
 - name: rf_freq
@@ -102,7 +126,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 12.0]
+    coordinate: [456, 12.0]
     rotation: 0
     state: enabled
 - name: rx_gain
@@ -117,13 +141,13 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '15'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 20.0]
+    coordinate: [576, 12.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -305,7 +329,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/64QAM/strm_data_2x2.bin"'
+    filename: '"../data/2x2/" + modtype + "/strm_data_2x2.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -326,7 +350,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    modtype: '6'
+    modtype: mod_order
     nstrms: '2'
     usecsi: 'False'
   states:
@@ -753,7 +777,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: gpsdo
+    clock_source0: external
     clock_source1: ''
     clock_source2: ''
     clock_source3: ''
@@ -1071,7 +1095,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: gpsdo
+    time_source0: external
     time_source1: ''
     time_source2: ''
     time_source3: ''

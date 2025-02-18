@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: test_stbc
+    id: test_mc_stbc
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: Test STBC Tx/Rx
+    title: Test MC STBC Tx/Rx
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 12.0]
+    coordinate: [376, 8.0]
     rotation: 0
     state: enabled
 - name: fft_size
@@ -54,7 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 12.0]
+    coordinate: [296, 16.0]
     rotation: 0
     state: enabled
 - name: frame_data_len
@@ -66,19 +66,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [312, 92.0]
-    rotation: 0
-    state: enabled
-- name: modtype
-  id: variable
-  parameters:
-    comment: ''
-    value: '"256QAM"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [512, 92.0]
+    coordinate: [400, 92.0]
     rotation: 0
     state: enabled
 - name: num_data_syms
@@ -97,12 +85,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '8'
+    value: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 92.0]
+    coordinate: [312, 92.0]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -115,6 +103,42 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [200, 12]
+    rotation: 0
+    state: enabled
+- name: blocks_add_xx_0
+  id: blocks_add_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [712, 320.0]
+    rotation: 0
+    state: enabled
+- name: blocks_add_xx_0_0
+  id: blocks_add_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [720, 440.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0
@@ -132,9 +156,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1504, 344.0]
+    coordinate: [1480, 316.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_sink_0_0
   id: blocks_file_sink
   parameters:
@@ -150,9 +174,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 528.0]
+    coordinate: [1128, 500.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_file_sink_0_1
   id: blocks_file_sink
   parameters:
@@ -168,9 +192,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 264.0]
+    coordinate: [1112, 260.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_file_sink_0_1_0
   id: blocks_file_sink
   parameters:
@@ -178,7 +202,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: '"/tmp/stbc_out.bin"'
+    file: '"/tmp/stbc_out_1.bin"'
     type: complex
     unbuffered: 'False'
     vlen: '1'
@@ -186,7 +210,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1304, 280.0]
+    coordinate: [1304, 252.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_1_0_0
@@ -196,7 +220,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: '"/tmp/stbc_csi.bin"'
+    file: '"/tmp/stbc_out_2.bin"'
     type: complex
     unbuffered: 'False'
     vlen: '1'
@@ -204,45 +228,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1296, 496.0]
+    coordinate: [1320, 484.0]
     rotation: 0
     state: enabled
-- name: blocks_file_sink_0_1_1
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: '"/tmp/stbc_s1.bin"'
-    type: complex
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [456, 276.0]
-    rotation: 0
-    state: disabled
-- name: blocks_file_sink_0_1_1_0
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: '"/tmp/stbc_s2.bin"'
-    type: complex
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [448, 532.0]
-    rotation: 0
-    state: disabled
 - name: blocks_file_source_0
   id: blocks_file_source
   parameters:
@@ -250,7 +238,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../data/1x1/" + modtype + "/strm_data_1x1.bin"'
+    file: '"../data/1x1/QPSK/strm_data_1x1.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -262,7 +250,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [48, 216.0]
+    coordinate: [24, 172.0]
     rotation: 0
     state: enabled
 - name: blocks_null_sink_0
@@ -279,9 +267,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1584, 448.0]
+    coordinate: [1552, 440.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_stream_to_tagged_stream_0
   id: blocks_stream_to_tagged_stream
   parameters:
@@ -298,7 +286,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 320.0]
+    coordinate: [184, 268.0]
     rotation: 180
     state: enabled
 - name: blocks_throttle2_0
@@ -319,7 +307,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 240.0]
+    coordinate: [216, 196.0]
     rotation: 0
     state: enabled
 - name: ncjt_add_preamble_0
@@ -329,7 +317,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/2x2/htltfx.bin"'
+    filename: '"../data/2x2/htltfx1.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrms: '2'
@@ -337,7 +325,45 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 416.0]
+    coordinate: [536, 320.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_add_preamble_0_0
+  id: ncjt_add_preamble
+  parameters:
+    affinity: '2'
+    alias: ''
+    comment: ''
+    debug: 'False'
+    filename: '"../data/2x2/htltfx2.bin"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nstrms: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 424.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_mc_stbc_decode_0
+  id: ncjt_mc_stbc_decode
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'True'
+    fftsize: fft_size
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    modtype: '2'
+    ndatasyms: num_data_syms
+    npilotsyms: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1144, 376.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0
@@ -347,20 +373,20 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    fftsize: '64'
+    fftsize: fft_size
     logfreq: '10'
     maxoutbuf: '0'
     minoutbuf: '0'
     ndatasyms: num_data_syms
-    npreamblesyms: '2'
+    npreamblesyms: '4'
     nrx: '2'
-    ntx: '2'
+    ntx: '4'
     nue: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [872, 400.0]
+    coordinate: [952, 376.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -378,7 +404,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [712, 416.0]
+    coordinate: [792, 336.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_1
@@ -391,12 +417,12 @@ blocks:
     fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '0'
-    symoffset: '12'
+    symoffset: '14'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [712, 448.0]
+    coordinate: [800, 456.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0
@@ -411,12 +437,12 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: '2'
-    scaling: '0.5'
+    scaling: '0.25'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [392, 384.0]
+    coordinate: [344, 332.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0
@@ -431,12 +457,12 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: '2'
-    scaling: '0.5'
+    scaling: '0.2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [392, 448.0]
+    coordinate: [344, 412.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_0
@@ -447,7 +473,7 @@ blocks:
     berout: 'False'
     comment: ''
     debug: 'True'
-    filename: '"../data/1x1/" + modtype + "/strm_data_1x1.bin"'
+    filename: '"../data/1x1/QPSK/strm_data_1x1.bin"'
     logfreq: '10'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -456,9 +482,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1480, 448.0]
+    coordinate: [1456, 440.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_rg_demapper_0
   id: ncjt_rg_demapper
   parameters:
@@ -469,7 +495,7 @@ blocks:
     framelen: 52 * num_data_syms
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
+    modtype: '2'
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrm: '1'
@@ -478,9 +504,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1280, 396.0]
+    coordinate: [1296, 372.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_rg_mapper_0
   id: ncjt_rg_mapper
   parameters:
@@ -492,7 +518,7 @@ blocks:
     framelen: frame_data_len
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
+    modtype: '2'
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrms: '1'
@@ -500,26 +526,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [40, 412.0]
-    rotation: 0
-    state: enabled
-- name: ncjt_stbc_decode_0
-  id: ncjt_stbc_decode
-  parameters:
-    affinity: '5'
-    alias: ''
-    comment: ''
-    debug: 'False'
-    fftsize: fft_size
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    ndatasyms: num_data_syms
-    npilotsyms: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1088, 400.0]
+    coordinate: [32, 364.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
@@ -538,35 +545,39 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [216, 416.0]
+    coordinate: [184, 368.0]
     rotation: 0
     state: enabled
 
 connections:
+- [blocks_add_xx_0, '0', ncjt_ofdm_demod_0, '0']
+- [blocks_add_xx_0_0, '0', ncjt_ofdm_demod_1, '0']
 - [blocks_file_source_0, '0', blocks_throttle2_0, '0']
 - [blocks_stream_to_tagged_stream_0, '0', ncjt_rg_mapper_0, '0']
 - [blocks_throttle2_0, '0', blocks_stream_to_tagged_stream_0, '0']
-- [ncjt_add_preamble_0, '0', ncjt_ofdm_demod_0, '0']
-- [ncjt_add_preamble_0, '1', ncjt_ofdm_demod_1, '0']
+- [ncjt_add_preamble_0, '0', blocks_add_xx_0, '0']
+- [ncjt_add_preamble_0, '1', blocks_add_xx_0_0, '0']
+- [ncjt_add_preamble_0_0, '0', blocks_add_xx_0, '1']
+- [ncjt_add_preamble_0_0, '1', blocks_add_xx_0_0, '1']
+- [ncjt_mc_stbc_decode_0, '0', blocks_file_sink_0_1_0, '0']
+- [ncjt_mc_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
+- [ncjt_mc_stbc_decode_0, '1', blocks_file_sink_0_1_0_0, '0']
+- [ncjt_mc_stbc_decode_0, '1', ncjt_rg_demapper_0, '1']
 - [ncjt_mu_chanest_0, '0', blocks_file_sink_0_1, '0']
-- [ncjt_mu_chanest_0, '0', ncjt_stbc_decode_0, '0']
+- [ncjt_mu_chanest_0, '0', ncjt_mc_stbc_decode_0, '0']
 - [ncjt_mu_chanest_0, '1', blocks_file_sink_0_0, '0']
-- [ncjt_mu_chanest_0, '1', ncjt_stbc_decode_0, '1']
+- [ncjt_mu_chanest_0, '1', ncjt_mc_stbc_decode_0, '1']
 - [ncjt_ofdm_demod_0, '0', ncjt_mu_chanest_0, '0']
 - [ncjt_ofdm_demod_1, '0', ncjt_mu_chanest_0, '1']
 - [ncjt_ofdm_mod_0, '0', ncjt_add_preamble_0, '0']
+- [ncjt_ofdm_mod_0, '0', ncjt_add_preamble_0_0, '0']
 - [ncjt_ofdm_mod_0_0, '0', ncjt_add_preamble_0, '1']
+- [ncjt_ofdm_mod_0_0, '0', ncjt_add_preamble_0_0, '1']
 - [ncjt_pkt_err_0_0, '0', blocks_null_sink_0, '0']
 - [ncjt_rg_demapper_0, '0', blocks_file_sink_0, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0, '0']
 - [ncjt_rg_mapper_0, '0', ncjt_stbc_encode_0, '0']
-- [ncjt_stbc_decode_0, '0', blocks_file_sink_0_1_0, '0']
-- [ncjt_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
-- [ncjt_stbc_decode_0, '1', blocks_file_sink_0_1_0_0, '0']
-- [ncjt_stbc_decode_0, '1', ncjt_rg_demapper_0, '1']
-- [ncjt_stbc_encode_0, '0', blocks_file_sink_0_1_1, '0']
 - [ncjt_stbc_encode_0, '0', ncjt_ofdm_mod_0, '0']
-- [ncjt_stbc_encode_0, '1', blocks_file_sink_0_1_1_0, '0']
 - [ncjt_stbc_encode_0, '1', ncjt_ofdm_mod_0_0, '0']
 
 metadata:

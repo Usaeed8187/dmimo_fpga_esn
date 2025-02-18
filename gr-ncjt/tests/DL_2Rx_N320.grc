@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 172.0]
+    coordinate: [472, 12.0]
     rotation: 0
     state: enabled
 - name: fft_size
@@ -54,7 +54,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [328, 172.0]
+    coordinate: [384, 12.0]
+    rotation: 0
+    state: enabled
+- name: mod_order
+  id: variable
+  parameters:
+    comment: ''
+    value: '8'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [464, 92.0]
     rotation: 0
     state: enabled
 - name: num_data_syms
@@ -123,7 +135,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 20.0]
+    coordinate: [600, 28.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -305,7 +317,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/64QAM/strm_data_2x2.bin"'
+    filename: '"../data/2x2/256QAM/strm_data_2x2.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -326,7 +338,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    modtype: '6'
+    modtype: mod_order
     nstrms: '2'
     usecsi: 'False'
   states:

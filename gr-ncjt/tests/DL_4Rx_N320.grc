@@ -57,6 +57,18 @@ blocks:
     coordinate: [392, 12.0]
     rotation: 0
     state: enabled
+- name: mod_order
+  id: variable
+  parameters:
+    comment: ''
+    value: '6'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [512, 92.0]
+    rotation: 0
+    state: enabled
 - name: num_data_syms
   id: variable
   parameters:
@@ -123,7 +135,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 12.0]
+    coordinate: [608, 12.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -413,7 +425,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/64QAM/strm_data_2x2.bin"'
+    filename: '"../data/2x2/64QAM/strm_data_2x2.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -434,7 +446,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    modtype: '6'
+    modtype: mod_order
     nstrms: '2'
     usecsi: 'False'
   states:
