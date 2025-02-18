@@ -17,17 +17,18 @@
  * @param B Tensor with shape (K, N, B_batch1, B_batch2).
  * @return Output tensor AB with shape (M, N, max(A_batch1,B_batch1), max(A_batch2,B_batch2)).
  */
-CTensor4D matmul_4d(
-    const CTensor4D& A,
-    const CTensor4D& B) 
+CTensor4D
+matmul_4d(
+    const CTensor4D &A,
+    const CTensor4D &B)
 {
     // Extract dimensions for A and B
     int M = A.dimension(0); // Rows of A
-    int K = A.dimension(1); // Shared dimension
+    // int K = A.dimension(1); // Shared dimension
     int N = B.dimension(1); // Columns of B
 
     // Ensure the shared dimension matches
-    assert(K == B.dimension(0) && "The shared dimension K of A and B must match.");
+    assert(A.dimension(1) == B.dimension(0) && "The shared dimension K of A and B must match.");
 
     // Batch dimensions
     int batch_dim_A1 = A.dimension(2); // First batch dimension of A
@@ -41,12 +42,12 @@ CTensor4D matmul_4d(
 
     // Ensure broadcasting compatibility
     assert((batch_dim_A1 == batch_dim_B1 || batch_dim_A1 == 1 || batch_dim_B1 == 1) &&
-            "Batch dimensions must either match or be 1 for broadcasting.");
+        "Batch dimensions must either match or be 1 for broadcasting.");
     assert((batch_dim_A2 == batch_dim_B2 || batch_dim_A2 == 1 || batch_dim_B2 == 1) &&
-            "Batch dimensions must either match or be 1 for broadcasting.");
+        "Batch dimensions must either match or be 1 for broadcasting.");
 
     // Output tensor shape: (M, N, output_batch1, output_batch2)
-    Eigen::array<int, 4> output_shape = {M, N, output_batch1, output_batch2};
+    // Eigen::array<int, 4> output_shape = {M, N, output_batch1, output_batch2};
 
     // Dynamically create the output tensor
     CTensor4D output(M, N, output_batch1, output_batch2);
@@ -61,8 +62,10 @@ CTensor4D matmul_4d(
     CTensor4D B_broadcasted = B.broadcast(B_broadcast_shape);
 
     // Perform batch matrix multiplication
-    for (int i = 0; i < M; ++i) {
-        for (int j = 0; j < N; ++j) {
+    for (int i = 0; i < M; ++i)
+    {
+        for (int j = 0; j < N; ++j)
+        {
             // Extract A.row(i) and B.col(j)
             CTensor3D A_row = A_broadcasted.chip(i, 0); // Shape (K, batch1, batch2)
             CTensor3D B_col = B_broadcasted.chip(j, 1); // Shape (K, batch1, batch2)
@@ -79,8 +82,82 @@ CTensor4D matmul_4d(
     return output;
 }
 
+// Method to remap a 4D input tensor to the nearest QAM symbol
+/**
+ * @brief Remaps a 4D input tensor of complex values to the nearest QAM symbols.
+ * @param input_tensor The input tensor containing complex values.
+ * @return A 4D tensor of the same shape as the input, where each element is remapped to the nearest QAM symbol.
+ *
+ * The method normalizes the input real and imaginary parts by the distances between points,
+ * floors the normalized values, clips them to the valid range, and remaps them back to the QAM grid.
+ *
+ * @note Requires the Eigen library.
+ */
+CTensor4D
+remap_4d(const CTensor4D &input_tensor, int mod_ord)
+{
+    // int dim0 = input_tensor.dimension(0);
+    // int dim1 = input_tensor.dimension(1);
+    // int dim2 = input_tensor.dimension(2);
+    // int dim3 = input_tensor.dimension(3);
+    // Separate real and imaginary parts
+    Tensor4D input_real = input_tensor.real();
+    Tensor4D input_imag = input_tensor.imag();
 
+    float distance;
+    switch (mod_ord)
+    {
+        case 2: distance = 1.4142135623730951f;  // 2/sqrt(2)
+            break;
+        case 4: distance = 0.6324555320336759f; // 2/sqrt(10)
+            break;
+        case 6: distance = 0.3086066999241838f; // 2/sqrt(42)
+            break;
+        case 8: distance = 0.15339299776947407f; // 2/sqrt(170)
+        default: distance = 1.0f;
+            break;
+    }
 
+    // Normalize by distances
+    Tensor4D input_normalized_real = input_real / distance; // distance_real;
+    Tensor4D input_normalized_imag = input_imag / distance; // distance_imag;
+
+    // Floor the values
+    input_normalized_real = input_normalized_real.floor();
+    input_normalized_imag = input_normalized_imag.floor();
+
+    // Limit the values to the valid range
+    float max_value = std::pow(2, mod_ord / 2 - 1) - 1;
+    float min_value = -std::pow(2, mod_ord / 2 - 1);
+
+    // Tensor4D newValues(dim0, dim1, dim2, dim3);
+    // newValues.setConstant((max_value));
+    // input_normalized_real = (input_normalized_real > max_value).select(newValues, input_normalized_real);
+    // newValues.setConstant((min_value));
+    // input_normalized_real = (input_normalized_real < min_value).select(newValues, input_normalized_real);
+
+    // newValues.setConstant((max_value));
+    // input_normalized_imag = (input_normalized_imag > max_value).select(newValues, input_normalized_imag);
+    // newValues.setConstant((min_value));
+    // input_normalized_imag = (input_normalized_imag < min_value).select(newValues, input_normalized_imag);
+
+    // Clip values for real parts
+    input_normalized_real = input_normalized_real.cwiseMin(max_value).cwiseMax(min_value);
+
+    // Clip values for imaginary parts
+    input_normalized_imag = input_normalized_imag.cwiseMin(max_value).cwiseMax(min_value);
+
+    // Remap to QAM grid
+    Tensor4D input_remapped_real = (input_normalized_real + 0.5f) * distance; // distance_real;
+    Tensor4D input_remapped_imag = (input_normalized_imag + 0.5f) * distance; // distance_imag;
+
+    // Combine real and imaginary parts into a complex tensor
+    CTensor4D input_remapped(input_tensor.dimensions());
+    input_remapped = input_remapped_real.cast<gr_complex>() +
+        gr_complex(0.0, 1.0) * input_remapped_imag.cast<gr_complex>();
+
+    return input_remapped;
+}
 
 /**
  * @brief Perform Alamouti encoding on input symbols.
@@ -107,7 +184,9 @@ CTensor4D matmul_4d(
  * CTensor3D encoded = alamouti_encode(input);
  * @endcode
  */
-CTensor3D alamouti_encode(CTensor2D& input) {
+CTensor3D
+alamouti_encode(CTensor2D &input)
+{
 
     // Dimensions
     const int num_syms = input.dimension(0);     // Number of OFDM symbols
@@ -121,11 +200,11 @@ CTensor3D alamouti_encode(CTensor2D& input) {
 
     // Reshape input tensor: [..., num_syms/2, 1, 2]
     std::array<int, 4> reshape_dims = {2, 1, num_syms_half, subcarriers};
-    auto reshaped = Eigen::TensorMap<CTensor4D>(input.data() , reshape_dims);
+    auto reshaped = Eigen::TensorMap<CTensor4D>(input.data(), reshape_dims);
 
     // Extract first and second symbols
-    CTensor3D x_first = reshaped.chip(0,0);
-    CTensor3D x_second = reshaped.chip(1,0);
+    CTensor3D x_first = reshaped.chip(0, 0);
+    CTensor3D x_second = reshaped.chip(1, 0);
 
     // Compute conjugates and combine into Alamouti code
     CTensor4D x_t2(2, 1, num_syms_half, subcarriers);
@@ -134,16 +213,15 @@ CTensor3D alamouti_encode(CTensor2D& input) {
 
     // Concatenate along the second-to-last dimension (axis -2, i.e., the `1` in [...,num_syms/2,2,2])
     CTensor4D x_alamouti_temp(2, 2, num_syms_half, subcarriers);
-    x_alamouti_temp.chip(0,1) = reshaped.chip(0,1);
-    x_alamouti_temp.chip(1,1) = x_t2.chip(0,1);
+    x_alamouti_temp.chip(0, 1) = reshaped.chip(0, 1);
+    x_alamouti_temp.chip(1, 1) = x_t2.chip(0, 1);
 
     // Reshape to final output shape: [..., num_syms, 2]
     Eigen::array<int, 3> final_shape = {2, num_syms, subcarriers};
-    CTensor3D x_alamouti = Eigen::TensorMap<CTensor3D>(x_alamouti_temp.data(),final_shape);
+    CTensor3D x_alamouti = Eigen::TensorMap<CTensor3D>(x_alamouti_temp.data(), final_shape);
 
     return x_alamouti;
 }
-
 
 /**
  * @brief Alamouti decoder.
@@ -177,8 +255,9 @@ CTensor3D alamouti_encode(CTensor2D& input) {
  *         - h_eq: Effective channel gain of shape [num_syms, num_subcarriers].
  */
 std::tuple<CTensor2D, Tensor2D>
-alamouti_decode(const CTensor4D& r,
-                const CTensor4D& h) {
+alamouti_decode(const CTensor4D &r,
+                const CTensor4D &h)
+{
     // Dimensions
     const int M_r = r.dimension(0);                  // Number of receive antennas
     const int num_syms_half = r.dimension(2);        // num_syms / 2
@@ -200,15 +279,15 @@ alamouti_decode(const CTensor4D& r,
 
     // Step 1: Reshape z1 and z2 to [M_r, 1, num_syms_half, num_subcarriers]
     Eigen::array<int, 4> z_reshaped_dims = {M_r, 1, num_syms_half, num_subcarriers};
-    CTensor4D z1_reshaped = Eigen::TensorMap<CTensor4D>(z1.data(),z_reshaped_dims);
-    CTensor4D z2_reshaped = Eigen::TensorMap<CTensor4D>(z2.data(),z_reshaped_dims);
+    CTensor4D z1_reshaped = Eigen::TensorMap<CTensor4D>(z1.data(), z_reshaped_dims);
+    CTensor4D z2_reshaped = Eigen::TensorMap<CTensor4D>(z2.data(), z_reshaped_dims);
 
     // Step 2: Concatenate along axis 1 to produce [M_r, 2, num_syms_half, num_subcarriers]
     CTensor4D z_combined = z1_reshaped.concatenate(z2_reshaped, 1);
 
     // Step 3: Reshape concatenated tensor to [M_r, 2 * num_syms_half, num_subcarriers]
     Eigen::array<int, 3> z_combined_dims = {M_r, 2 * num_syms_half, num_subcarriers};
-    CTensor3D z_combined_reshaped = Eigen::TensorMap<CTensor3D>(z_combined.data(),z_combined_dims);
+    CTensor3D z_combined_reshaped = Eigen::TensorMap<CTensor3D>(z_combined.data(), z_combined_dims);
 
     // Step 4: Sum over receive antennas (axis 0) to get [2 * num_syms_half, num_subcarriers]
     CTensor2D z_summed = z_combined_reshaped.sum(Eigen::array<int, 1>{0});
@@ -219,39 +298,42 @@ alamouti_decode(const CTensor4D& r,
 
     // Step 1: Reshape h_eq_summed to [1, num_syms/2, num_subcarriers]
     Eigen::array<int, 3> h_eq_intermediate_dims = {1, num_syms_half, num_subcarriers};
-    Tensor3D h_eq_intermediate = Eigen::TensorMap<Tensor3D>(h_eq_summed.data(),h_eq_intermediate_dims);
+    Tensor3D h_eq_intermediate = Eigen::TensorMap<Tensor3D>(h_eq_summed.data(), h_eq_intermediate_dims);
 
     // Step 2: Concatenate with itself to form [2, num_syms/2, num_subcarriers]
     Tensor3D h_eq_duplicated = h_eq_intermediate.concatenate(h_eq_intermediate, 0);
 
     // Step 3: Reshape to final dimensions [num_syms, num_subcarriers]
     Eigen::array<int, 2> h_eq_final_dims = {num_syms_half * 2, num_subcarriers};
-    Tensor2D h_eq_reshaped = Eigen::TensorMap<Tensor2D>(h_eq_duplicated.data(),h_eq_final_dims);
-
+    Tensor2D h_eq_reshaped = Eigen::TensorMap<Tensor2D>(h_eq_duplicated.data(), h_eq_final_dims);
 
     return {z_summed, h_eq_reshaped};
 }
 
 // Function to compute the Hermitian transpose (conjugate transpose)
-CTensor4D _hermitian(const CTensor4D& matrix) {
-    Eigen::array<int, 4> shuffle_order = {1, 0, 2 , 3}; // Swap first two axes for Hermitian
+CTensor4D
+tensor_hermitian(const CTensor4D &matrix)
+{
+    Eigen::array<int, 4> shuffle_order = {1, 0, 2, 3}; // Swap first two axes for Hermitian
     return matrix.conjugate().shuffle(shuffle_order);
 }
 
 // Function to compute the inverse of a Hermitian matrix (Zero Forcing)
-CTensor4D _inv(const CTensor4D& omega_matrix) {
-    CTensor4D omega_hermitian = _hermitian(omega_matrix);
+CTensor4D
+tensor_inv(const CTensor4D &omega_matrix)
+{
+    CTensor4D omega_hermitian = tensor_hermitian(omega_matrix);
     int dim0 = omega_matrix.dimension(0);
-    int dim1 = omega_matrix.dimension(1);
-    assert(dim0 == 2 && dim1 == 2 && "Need a square matrix of size 2x2 to do the inversion");
+    // int dim1 = omega_matrix.dimension(1);
+    assert(dim0 == 2 && omega_matrix.dimension(1) == 2 && "Need a square matrix of size 2x2 to do the inversion");
     int dim2 = omega_matrix.dimension(2);
     int dim3 = omega_matrix.dimension(3);
 
     // Compute (ΩᴴΩ) and extract the first element for normalization
-    CTensor2D sigma_matrix = matmul_4d(omega_matrix,omega_hermitian).chip(0,0).chip(0,0);
+    CTensor2D sigma_matrix = matmul_4d(omega_matrix, omega_hermitian).chip(0, 0).chip(0, 0);
     CTensor4D sigma = Eigen::TensorMap<CTensor4D>(
         sigma_matrix.data(), Eigen::array<int, 4>{1, 1, dim2, dim3}
-    ).broadcast(Eigen::array<int, 4> {dim0, dim0, 1, 1});
+    ).broadcast(Eigen::array<int, 4>{dim0, dim0, 1, 1});
     return omega_hermitian / sigma; // Making use of broadcasting
 }
 
@@ -311,10 +393,11 @@ CTensor4D _inv(const CTensor4D& omega_matrix) {
  *         - `equalized_symbols`: The estimated symbols after decoding. Shape=(2, num_syms_half * 2, num_subcarriers)
  *         - `noise_enhancement`: The SNR gain per symbol. Shape=(2, num_syms_half * 2, num_subcarriers)
  */
-std::pair<CTensor3D, Tensor3D > 
-alamouti_decode_zf_double(const CTensor4D& r, 
-                          const CTensor4D& h) {
-    
+std::pair<CTensor3D, Tensor3D>
+alamouti_decode_zf_double(const CTensor4D &r,
+                          const CTensor4D &h)
+{
+
     int M_r = r.dimension(0);
     int num_syms_half = r.dimension(2);
     int num_subcarriers = r.dimension(3);
@@ -327,8 +410,8 @@ alamouti_decode_zf_double(const CTensor4D& r,
     assert(h.dimension(0) == 4 && "h must have 4 transmit antennas.");
     assert(r.dimension(0) == h.dimension(1) && "Mismatch in r and h shapes for the number of receive antennas.");
 
-    
-    Eigen::array<Eigen::IndexPair<int>, 1> product_dims = { Eigen::IndexPair<int>(1, 0) };
+
+    // Eigen::array<Eigen::IndexPair<int>, 1> product_dims = { Eigen::IndexPair<int>(1, 0) };
     // Step 1: Shuffle r to swap M_r and 2
     CTensor4D r_transposed = r.shuffle(Eigen::array<int, 4>{1, 0, 2, 3}); // Swap first two axes
     // r_transposed is of shape (2, M_r, num_syms_half, num_subcarriers)
@@ -337,92 +420,98 @@ alamouti_decode_zf_double(const CTensor4D& r,
     CTensor4D r_r_conj_temp(2, M_r, num_syms_half, num_subcarriers);
     r_r_conj_temp.chip(0, 0) = r_transposed.chip(0, 0);
     r_r_conj_temp.chip(1, 0) = r_transposed.chip(1, 0).conjugate();
-    CTensor4D r_r_conj = Eigen::TensorMap<CTensor4D>(r_r_conj_temp.data(),Eigen::array<int, 4>{2 * M_r, 1, num_syms_half, num_subcarriers});
+    CTensor4D r_r_conj = Eigen::TensorMap<CTensor4D>(r_r_conj_temp.data(),
+                                                     Eigen::array<int, 4>{2 * M_r, 1, num_syms_half, num_subcarriers});
     // r_r_conj is [r11, r21*, ... , r14, r24*] where the second index represents the receive antenna
 
     // Step 3: Shuffle h to swap M_r and 4 (transposing it)
-    CTensor4D h_trans = h.shuffle(Eigen::array<int, 4>{1, 0, 2, 3}); // new shape (M_r, 4, num_syms_half, num_subcarriers)
+    CTensor4D
+        h_trans = h.shuffle(Eigen::array<int, 4>{1, 0, 2, 3}); // new shape (M_r, 4, num_syms_half, num_subcarriers)
     CTensor4D h_trans_conj = h_trans.conjugate();
 
     // Step 4: Modify h_trans_conj for Alamouti Structure
-    CTensor4D h_modified(M_r , 4 , num_syms_half , num_subcarriers);
+    CTensor4D h_modified(M_r, 4, num_syms_half, num_subcarriers);
     h_modified.chip(0, 1) = h_trans_conj.chip(1, 1);
     h_modified.chip(1, 1) = -h_trans_conj.chip(0, 1);
     h_modified.chip(2, 1) = h_trans_conj.chip(3, 1);
     h_modified.chip(3, 1) = -h_trans_conj.chip(2, 1);
 
     // Step 5: Construct Omega matrix
-    CTensor4D Omega(2 * M_r , 4 , num_syms_half , num_subcarriers);
-    for (int i = 0; i < M_r; i++) {
+    CTensor4D Omega(2 * M_r, 4, num_syms_half, num_subcarriers);
+    for (int i = 0; i < M_r; i++)
+    {
         Omega.chip(2 * i, 0) = h_trans.chip(i, 0);
         Omega.chip(2 * i + 1, 0) = h_modified.chip(i, 0);
     }
 
     // Step 6: Construct Zero-Forcing Matrix
     CTensor4D zero_forcer(4, 2 * M_r, num_syms_half, num_subcarriers);
-    
+
     // Identity Matrix (2x2) expanded for all symbols & subcarriers
     CTensor4D Eye(2, 2, num_syms_half, num_subcarriers);
     Eye.setZero();
     // Identity diagonal elements
-    Eye.chip(0,0).chip(0,0).setConstant(gr_complex(1.0, 0.0)); // First chip -> axis 0 of Eye, second chip -> axis 1 of Eye
-    Eye.chip(1,0).chip(1,0).setConstant(gr_complex(1.0, 0.0));
-    
-    for (int i = 0; i < M_r / 2; i++) {
+    Eye.chip(0, 0).chip(0, 0).setConstant(gr_complex(1.0,
+                                                     0.0)); // First chip -> axis 0 of Eye, second chip -> axis 1 of Eye
+    Eye.chip(1, 0).chip(1, 0).setConstant(gr_complex(1.0, 0.0));
+
+    for (int i = 0; i < M_r / 2; i++)
+    {
 
         // Extract inverse submatrices
         Eigen::array<Eigen::Index, 4> offsets;
         Eigen::array<Eigen::Index, 4> extents;
-        
-        offsets = {4*i, 0, 0, 0};
-        extents = {2, 2, Omega.dimension(2),Omega.dimension(3)};
+
+        offsets = {4 * i, 0, 0, 0};
+        extents = {2, 2, Omega.dimension(2), Omega.dimension(3)};
         CTensor4D omega11 = Omega.slice(offsets, extents);
-        CTensor4D inv_omega11 = _inv(omega11);
-        
-        offsets = {4*i+2, 0, 0, 0};
+        CTensor4D inv_omega11 = tensor_inv(omega11);
+
+        offsets = {4 * i + 2, 0, 0, 0};
         CTensor4D omega12 = Omega.slice(offsets, extents);
-        
-        offsets = {4*i, 2, 0, 0};
+
+        offsets = {4 * i, 2, 0, 0};
         CTensor4D omega21 = Omega.slice(offsets, extents);
-        
-        offsets = {4*i+2, 2, 0, 0};
+
+        offsets = {4 * i + 2, 2, 0, 0};
         CTensor4D omega22 = Omega.slice(offsets, extents);
-        CTensor4D inv_omega22 = _inv(omega22);
+        CTensor4D inv_omega22 = tensor_inv(omega22);
 
         // Compute -inv_omega1 * Omega(2*i + 1, :)
         // auto neg_inv_omega1_Omega = -omega12.contract(inv_omega11, product_dims);
         CTensor4D neg_inv_omega1_Omega = -matmul_4d(omega12, inv_omega11);
-        
+
         // Compute -inv_omega2 * Omega(2*i, :)
         // CTensor4D neg_inv_omega2_Omega = -omega21.contract(inv_omega22, product_dims);
         CTensor4D neg_inv_omega2_Omega = -matmul_4d(omega21, inv_omega22);
 
         // Assign computed blocks into zero_forcer
-        offsets = {0, 4*i, 0, 0};
-        extents = {2, 2, Omega.dimension(2),Omega.dimension(3)};
+        offsets = {0, 4 * i, 0, 0};
+        extents = {2, 2, Omega.dimension(2), Omega.dimension(3)};
         zero_forcer.slice(offsets, extents) = Eye;
-        
-        offsets = {2, 4*i, 0, 0};
+
+        offsets = {2, 4 * i, 0, 0};
         zero_forcer.slice(offsets, extents) = neg_inv_omega1_Omega;
-        
-        offsets = {0, 4*i+2, 0, 0};
+
+        offsets = {0, 4 * i + 2, 0, 0};
         zero_forcer.slice(offsets, extents) = neg_inv_omega2_Omega;
 
-        offsets = {2, 4*i+2, 0, 0};
+        offsets = {2, 4 * i + 2, 0, 0};
         zero_forcer.slice(offsets, extents) = Eye;
     }
 
     // Step 7: Remove interference
     // CTensor4D r_without_interference = zero_forcer.contract(r_r_conj, product_dims); // (4 , 1 , num_syms_half, num_subcarriers)
     CTensor4D r_without_interference = matmul_4d(zero_forcer, r_r_conj);
-    
+
     // Step 8: Extract r1 and r2 using slicing
     Eigen::array<Eigen::Index, 4> offsets;
     Eigen::array<Eigen::Index, 4> extents;
 
     // Extract r1 (first two rows: indices 0 and 1)
     offsets = {0, 0, 0, 0};   // Start from row 0
-    extents = {2, r_without_interference.dimension(1), r_without_interference.dimension(2), r_without_interference.dimension(3)};
+    extents = {2, r_without_interference.dimension(1), r_without_interference.dimension(2),
+               r_without_interference.dimension(3)};
     CTensor4D r1 = r_without_interference.slice(offsets, extents); //(2 , 1 , num_syms_half, num_subcarriers)
 
     // Extract r2 (last two rows: indices 2 and 3)
@@ -431,7 +520,7 @@ alamouti_decode_zf_double(const CTensor4D& r,
 
     // Step 9: Compute new_equivalent_omega = Omega * zero_forcer
     // CTensor4D new_equivalent_omega = zero_forcer.contract(Omega, product_dims); 
-    CTensor4D new_equivalent_omega = matmul_4d(zero_forcer,Omega);
+    CTensor4D new_equivalent_omega = matmul_4d(zero_forcer, Omega);
     // (4, 2 * M_r , num_syms_half , num_subcarriers) by (2 * M_r , 4 , num_syms_half , num_subcarriers) becomes (4, 4, num_syms_half , num_subcarriers)
 
     // Step 10: Extract omega1 and omega2 using slicing
@@ -445,8 +534,8 @@ alamouti_decode_zf_double(const CTensor4D& r,
     // (2, 2, num_syms_half , num_subcarriers)
 
     // Step 11: Compute first and second cluster symbols
-    CTensor4D omega1_inv =  _inv(omega1);
-    CTensor4D omega2_inv =  _inv(omega2);
+    CTensor4D omega1_inv = tensor_inv(omega1);
+    CTensor4D omega2_inv = tensor_inv(omega2);
     // CTensor4D first_cluster_symbol = omega1_inv.contract(r1, product_dims);  // Shape: (2,1, num_syms_half , num_subcarriers))
     CTensor4D first_cluster_symbol = matmul_4d(omega1_inv, r1);
     // CTensor4D second_cluster_symbol = omega2_inv.contract(r2, product_dims);  // Shape: (2,1, num_syms_half , num_subcarriers)
@@ -455,38 +544,51 @@ alamouti_decode_zf_double(const CTensor4D& r,
 
     // Step 12: Reshape and stack results into equalized_symbols
     CTensor3D equalized_symbols(2, num_syms_half * 2, num_subcarriers);
-    equalized_symbols.chip(0, 0) = Eigen::TensorMap<CTensor2D>(first_cluster_symbol.data(),Eigen::array<int, 2>{num_syms_half * 2, num_subcarriers});
-    equalized_symbols.chip(1, 0) = Eigen::TensorMap<CTensor2D>(second_cluster_symbol.data(),Eigen::array<int, 2>{num_syms_half * 2, num_subcarriers});
+    equalized_symbols.chip(0, 0) = Eigen::TensorMap<CTensor2D>(first_cluster_symbol.data(),
+                                                               Eigen::array<int, 2>{num_syms_half * 2,
+                                                                                    num_subcarriers});
+    equalized_symbols.chip(1, 0) = Eigen::TensorMap<CTensor2D>(second_cluster_symbol.data(),
+                                                               Eigen::array<int, 2>{num_syms_half * 2,
+                                                                                    num_subcarriers});
     // Step 13: Compute noise enhancement
     // CTensor4D noise_enhancer_cov = (zero_forcer).contract(_hermitian(zero_forcer), product_dims); 
-    CTensor4D noise_enhancer_cov = matmul_4d(zero_forcer, _hermitian(zero_forcer));
+    CTensor4D noise_enhancer_cov = matmul_4d(zero_forcer, tensor_hermitian(zero_forcer));
     //                                    (4, 4, num_syms_half , num_subcarriers))
 
     offsets = {0, 0, 0, 0};   // First 2x2 block from new_equivalent_omega
     extents = {2, 2, noise_enhancer_cov.dimension(2), noise_enhancer_cov.dimension(3)};
     CTensor4D cluster1_noise_enhancer_cov = matmul_4d(omega1_inv,
-        matmul_4d(noise_enhancer_cov.slice(offsets, extents), _hermitian(omega1_inv))) ;
-    
+                                                      matmul_4d(noise_enhancer_cov.slice(offsets, extents),
+                                                                tensor_hermitian(omega1_inv)));
 
     offsets = {2, 2, 0, 0};
     CTensor4D cluster2_noise_enhancer_cov = matmul_4d(omega2_inv,
-        matmul_4d(noise_enhancer_cov.slice(offsets, extents), _hermitian(omega2_inv))) ;
+                                                      matmul_4d(noise_enhancer_cov.slice(offsets, extents),
+                                                                tensor_hermitian(omega2_inv)));
 
     CTensor3D cluster1_noise_power_temp(2, num_syms_half, num_subcarriers);
-    cluster1_noise_power_temp.chip(0,0) = cluster1_noise_enhancer_cov.chip(0,0).chip(0,0); // cluster1_noise_enhancer_cov[0,0,...]
-    cluster1_noise_power_temp.chip(1,0) = cluster1_noise_enhancer_cov.chip(1,0).chip(1,0); // cluster1_noise_enhancer_cov[1,1,...]
-    CTensor2D cluster1_noise_power = Eigen::TensorMap<CTensor2D>(cluster1_noise_power_temp.data(),Eigen::array<int, 2>{num_syms_half * 2, num_subcarriers});
+    cluster1_noise_power_temp.chip(0, 0) =
+        cluster1_noise_enhancer_cov.chip(0, 0).chip(0, 0); // cluster1_noise_enhancer_cov[0,0,...]
+    cluster1_noise_power_temp.chip(1, 0) =
+        cluster1_noise_enhancer_cov.chip(1, 0).chip(1, 0); // cluster1_noise_enhancer_cov[1,1,...]
+    CTensor2D cluster1_noise_power = Eigen::TensorMap<CTensor2D>(cluster1_noise_power_temp.data(),
+                                                                 Eigen::array<int, 2>{num_syms_half * 2,
+                                                                                      num_subcarriers});
 
     CTensor3D cluster2_noise_power_temp(2, num_syms_half, num_subcarriers);
-    cluster2_noise_power_temp.chip(0,0) = cluster2_noise_enhancer_cov.chip(0,0).chip(0,0); // cluster2_noise_enhancer_cov[0,0,...]
-    cluster2_noise_power_temp.chip(1,0) = cluster2_noise_enhancer_cov.chip(1,0).chip(1,0); // cluster2_noise_enhancer_cov[1,1,...]
-    CTensor2D cluster2_noise_power = Eigen::TensorMap<CTensor2D>(cluster2_noise_power_temp.data(),Eigen::array<int, 2>{num_syms_half * 2, num_subcarriers});
+    cluster2_noise_power_temp.chip(0, 0) =
+        cluster2_noise_enhancer_cov.chip(0, 0).chip(0, 0); // cluster2_noise_enhancer_cov[0,0,...]
+    cluster2_noise_power_temp.chip(1, 0) =
+        cluster2_noise_enhancer_cov.chip(1, 0).chip(1, 0); // cluster2_noise_enhancer_cov[1,1,...]
+    CTensor2D cluster2_noise_power = Eigen::TensorMap<CTensor2D>(cluster2_noise_power_temp.data(),
+                                                                 Eigen::array<int, 2>{num_syms_half * 2,
+                                                                                      num_subcarriers});
 
     Tensor3D both_noise_power(2, num_syms_half * 2, num_subcarriers);
-    both_noise_power.chip(0,0) = cluster1_noise_power.abs();
-    both_noise_power.chip(1,0) = cluster2_noise_power.abs();
-    
-    return {equalized_symbols, (1.0/both_noise_power)};
+    both_noise_power.chip(0, 0) = cluster1_noise_power.abs();
+    both_noise_power.chip(1, 0) = cluster2_noise_power.abs();
+
+    return {equalized_symbols, (1.0 / both_noise_power)};
 }
 
 // ZF + SIC function
@@ -540,99 +642,113 @@ alamouti_decode_zf_double(const CTensor4D& r,
  *         - `equalized_symbols`: The estimated symbols after decoding. Shape=(2, num_syms_half * 2, num_subcarriers)
  *         - `gains`: The SNR gain per symbol. Shape=(2, num_syms_half * 2, num_subcarriers)
  */
-std::pair<CTensor3D, Tensor3D> alamouti_decode_zf_sic_double(
-    CTensor3D& r, 
-    CTensor4D& h,
+std::pair<CTensor3D, Tensor3D>
+alamouti_decode_zf_sic_double(
+    CTensor3D &r,
+    CTensor4D &h,
     const int num_bits_per_symbol
 )
 {
     int M_r = r.dimension(0);
     int num_syms = r.dimension(1);
     int num_subcarriers = r.dimension(2);
-    int num_syms_half = num_syms/2;
+    int num_syms_half = num_syms / 2;
     assert(M_r % 2 == 0 && "M_r must be even.");
     assert(h.dimension(0) == 4 && "N_t (fist dimension of h) must be 4.");
     assert(h.dimension(1) == M_r && "Mismatch between M_r of the received signal and channel.");
     assert(h.dimension(2) == num_syms && "Mismatch between num_syms of the received signal and channel.");
     assert(h.dimension(3) == num_subcarriers && "Mismatch between num_subcarriers of the received signal and channel.");
 
-    CTensor4D r_reshaped = Eigen::TensorMap<CTensor4D>(r.data(), Eigen::array<int,4>{M_r, 2, num_syms_half, num_subcarriers});
+    CTensor4D r_reshaped =
+        Eigen::TensorMap<CTensor4D>(r.data(), Eigen::array<int, 4>{M_r, 2, num_syms_half, num_subcarriers});
 
     Eigen::array<int, 4> transpose_dims = {1, 0, 2, 3}; // Transpose to [N_t, M_r, num_syms, num_subcarriers]
     CTensor4D h_transposed = h.shuffle(transpose_dims);
-    Eigen::array<int, 5> reshape_dims = {4, M_r, 2, num_syms_half, num_subcarriers}; // Reshape to [N_t, M_r, 2, num_syms/2, num_subcarriers]
-    CTensor5D h_reshaped = Eigen::TensorMap<CTensor5D>(h_transposed.data(),reshape_dims);
-    CTensor4D h_avg = (h_reshaped.chip(0, 2) + h_reshaped.chip(1, 2)) / gr_complex(2.0f, 0.0f); //[N_t, M_r, num_syms/2, num_subcarriers]
-    
+    Eigen::array<int, 5> reshape_dims =
+        {4, M_r, 2, num_syms_half, num_subcarriers}; // Reshape to [N_t, M_r, 2, num_syms/2, num_subcarriers]
+    CTensor5D h_reshaped = Eigen::TensorMap<CTensor5D>(h_transposed.data(), reshape_dims);
+    CTensor4D h_avg = (h_reshaped.chip(0, 2) + h_reshaped.chip(1, 2))
+        / gr_complex(2.0f, 0.0f); //[N_t, M_r, num_syms/2, num_subcarriers]
+
     // the input r should be of shape (M_r, num_syms, num_subcarriers) where 2 represents consecutive symbols
     // the input h should be of shape (4, M_r, num_syms_half, num_subcarriers) where 4 represents N_t
-    auto [y, gains] = alamouti_decode_zf_double(r_reshaped, h_avg); // y: [2, num_syms, num_subcarriers], gains: [2, num_syms, num_subcarriers]
-    
-    CTensor2D comparison = (gains.chip(0,0) >= gains.chip(1,0)).cast<gr_complex>();
-    CTensor4D cluster0isbetter = Eigen::TensorMap<CTensor4D>(comparison.data(),Eigen::array<int, 4> {1,1,num_syms, num_subcarriers});
-    comparison = (gains.chip(0,0) < gains.chip(1,0)).cast<gr_complex>() ;
-    CTensor4D cluster1isbetter = Eigen::TensorMap<CTensor4D>(comparison.data(),Eigen::array<int, 4> {1,1,num_syms, num_subcarriers});
+    auto [y, gains] = alamouti_decode_zf_double(r_reshaped,
+                                                h_avg); // y: [2, num_syms, num_subcarriers], gains: [2, num_syms, num_subcarriers]
+
+    CTensor2D comparison = (gains.chip(0, 0) >= gains.chip(1, 0)).cast<gr_complex>();
+    CTensor4D cluster0isbetter =
+        Eigen::TensorMap<CTensor4D>(comparison.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
+    comparison = (gains.chip(0, 0) < gains.chip(1, 0)).cast<gr_complex>();
+    CTensor4D cluster1isbetter =
+        Eigen::TensorMap<CTensor4D>(comparison.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
     // shape = (num_syms_half * 2, num_subcarriers)
-    
-    QAMModulator modulator(num_bits_per_symbol);
-    
-    CTensor2D y_chipped = y.chip(0,0);
-    CTensor4D x0 = modulator.remap_4d(
-        Eigen::TensorMap<CTensor4D>(y_chipped.data(),Eigen::array<int, 4> {1,1,num_syms, num_subcarriers})
+
+    // QAMModulator modulator(num_bits_per_symbol);
+
+    CTensor2D y_chipped = y.chip(0, 0);
+    CTensor4D x0 = remap_4d(
+        Eigen::TensorMap<CTensor4D>(y_chipped.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers}),
+        num_bits_per_symbol
     );
-    
-    y_chipped = y.chip(1,0);
-    CTensor4D x1 = modulator.remap_4d(
-        Eigen::TensorMap<CTensor4D>(y_chipped.data(),Eigen::array<int, 4> {1,1,num_syms, num_subcarriers})
+
+    y_chipped = y.chip(1, 0);
+    CTensor4D x1 = remap_4d(
+        Eigen::TensorMap<CTensor4D>(y_chipped.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers}),
+        num_bits_per_symbol
     ); // TODO: Use modulator2 here
 
     CTensor4D better_x = cluster0isbetter * x0 + cluster1isbetter * x1;
     Eigen::array<Eigen::Index, 4> offsets = {0, 0, 0, 0};
-    Eigen::array<Eigen::Index, 4> extents = {h.dimension(0), 2, h.dimension(2),h.dimension(3)};
+    Eigen::array<Eigen::Index, 4> extents = {h.dimension(0), 2, h.dimension(2), h.dimension(3)};
     CTensor4D channel0 = h.slice(offsets, extents);
     offsets = {0, 2, 0, 0};
     CTensor4D channel1 = h.slice(offsets, extents);
 
-    CTensor2D better_x_reshaped = Eigen::TensorMap<CTensor2D>(better_x.data(),Eigen::array<int,2> {num_syms, num_subcarriers});
+    CTensor2D better_x_reshaped =
+        Eigen::TensorMap<CTensor2D>(better_x.data(), Eigen::array<int, 2>{num_syms, num_subcarriers});
     CTensor4D better_x_alamouti = Eigen::TensorMap<CTensor4D>(
-        alamouti_encode(better_x_reshaped).data(),Eigen::array<int,4> {2, 1 , num_syms , num_subcarriers} ); // {2, 1 , num_syms , num_subcarriers}
-    
+        alamouti_encode(better_x_reshaped).data(),
+        Eigen::array<int, 4>{2, 1, num_syms, num_subcarriers}); // {2, 1 , num_syms , num_subcarriers}
+
     CTensor4D channel_better_cluster = (
-        channel0 * cluster0isbetter.broadcast(Eigen::array<int, 4> {M_r, 2, 1, 1})+
-        channel1 * cluster1isbetter.broadcast(Eigen::array<int, 4> {M_r, 2, 1, 1})
+        channel0 * cluster0isbetter.broadcast(Eigen::array<int, 4>{M_r, 2, 1, 1}) +
+            channel1 * cluster1isbetter.broadcast(Eigen::array<int, 4>{M_r, 2, 1, 1})
     ); // {M_r, 2, num_syms, num_subcarriers}
     CTensor4D channel_worse_cluster = (
-        channel0 * cluster1isbetter.broadcast(Eigen::array<int, 4> {M_r, 2, 1, 1})+
-        channel1 * cluster0isbetter.broadcast(Eigen::array<int, 4> {M_r, 2, 1, 1})
+        channel0 * cluster1isbetter.broadcast(Eigen::array<int, 4>{M_r, 2, 1, 1}) +
+            channel1 * cluster0isbetter.broadcast(Eigen::array<int, 4>{M_r, 2, 1, 1})
     ); // {M_r, 2, num_syms, num_subcarriers}
-    
+
     CTensor4D better_cluster_effect = Eigen::TensorMap<CTensor4D>(
         matmul_4d(channel_better_cluster, better_x_alamouti).data(),
-        Eigen::array<int,4> {M_r, 2, num_syms_half, num_subcarriers}
+        Eigen::array<int, 4>{M_r, 2, num_syms_half, num_subcarriers}
     ); // {M_r, 2, num_syms_half, num_subcarriers}
 
     // Remove the effect form the received signal
     CTensor4D ry_all_new = r_reshaped - better_cluster_effect; // {M_r, 2, num_syms_half, num_subcarriers}
-    Eigen::array<int, 4> stride_array = {1, 1 , 2, 1}; // Choose every second element in the num_syms dimension
-    offsets = {0,0,1,0};
-    extents = {M_r, 2, num_syms-1, num_subcarriers};
+    Eigen::array<int, 4> stride_array = {1, 1, 2, 1}; // Choose every second element in the num_syms dimension
+    offsets = {0, 0, 1, 0};
+    extents = {M_r, 2, num_syms - 1, num_subcarriers};
     CTensor4D channel_worse_cluster_reshaped = (channel_worse_cluster.stride(stride_array) +
-     channel_worse_cluster.slice(offsets, extents).stride(stride_array))/gr_complex(2, 0); // {M_r, 2, num_syms/2, num_subcarriers}
-    
-    auto [new_y , new_SNR] = alamouti_decode(ry_all_new, channel_worse_cluster_reshaped.shuffle(Eigen::array<int,4> {1,0,2,3})) ;
-    new_y = new_y / (new_SNR.cast<gr_complex>());
-    CTensor4D new_y_reshaped = Eigen::TensorMap<CTensor4D>(new_y.data(),Eigen::array<int,4> {1, 1, num_syms, num_subcarriers}) ;
+        channel_worse_cluster.slice(offsets, extents).stride(stride_array))
+        / gr_complex(2, 0); // {M_r, 2, num_syms/2, num_subcarriers}
 
-    CTensor4D new_x =  new_y_reshaped;
+    auto [new_y, new_SNR] =
+        alamouti_decode(ry_all_new, channel_worse_cluster_reshaped.shuffle(Eigen::array<int, 4>{1, 0, 2, 3}));
+    new_y = new_y / (new_SNR.cast<gr_complex>());
+    CTensor4D new_y_reshaped =
+        Eigen::TensorMap<CTensor4D>(new_y.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
+
+    // CTensor4D new_x =  new_y_reshaped;
     // TODO: Make this modulator1 and modulator2 if the modulation order is different across clusters
-    x0 = cluster0isbetter * better_x + cluster1isbetter * new_x ;
-    x1 = cluster1isbetter * better_x + cluster0isbetter * new_x ;
+    x0 = cluster0isbetter * better_x + cluster1isbetter * new_y_reshaped;
+    x1 = cluster1isbetter * better_x + cluster0isbetter * new_y_reshaped;
 
     CTensor3D equalized_x(2, num_syms, num_subcarriers);
-    equalized_x.chip(0,0) = x0.chip(0,0).chip(0,0);
-    equalized_x.chip(1,0) = x1.chip(0,0).chip(0,0);
+    equalized_x.chip(0, 0) = x0.chip(0, 0).chip(0, 0);
+    equalized_x.chip(1, 0) = x1.chip(0, 0).chip(0, 0);
 
     return {equalized_x, gains};
     // Demodulate
-    
+
 }

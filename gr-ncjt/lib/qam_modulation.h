@@ -3,6 +3,7 @@
  * Copyright 2025 Wireless @ Virginia Tech.
  *
  */
+
 #ifndef GR_NCJT_LIB_QAM_MODULATION_H
 #define GR_NCJT_LIB_QAM_MODULATION_H
 
@@ -70,12 +71,6 @@ public:
 
     std::string
     Demodulate(const CTensor1D &input_tensor);
-
-    CTensor4D
-    remap_4d(const CTensor4D &input_tensor);
-
-    void
-    print_constl(int mord);
 
 };
 

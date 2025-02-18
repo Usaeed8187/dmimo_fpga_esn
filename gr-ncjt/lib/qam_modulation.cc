@@ -123,7 +123,7 @@ generateQAMSymbols(int k, bool normalize_power)
         {
             /// int decimalValue = grayCode2DDecimal[r][s];
             int decimalValue = grayCode2DDecimal[s][r];
-            gr_complex symbol = {2.0f * s - (m - 1), -2.0f * r + (m - 1)};
+            gr_complex symbol = {2.0f * s - (m - 1.0f), -2.0f * r + (m - 1.0f)};
             qamSymbols[decimalValue] = symbol;
         }
     }
@@ -131,7 +131,7 @@ generateQAMSymbols(int k, bool normalize_power)
     // Normalize power if required
     if (normalize_power)
     {
-        double power = 0.0;
+        float power = 0.0;
         for (const auto &symbol : qamSymbols)
         {
             power += std::norm(symbol); // Sum of absolute square values
@@ -243,69 +243,6 @@ QAMModulator::Modulate(const std::string &bit_stream)
     return symbol_stream;
 }
 
-// Method to remap a 4D input tensor to the nearest QAM symbol
-/**
- * @brief Remaps a 4D input tensor of complex values to the nearest QAM symbols.
- * @param input_tensor The input tensor containing complex values.
- * @return A 4D tensor of the same shape as the input, where each element is remapped to the nearest QAM symbol.
- *
- * The method normalizes the input real and imaginary parts by the distances between points,
- * floors the normalized values, clips them to the valid range, and remaps them back to the QAM grid.
- *
- * @note Requires the Eigen library.
- */
-CTensor4D
-QAMModulator::remap_4d(const CTensor4D &input_tensor)
-{
-    // int dim0 = input_tensor.dimension(0);
-    // int dim1 = input_tensor.dimension(1);
-    // int dim2 = input_tensor.dimension(2);
-    // int dim3 = input_tensor.dimension(3);
-    // Separate real and imaginary parts
-    Tensor4D input_real = input_tensor.real();
-    Tensor4D input_imag = input_tensor.imag();
-
-    // Normalize by distances
-    Tensor4D input_normalized_real = input_real / distance_real;
-    Tensor4D input_normalized_imag = input_imag / distance_imag;
-
-    // Floor the values
-    input_normalized_real = input_normalized_real.floor();
-    input_normalized_imag = input_normalized_imag.floor();
-
-    // Limit the values to the valid range
-    float max_value = std::pow(2, k / 2 - 1) - 1;
-    float min_value = -std::pow(2, k / 2 - 1);
-
-    // Tensor4D newValues(dim0, dim1, dim2, dim3);
-    // newValues.setConstant((max_value));
-    // input_normalized_real = (input_normalized_real > max_value).select(newValues, input_normalized_real);
-    // newValues.setConstant((min_value));
-    // input_normalized_real = (input_normalized_real < min_value).select(newValues, input_normalized_real);
-
-    // newValues.setConstant((max_value));
-    // input_normalized_imag = (input_normalized_imag > max_value).select(newValues, input_normalized_imag);
-    // newValues.setConstant((min_value));
-    // input_normalized_imag = (input_normalized_imag < min_value).select(newValues, input_normalized_imag);
-
-    // Clip values for real parts
-    input_normalized_real = input_normalized_real.cwiseMin(max_value).cwiseMax(min_value);
-
-    // Clip values for imaginary parts
-    input_normalized_imag = input_normalized_imag.cwiseMin(max_value).cwiseMax(min_value);
-
-    // Remap to QAM grid
-    Tensor4D input_remapped_real = (input_normalized_real + 0.5f) * distance_real;
-    Tensor4D input_remapped_imag = (input_normalized_imag + 0.5f) * distance_imag;
-
-    // Combine real and imaginary parts into a complex tensor
-    CTensor4D input_remapped(input_tensor.dimensions());
-    input_remapped = input_remapped_real.cast<gr_complex>() +
-        gr_complex(0.0, 1.0) * input_remapped_imag.cast<gr_complex>();
-
-    return input_remapped;
-}
-
 /**
  * @brief Demodulates an Eigen tensor of complex QAM symbols into a binary bit stream.
  * @param input_tensor The input Eigen tensor containing QAM symbols as complex numbers.
@@ -348,8 +285,7 @@ QAMModulator::Demodulate(const CTensor1D &input_tensor)
     Eigen::Tensor<int, 1> row_indices = input_normalized_imag.cast<int>();
 
     // Construct the final bit stream
-    std::string final_string = "";
-    // std::cout << "============== " << std::endl;
+    std::string final_string;
     for (int i = 0; i < dim0; i++)
     {
         // std::cout << "Integer mapped element (" << row_indices[i] << "," << col_indices[i] << ")" << std::endl ;
@@ -359,17 +295,4 @@ QAMModulator::Demodulate(const CTensor1D &input_tensor)
 
     return final_string;
 }
-
-void
-QAMModulator::print_constl(int mord)
-{
-    auto constl = generateQAMSymbols(mord, false);
-    for (auto s : constl)
-        std::cout << s << ' ';
-    std::cout << std::endl;
-}
-    
-
-
-
 
