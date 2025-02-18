@@ -84,8 +84,8 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 const gr_complex *in = (const gr_complex *) input_items[n];
                 for (int m = 0; m < 2; m++) // for all tx antennas
                 {
-                    // matrix shape (num_tx, num_rx, num_sc)
-                    // row major memory layout for Eigen
+                    // matrix shape (num_sc, num_rx, num_tx)
+                    // column major memory layout for Eigen
                     int offset = 2 * d_scnum * m + d_scnum * n + k;
                     d_chan_est[offset] = in[2 * k + m];
                 }
@@ -94,18 +94,18 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     else
         throw std::runtime_error("Channel estimation not received!");
 
-    // reshape inputs as a tensor of shape (Nsyms/2, 2, Nsc)
-    Eigen::DSizes<Eigen::Index, 4> dims(1,d_numsyms / 2, 2, d_scnum);
+    // reshape inputs as a tensor of shape (Nsc, 2, 1, Nsyms/2)
+    Eigen::DSizes<Eigen::Index, 4> dims(d_scnum, 2, 1, d_numsyms / 2);
     CTensor4D ry0 = Eigen::TensorMap<const CTensor4D>(in0 + 2 * d_scnum, dims);
     CTensor4D ry1 = Eigen::TensorMap<const CTensor4D>(in1 + 2 * d_scnum, dims);
-    CTensor4D ry = ry0.concatenate(ry1, 0);
+    CTensor4D ry = ry0.concatenate(ry1, 2); // (Nsc, 2, Nrx, Nsyms/2)
     dout << "ry size: " << ry.dimensions() << std::endl;
 
     // channel estimation
-    Eigen::DSizes<Eigen::Index, 4> chest_dims(2, 2, 1, d_scnum);
+    Eigen::DSizes<Eigen::Index, 4> chest_dims(d_scnum, 2, 2, 1);
     auto chant_est = Eigen::TensorMap<const CTensor4D>(d_chan_est, chest_dims);
-    Eigen::array<int, 4> bcast({1, 1, d_numsyms / 2, 1});
-    CTensor4D ch = chant_est.broadcast(bcast);
+    Eigen::array<int, 4> bcast({1, 1, 1, d_numsyms / 2});
+    CTensor4D ch = chant_est.broadcast(bcast); // (Nsc, Nrx, 2, Nsym/2)
     dout << "chanest size: " << ch.dimensions() << std::endl;
 
     // STBC receiver
@@ -113,48 +113,48 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     // dout << "output size: " << z.dimensions() << std::endl;
 
     // Split r into r1 and r2
-    CTensor3D r1 = ry.chip(0, 2); // Slice [num_rx, num_syms/2, num_subcarriers]
-    CTensor3D r2 = ry.chip(1, 2);
+    CTensor3D r1 = ry.chip(0, 1); // Slice [num_subcarriers, num_rx, num_syms/2]
+    CTensor3D r2 = ry.chip(1, 1);
 
     // Split h into h1 and h2
-    CTensor3D h1 = ch.chip(0, 0); // Slice [num_rx, num_syms/2, num_subcarriers]
-    CTensor3D h2 = ch.chip(1, 0);
+    CTensor3D h1 = ch.chip(0, 2); // Slice [num_subcarriers, num_rx, num_syms/2]
+    CTensor3D h2 = ch.chip(1, 2);
 
     // z1 = h1^* * r1 + h2 * r2^*
-    CTensor3D z1 = h1.conjugate() * r1 + h2 * r2.conjugate(); // [num_rx, num_syms/2, num_subcarriers]
+    CTensor3D z1 = h1.conjugate() * r1 + h2 * r2.conjugate(); // [num_subcarriers, num_rx, num_syms/2]
 
     // z2 = h2^* * r1 - h1 * r2^*
-    CTensor3D z2 = h2.conjugate() * r1 - h1 * r2.conjugate(); // [num_rx, num_syms/2, num_subcarriers]
+    CTensor3D z2 = h2.conjugate() * r1 - h1 * r2.conjugate(); // [num_subcarriers, num_rx, num_syms/2]
 
-    // Step 1: Reshape z1 and z2 to [num_rx, num_syms_half, 1, num_subcarriers]
-    Eigen::array<int, 4> z_reshaped_dims = {d_nrx, d_numsyms / 2, 1, d_scnum};
+    // Step 1: Reshape z1 and z2 to [num_subcarriers, num_rx, 1, num_syms_half]
+    Eigen::array<int, 4> z_reshaped_dims = {d_scnum, d_nrx, 1, d_numsyms / 2};
     CTensor4D z1_reshaped = Eigen::TensorMap<CTensor4D>(z1.data(), z_reshaped_dims);
     CTensor4D z2_reshaped = Eigen::TensorMap<CTensor4D>(z2.data(), z_reshaped_dims);
 
-    // Step 2: Concatenate along axis 1 to produce [num_rx, num_syms_half, 2, num_subcarriers]
+    // Step 2: Concatenate to produce [num_subcarriers, num_rx, 2, num_syms_half]
     CTensor4D z_combined = z1_reshaped.concatenate(z2_reshaped, 2);
 
-    // Step 3: Reshape concatenated tensor to [num_rx, 2 * num_syms_half, num_subcarriers]
-    Eigen::array<int, 3> z_combined_dims = {d_nrx, d_numsyms, d_scnum};
+    // Step 3: Reshape concatenated tensor to [num_subcarriers, num_rx, 2 * num_syms_half, ]
+    Eigen::array<int, 3> z_combined_dims = {d_scnum, d_nrx, d_numsyms};
     CTensor3D z_combined_reshaped = Eigen::TensorMap<CTensor3D>(z_combined.data(), z_combined_dims);
     dout << "z_combined_reshaped: " << z_combined_reshaped.dimensions() << std::endl;
 
-    // Step 4: Sum over receive antennas (axis 0) to get [2 * num_syms_half, num_subcarriers]
-    CTensor2D z_summed = z_combined_reshaped.sum(Eigen::array<int, 1>{0});
+    // Step 4: Sum over receive antennas (axis 0) to get [num_subcarriers, 2 * num_syms_half]
+    CTensor2D z_summed = z_combined_reshaped.sum(Eigen::array<int, 1>{1});
 
     // Effective channel gain
-    Tensor3D h_eq = h1.abs().pow(2) + h2.abs().pow(2); // [num_rx, num_syms/2, num_subcarriers]
-    Tensor2D h_eq_summed = h_eq.sum(Eigen::array<int, 1>{0}); // [num_syms/2, num_subcarriers]
+    Tensor3D h_eq = h1.abs().pow(2) + h2.abs().pow(2); // [num_subcarriers, num_rx, num_syms/2]
+    Tensor2D h_eq_summed = h_eq.sum(Eigen::array<int, 1>{1}); // [num_subcarriers, num_syms/2]
 
-    // Step 1: Reshape h_eq_summed to [1, num_syms/2, num_subcarriers]
-    Eigen::array<int, 3> h_eq_intermediate_dims = {1, d_numsyms / 2, d_scnum};
+    // Step 1: Reshape h_eq_summed to [num_subcarriers, num_syms/2, 1]
+    Eigen::array<int, 3> h_eq_intermediate_dims = {d_scnum, d_numsyms / 2, 1};
     Tensor3D h_eq_intermediate = Eigen::TensorMap<Tensor3D>(h_eq_summed.data(), h_eq_intermediate_dims);
 
-    // Step 2: Concatenate with itself to form [2, num_syms/2, num_subcarriers]
-    Tensor3D h_eq_duplicated = h_eq_intermediate.concatenate(h_eq_intermediate, 0);
+    // Step 2: Concatenate with itself to form [num_subcarriers, num_syms/2, 2]
+    Tensor3D h_eq_duplicated = h_eq_intermediate.concatenate(h_eq_intermediate, 2);
 
-    // Step 3: Reshape to final dimensions [num_syms, num_subcarriers]
-    Eigen::array<int, 2> h_eq_final_dims = {d_numsyms, d_scnum};
+    // Step 3: Reshape to final dimensions [num_subcarriers, num_syms]
+    Eigen::array<int, 2> h_eq_final_dims = {d_scnum, d_numsyms};
     Tensor2D h_eq_reshaped = Eigen::TensorMap<Tensor2D>(h_eq_duplicated.data(), h_eq_final_dims);
     dout << "h_eq: " << h_eq_reshaped.dimensions() << std::endl;
 
@@ -167,8 +167,8 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
             if ((d_scnum == 56) & (i == 7 || i == 21 || i == 34 || i == 48))
                 continue;
             int offset = m * d_scdata + sc_cnt;
-            out0[offset] = z_summed(m,i);
-            out1[offset] = gr_complex(h_eq_reshaped(m, i), 0.0);
+            out0[offset] = z_summed(i, m);
+            out1[offset] = gr_complex(h_eq_reshaped( i, m), 0.0);
             sc_cnt += 1;
         }
     }

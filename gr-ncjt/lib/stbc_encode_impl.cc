@@ -105,15 +105,15 @@ stbc_encode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     auto out0 = (gr_complex *) output_items[0];
     auto out1 = (gr_complex *) output_items[1];
 
-    // Reshape input as a tensor of shape (Nsyms/2, 2, Nsc)
-    Eigen::DSizes<Eigen::Index, 3> dims(d_numsyms / 2, 2, d_scnum);
+    // Reshape input as a tensor of shape (Nsc, 2, Nsyms/2)
+    Eigen::DSizes<Eigen::Index, 3> dims(d_scnum, 2, d_numsyms / 2);
     CTensor3D xin = Eigen::TensorMap<const CTensor3D>(in, dims);
 
     // Extract odd/even-index symbols
-    CTensor2D s0 = xin.chip(0, 1);  // (Nsyms/2, Nsc)
-    CTensor2D s1 = xin.chip(1, 1);  // (Nsyms/2, Nsc)
+    CTensor2D s0 = xin.chip(0, 1);  // (Nsc, Nsyms/2)
+    CTensor2D s1 = xin.chip(1, 1);  // (Nsc, Nsyms/2)
 
-    // Map output buffer as tensors of shape (Nsyms/2, 2, Nsc)
+    // Map output buffer as tensors of shape (Nsc, 2, Nsyms/2)
     auto tx0 = Eigen::TensorMap<CTensor3D>(out0, dims);
     auto tx1 = Eigen::TensorMap<CTensor3D>(out1, dims);
 
