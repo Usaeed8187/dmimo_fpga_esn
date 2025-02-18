@@ -32,7 +32,10 @@ list(APPEND ncjt_sources
     sic_detect_impl.cc
     stbc_encode_impl.cc
     stbc_decode_impl.cc
-    add_preamble_impl.cc)
+    add_preamble_impl.cc
+    qam_modulation.cc
+    stbc_sic_decode.cc
+    mc_stbc_decode_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"

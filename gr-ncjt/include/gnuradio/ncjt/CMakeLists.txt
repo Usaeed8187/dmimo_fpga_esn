@@ -29,4 +29,5 @@ install(FILES api.h
     sic_detect.h
     stbc_encode.h
     stbc_decode.h
-    add_preamble.h DESTINATION include/gnuradio/ncjt)
+    add_preamble.h
+    mc_stbc_decode.h DESTINATION include/gnuradio/ncjt)
