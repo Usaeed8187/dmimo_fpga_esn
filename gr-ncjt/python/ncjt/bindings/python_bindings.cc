@@ -42,6 +42,8 @@ namespace py = pybind11;
     void bind_stbc_decode(py::module& m);
     void bind_add_preamble(py::module& m);
     void bind_mc_stbc_decode(py::module& m);
+    void bind_srsran_ldpc_encoder(py::module& m);
+    void bind_srsran_ldpc_decoder(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -91,5 +93,7 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_stbc_decode(m);
     bind_add_preamble(m);
     bind_mc_stbc_decode(m);
+    bind_srsran_ldpc_encoder(m);
+    bind_srsran_ldpc_decoder(m);
     // ) END BINDING_FUNCTION_CALLS
 }

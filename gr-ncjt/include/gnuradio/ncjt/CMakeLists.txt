@@ -30,4 +30,6 @@ install(FILES api.h
     stbc_encode.h
     stbc_decode.h
     add_preamble.h
-    mc_stbc_decode.h DESTINATION include/gnuradio/ncjt)
+    mc_stbc_decode.h
+    srsran_ldpc_encoder.h
+    srsran_ldpc_decoder.h DESTINATION include/gnuradio/ncjt)

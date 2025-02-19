@@ -27,4 +27,6 @@ install(FILES
     ncjt_stbc_encode.block.yml
     ncjt_stbc_decode.block.yml
     ncjt_add_preamble.block.yml
-    ncjt_mc_stbc_decode.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_mc_stbc_decode.block.yml
+    ncjt_srsran_ldpc_encoder.block.yml
+    ncjt_srsran_ldpc_decoder.block.yml DESTINATION share/gnuradio/grc/blocks)

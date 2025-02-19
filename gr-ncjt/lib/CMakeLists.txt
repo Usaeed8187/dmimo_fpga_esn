@@ -10,6 +10,8 @@
 # Setup library
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+add_subdirectory(srsran_ldpc)
 list(APPEND ncjt_sources
     burst_tx_impl.cc
     pkt_detect_impl.cc
@@ -34,7 +36,9 @@ list(APPEND ncjt_sources
     stbc_decode_impl.cc
     add_preamble_impl.cc
     stbc_sic_decode.cc
-    mc_stbc_decode_impl.cc)
+    mc_stbc_decode_impl.cc
+    srsran_ldpc_encoder_impl.cc
+    srsran_ldpc_decoder_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"
@@ -47,14 +51,22 @@ endif(NOT ncjt_sources)
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 add_library(gnuradio-ncjt SHARED ${ncjt_sources})
-target_link_libraries(gnuradio-ncjt
+target_link_libraries(gnuradio-ncjt PUBLIC
 	gnuradio-filter
 	gnuradio-fft
 	Eigen3::Eigen)
 
+target_link_libraries(gnuradio-ncjt PRIVATE
+    srsran_channel_coding
+    srsran_support)
+
 target_include_directories(
     gnuradio-ncjt
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srsran_ldpc/include/>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srsran_ldpc/external>
     PUBLIC $<INSTALL_INTERFACE:include>)
 set_target_properties(gnuradio-ncjt PROPERTIES DEFINE_SYMBOL "gnuradio_ncjt_EXPORTS")
 
@@ -67,6 +79,12 @@ endif(APPLE)
 # Install built library files
 ########################################################################
 include(GrMiscUtils)
+gr_library_foo(srsran_channel_coding)
+gr_library_foo(log_likelihood_ratio)
+gr_library_foo(srsran_support)
+gr_library_foo(srsran_crc_calculator)
+gr_library_foo(srsran_ldpc)
+gr_library_foo(srsvec)
 gr_library_foo(gnuradio-ncjt)
 
 ########################################################################

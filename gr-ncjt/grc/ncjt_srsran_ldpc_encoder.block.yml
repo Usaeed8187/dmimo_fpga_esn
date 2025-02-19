@@ -1,0 +1,56 @@
+id: ncjt_srsran_ldpc_encoder
+label: LDPC encoder
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.srsran_ldpc_encoder(${mod}, ${message_length}, ${codeword_length}, ${is_input_byte}, ${debug})
+
+#  Make one 'parameters' list entry for every parameter you want settable from the GUI.
+#     Keys include:
+#     * id (makes the value accessible as keyname, e.g. in the make entry)
+#     * label (label shown in the GUI)
+#     * dtype (e.g. int, float, complex, byte, short, xxx_vector, ...)
+#     * default
+parameters:
+- id: mod
+  label: Modulation Scheme
+  dtype: string
+  default: "BPSK"
+  options: ["pi/2-BPSK", "BPSK", "QPSK", "16QAM", "64QAM", "256QAM"]
+
+- id: message_length
+  label: Message Length (bit)
+  dtype: int
+
+- id: codeword_length
+  label: Codeword Length (bit)
+  dtype: int
+
+- id: is_input_byte
+  label: Is Input Byte?
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+
+- id: debug
+  label: Debug
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: byte
+    multiplicity: "1"
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: byte
+    multiplicity: "1"
+
+#  'file_format' specifies the version of the GRC yml format used in the file
+#  and should usually not be changed.
+file_format: 1
