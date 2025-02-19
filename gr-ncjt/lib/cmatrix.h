@@ -9,9 +9,9 @@
 #include <Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>
 
-typedef Eigen::Matrix<std::complex<float>, -1, -1> CMatrixX;
-typedef Eigen::Matrix<std::complex<float>, 2, 2> CMatrix2;
-typedef Eigen::Matrix<std::complex<float>, 4, 4> CMatrix4;
+typedef Eigen::Matrix<std::complex<float>, -1, -1, Eigen::RowMajor> CMatrixX;
+typedef Eigen::Matrix<std::complex<float>, 2, 2, Eigen::RowMajor> CMatrix2;
+typedef Eigen::Matrix<std::complex<float>, 4, 4, Eigen::RowMajor> CMatrix4;
 
 typedef Eigen::Tensor<gr_complex, 1> CTensor1D;
 typedef Eigen::Tensor<gr_complex, 2> CTensor2D;
