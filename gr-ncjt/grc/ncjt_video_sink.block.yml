@@ -1,0 +1,36 @@
+id: ncjt_video_sink
+label: Video Sink
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.video_sink(${framelen}, ${debug})
+
+parameters:
+  - id: framelen
+    label: Frame Length
+    dtype: int
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: byte
+    multiplicity: '1'
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: byte
+    multiplicity: '1'
+
+asserts:
+  - ${ framelen > 0 and  framelen <= 32768 }
+
+file_format: 1

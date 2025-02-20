@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(mu_chanest.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(ac53ddfdfa441af4518e61efeca8edad) */
+/* BINDTOOL_HEADER_FILE(video_sink.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(8297a07e95e8a8fd821a391df0d7021c) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,19 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/mu_chanest.h>
+#include <gnuradio/ncjt/video_sink.h>
 // pydoc.h is automatically generated in the build directory
-#include <mu_chanest_pydoc.h>
+#include <video_sink_pydoc.h>
 
-void bind_mu_chanest(py::module &m) {
+void bind_video_sink(py::module &m) {
 
-  using mu_chanest = ::gr::ncjt::mu_chanest;
+  using video_sink = ::gr::ncjt::video_sink;
 
-  py::class_<mu_chanest, gr::tagged_stream_block, gr::block, gr::basic_block,
-             std::shared_ptr<mu_chanest>>(m, "mu_chanest", D(mu_chanest))
+  py::class_<video_sink, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<video_sink>>(m, "video_sink", D(video_sink))
 
-      .def(py::init(&mu_chanest::make), py::arg("fftsize"), py::arg("ntx"),
-           py::arg("nrx"), py::arg("nue"), py::arg("npreamblesyms"),
-           py::arg("ndatasyms"), py::arg("removecs") = false,
-           py::arg("logfreq") = 10, py::arg("debug") = false,
-           D(mu_chanest, make))
+      .def(py::init(&video_sink::make), py::arg("framelen"),
+           py::arg("debug") = false, D(video_sink, make))
 
       ;
 }

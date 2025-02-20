@@ -38,7 +38,9 @@ list(APPEND ncjt_sources
     stbc_sic_decode.cc
     mc_stbc_decode_impl.cc
     srsran_ldpc_encoder_impl.cc
-    srsran_ldpc_decoder_impl.cc)
+    srsran_ldpc_decoder_impl.cc
+    video_source_impl.cc
+    video_sink_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"

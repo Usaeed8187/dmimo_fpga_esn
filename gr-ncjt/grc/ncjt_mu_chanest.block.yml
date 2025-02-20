@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.mu_chanest(${fftsize}, ${ntx}, ${nrx}, ${nue}, ${npreamblesyms}, ${ndatasyms}, ${logfreq}, ${debug})
+  make: ncjt.mu_chanest(${fftsize}, ${ntx}, ${nrx}, ${nue}, ${npreamblesyms}, ${ndatasyms}, ${removecs}, ${logfreq}, ${debug})
 
 parameters:
   - id: fftsize
@@ -30,6 +30,11 @@ parameters:
   - id: ndatasyms
     label: Data Symobols
     dtype: int
+  - id: removecs
+    label: Remove Cyclic Shift
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
   - id: logfreq
     label: Log Frequency
     dtype: int

@@ -23,7 +23,7 @@ mc_stbc_decode_impl::mc_stbc_decode_impl(int fftsize, int ndatasyms, int npilots
     : gr::tagged_stream_block(
     "stbc_decode",
     gr::io_signature::make(2, 2, sizeof(gr_complex)),
-    gr::io_signature::make(2, 2, sizeof(gr_complex)),
+    gr::io_signature::make(2, 6, sizeof(gr_complex)),
     "packet_len"), d_debug(debug)
 {
     if (fftsize == 64)
@@ -77,6 +77,10 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     auto in1 = (const gr_complex *) input_items[1];
     auto out0 = (gr_complex *) output_items[0];
     auto out1 = (gr_complex *) output_items[1];
+    auto out2 = (gr_complex *) output_items[0];
+    auto out3 = (gr_complex *) output_items[1];
+    auto out4 = (gr_complex *) output_items[0];
+    auto out5 = (gr_complex *) output_items[1];
 
     if (ninput_items[0] < d_scnum * (4 + d_numsyms) ||
         ninput_items[1] < d_scnum * (4 + d_numsyms))

@@ -32,6 +32,7 @@ private:
     float d_noise_est;         // noise power estimation
     double d_sigpwr_sum;       // signal power sum
     double d_noise_sum;        // noise power sum
+    bool d_remove_cyclic_shift; // remove cyclic shift from channel estimation
 
     unsigned d_pilot_lsfr; // LSFR state for pilot parity sequence
     float d_cur_pilot[8][8]; // pilots for current OFDM symbol (mode 4 or 8)
@@ -92,7 +93,7 @@ protected:
 
 public:
     mu_chanest_impl(int fftsize, int ntx, int nrx, int nue, int npreamblesyms,
-                    int ndatasyms, int logfreq, bool debug);
+                    int ndatasyms, bool removecs, int logfreq, bool debug);
     ~mu_chanest_impl();
 
     int

@@ -33,7 +33,7 @@ public:
  */
     static sptr
     make(int fftsize, int ntx, int nrx, int nue, int npreamblesyms,
-         int ndatasyms, int logfreq = 10, bool debug = false);
+         int ndatasyms, bool removecs = false, int logfreq = 10, bool debug = false);
 };
 
 } // namespace gr::ncjt

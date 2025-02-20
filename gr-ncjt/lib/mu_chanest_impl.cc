@@ -14,21 +14,21 @@ namespace gr::ncjt
 
 mu_chanest::sptr
 mu_chanest::make(int fftsize, int ntx, int nrx, int nue, int npreamblesyms, int ndatasyms,
-                 int logfreq, bool debug)
+                 bool removecs, int logfreq, bool debug)
 {
     return gnuradio::make_block_sptr<mu_chanest_impl>(
-        fftsize, ntx, nrx, nue, npreamblesyms, ndatasyms, logfreq, debug);
+        fftsize, ntx, nrx, nue, npreamblesyms, ndatasyms, removecs, logfreq, debug);
 }
 
 mu_chanest_impl::mu_chanest_impl(int fftsize, int ntx, int nrx, int nue,
-                                 int npreamblesyms, int ndatasyms, int logfreq, bool debug)
+                                 int npreamblesyms, int ndatasyms, bool removecs, int logfreq, bool debug)
     : gr::tagged_stream_block(
     "mu_chanest",
     gr::io_signature::make(1, 8, sizeof(gr_complex)),
     gr::io_signature::make(1, 8, sizeof(gr_complex)),
     "packet_len"),
-      d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms),
-      d_total_frames(0), d_reset_frames(0), d_logfreq(logfreq), d_debug(debug)
+      d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_total_frames(0), d_reset_frames(0),
+      d_remove_cyclic_shift(removecs), d_logfreq(logfreq), d_debug(debug)
 {
     if (fftsize == 64)
     {
@@ -438,6 +438,16 @@ mu_chanest_impl::ltf_chan_est_2tx(gr_vector_const_void_star &input_items,
                 // H: nSTS x nRx, Pd: nSTS x nLTF, Rx: nLTF x nRx
                 Eigen::Map<CMatrix2> H(&d_chan_est[d_nss * d_ntx * cidx], 2, 2);
                 H = NORM_LTF_SEQ[cidx] * Pd * Rx;
+
+                // remove cyclic shift
+                if (d_remove_cyclic_shift)
+                    for (int s = 1; s < d_nss; s++) // for all except 1st stream
+                    {
+                        int sidx = s * d_scnum + cidx; // shift index
+                        for (int n=0; n < d_nrx; n++)
+                            H(s, n) *= d_cshift[sidx];
+                    }
+
                 // copy channel estimation for all streams per receiver antennas to individual output port
                 // (s0,r0),(s1,r0) -> ch0,  (s0,r1),(s1,r1) -> ch1
                 // using column-major memory layout, shape ()

@@ -32,4 +32,6 @@ install(FILES api.h
     add_preamble.h
     mc_stbc_decode.h
     srsran_ldpc_encoder.h
-    srsran_ldpc_decoder.h DESTINATION include/gnuradio/ncjt)
+    srsran_ldpc_decoder.h
+    video_source.h
+    video_sink.h DESTINATION include/gnuradio/ncjt)
