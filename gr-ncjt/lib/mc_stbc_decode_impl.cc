@@ -77,10 +77,6 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     auto in1 = (const gr_complex *) input_items[1];
     auto out0 = (gr_complex *) output_items[0];
     auto out1 = (gr_complex *) output_items[1];
-    auto out2 = (gr_complex *) output_items[0];
-    auto out3 = (gr_complex *) output_items[1];
-    auto out4 = (gr_complex *) output_items[0];
-    auto out5 = (gr_complex *) output_items[1];
 
     if (ninput_items[0] < d_scnum * (4 + d_numsyms) ||
         ninput_items[1] < d_scnum * (4 + d_numsyms))
@@ -116,7 +112,7 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     auto ry0 = Eigen::TensorMap<const CTensor3D>(in0 + d_ntx * d_scnum, dims);
     auto ry1 = Eigen::TensorMap<const CTensor3D>(in1 + d_ntx * d_scnum, dims);
     CTensor3D ry = ry0.concatenate(ry1, 1); // (num_sc, num_rx, num_syms)
-    Eigen::array<int, 4> ry_dims = {1, 2, 0}; // transpose to (num_rx, num_syms, num_sc)
+    Eigen::array<int, 3> ry_dims = {1, 2, 0}; // transpose to (num_rx, num_syms, num_sc)
     CTensor3D r = ry.shuffle(ry_dims);
     dout << "ry size: " << r.dimensions() << std::endl;
 

@@ -61,7 +61,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '8'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -109,7 +109,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.55e9
+    value: 2.6e9
   states:
     bus_sink: false
     bus_source: false
@@ -220,6 +220,7 @@ blocks:
     npreamblesyms: '2'
     nrx: '2'
     ntx: '2'
+    removecs: 'False'
   states:
     bus_sink: false
     bus_source: false
@@ -317,7 +318,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/2x2/256QAM/strm_data_2x2.bin"'
+    filename: '"../data/2x2/16QAM/strm_data_2x2.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -765,7 +766,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: gpsdo
+    clock_source0: external
     clock_source1: ''
     clock_source2: ''
     clock_source3: ''
@@ -838,7 +839,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"addr=192.168.40.2"'
+    dev_addr: '"addr=192.168.60.2"'
     dev_args: ''
     gain0: rx_gain
     gain1: rx_gain
@@ -1083,7 +1084,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: gpsdo
+    time_source0: external
     time_source1: ''
     time_source2: ''
     time_source3: ''
@@ -1124,4 +1125,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: v3.10.11.0-80-g0e28fd53
+  grc_version: 3.10.11.0

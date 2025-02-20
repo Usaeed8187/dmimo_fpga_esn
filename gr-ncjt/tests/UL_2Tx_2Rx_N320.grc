@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.55e9
+    value: 2.65e9
   states:
     bus_sink: false
     bus_source: false
@@ -265,6 +265,7 @@ blocks:
     nrx: '2'
     ntx: '2'
     nue: '2'
+    removecs: 'False'
   states:
     bus_sink: false
     bus_source: false
@@ -789,8 +790,8 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: gpsdo
-    clock_source1: gpsdo
+    clock_source0: external
+    clock_source1: external
     clock_source2: ''
     clock_source3: ''
     clock_source4: ''
@@ -1107,8 +1108,8 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: gpsdo
-    time_source1: gpsdo
+    time_source0: external
+    time_source1: external
     time_source2: ''
     time_source3: ''
     time_source4: ''
@@ -1150,4 +1151,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: v3.10.11.0-80-g0e28fd53
+  grc_version: 3.10.11.0

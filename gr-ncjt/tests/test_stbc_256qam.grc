@@ -73,7 +73,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"64QAM"'
+    value: '"256QAM"'
   states:
     bus_sink: false
     bus_source: false
@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '6'
+    value: '8'
   states:
     bus_sink: false
     bus_source: false

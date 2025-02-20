@@ -352,7 +352,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    debug: 'True'
+    debug: 'False'
     fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '0'

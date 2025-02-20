@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.55e9
+    value: 2.65e9
   states:
     bus_sink: false
     bus_source: false
@@ -338,6 +338,7 @@ blocks:
     nrx: '2'
     ntx: '2'
     nue: '2'
+    removecs: 'False'
   states:
     bus_sink: false
     bus_source: false
