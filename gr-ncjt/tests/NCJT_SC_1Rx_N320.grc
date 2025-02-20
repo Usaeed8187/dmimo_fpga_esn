@@ -121,7 +121,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.55e9
+    value: 2.65e9
   states:
     bus_sink: false
     bus_source: false
@@ -180,32 +180,14 @@ blocks:
     coordinate: [1360, 252.0]
     rotation: 0
     state: enabled
-- name: blocks_file_sink_0_1_0_0
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: '"/tmp/stbc_csi.bin"'
-    type: complex
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1064, 420.0]
-    rotation: 0
-    state: disabled
 - name: ncjt_mu_chanest_0
   id: ncjt_mu_chanest
   parameters:
-    affinity: ''
+    affinity: '4'
     alias: ''
     comment: ''
     debug: 'False'
-    fftsize: '64'
+    fftsize: fft_size
     logfreq: '10'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -285,13 +267,13 @@ blocks:
 - name: ncjt_pkt_err_0_0
   id: ncjt_pkt_err
   parameters:
-    affinity: ''
+    affinity: '6'
     alias: ''
     berout: 'True'
     comment: ''
     debug: 'True'
     filename: '"../data/1x1/" + modtype + "/strm_data_1x1.bin"'
-    logfreq: '10'
+    logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrms: '1'
@@ -299,13 +281,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 320.0]
+    coordinate: [1216, 304.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_demapper_0
   id: ncjt_rg_demapper
   parameters:
-    affinity: ''
+    affinity: '6'
     alias: ''
     comment: ''
     debug: 'False'
@@ -321,7 +303,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1040, 316.0]
+    coordinate: [1040, 300.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_decode_0
@@ -340,7 +322,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [856, 320.0]
+    coordinate: [848, 304.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_1
@@ -432,7 +414,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 204.0]
+    coordinate: [1040, 428.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0
@@ -535,7 +517,7 @@ blocks:
 - name: uhd_usrp_source_0
   id: uhd_usrp_source
   parameters:
-    affinity: '1'
+    affinity: '2'
     alias: ''
     ant0: '"TX/RX"'
     ant1: '"TX/RX"'
@@ -634,7 +616,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: gpsdo
+    clock_source0: external
     clock_source1: ''
     clock_source2: ''
     clock_source3: ''
@@ -707,7 +689,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"addr=192.168.40.2"'
+    dev_addr: '"addr=192.168.60.2"'
     dev_args: ''
     gain0: rx_gain
     gain1: rx_gain
@@ -952,7 +934,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: gpsdo
+    time_source0: external
     time_source1: ''
     time_source2: ''
     time_source3: ''
@@ -980,9 +962,8 @@ connections:
 - [ncjt_pkt_err_0_0, '1', qtgui_time_sink_x_0, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0, '0']
 - [ncjt_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
-- [ncjt_stbc_decode_0, '0', qtgui_const_sink_x_0_1, '0']
-- [ncjt_stbc_decode_0, '1', blocks_file_sink_0_1_0_0, '0']
 - [ncjt_stbc_decode_0, '1', ncjt_rg_demapper_0, '1']
+- [ncjt_stbc_decode_0, '2', qtgui_const_sink_x_0_1, '0']
 - [uhd_usrp_source_0, '0', ncjt_pkt_detect_0, '0']
 - [uhd_usrp_source_0, '1', ncjt_pkt_detect_0, '1']
 

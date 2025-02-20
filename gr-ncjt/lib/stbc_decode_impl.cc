@@ -21,7 +21,7 @@ stbc_decode_impl::stbc_decode_impl(int fftsize, int ndatasyms, int npilotsyms, b
     : gr::tagged_stream_block(
     "stbc_decode",
     gr::io_signature::make(2, 2, sizeof(gr_complex)),
-    gr::io_signature::make(1, 2, sizeof(gr_complex)),
+    gr::io_signature::make(1, 3, sizeof(gr_complex)),
     "packet_len"), d_debug(debug)
 {
     if (fftsize == 64)
@@ -71,6 +71,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     auto in1 = (const gr_complex *) input_items[1];
     auto out0 = (gr_complex *) output_items[0];
     auto out1 = (gr_complex *) output_items[1];
+    auto out2 = (gr_complex *) output_items[2];
 
     std::vector<gr::tag_t> d_tags;
     get_tags_in_window(d_tags, 0, 0, 1,
@@ -169,6 +170,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
             int offset = m * d_scdata + sc_cnt;
             out0[offset] = z_summed(i, m);
             out1[offset] = gr_complex(h_eq_reshaped(i, m), 0.0);
+            out2[offset] = z_summed(i, m) / h_eq_reshaped(i, m);
             sc_cnt += 1;
         }
     }
