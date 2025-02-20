@@ -96,10 +96,10 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     {
         // save channel estimation
         for (int k = 0; k < d_scnum; k++)
-            for (int n = 0; n < 2; n++) // for all rx
+            for (int n = 0; n < d_nrx; n++) // for all rx
             {
                 const gr_complex *in = (const gr_complex *) input_items[n];
-                for (int m = 0; m < 2; m++) // for all tx antennas
+                for (int m = 0; m < d_ntx; m++) // for all tx antennas
                 {
                     // matrix shape (num_rx, num_tx, num_sc)
                     // column major memory layout for Eigen
