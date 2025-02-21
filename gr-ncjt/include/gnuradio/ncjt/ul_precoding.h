@@ -19,10 +19,10 @@ namespace gr::ncjt
  *
  */
 class NCJT_API ul_precoding
-: virtual public gr::tagged_stream_block
+    : virtual public gr::tagged_stream_block
 {
 public:
-typedef std::shared_ptr <ul_precoding> sptr;
+    typedef std::shared_ptr<ul_precoding> sptr;
 
 /*!
  * \brief Return a shared_ptr to a new instance of ncjt::ul_precoding.
@@ -32,8 +32,8 @@ typedef std::shared_ptr <ul_precoding> sptr;
  * class. ncjt::ul_precoding::make is the public interface for
  * creating new instances.
  */
-static sptr
-make(int nstrms, int numsyms, bool debug);
+    static sptr
+    make(int nss, int ntx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug);
 };
 
 } // namespace gr::ncjt
