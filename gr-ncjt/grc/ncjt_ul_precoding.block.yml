@@ -4,18 +4,36 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.ul_precoding(${nstrms}, ${numsyms}, ${debug})
+  make: ncjt.ul_precoding(${nss}, ${ntx}, ${numhtsyms}, ${ndatasyms}, ${nprecodedsyms}, ${eigenmode}, ${debug})
 
 parameters:
-  - id: nstrms
+  - id: nss
     label: Number of Streams
     dtype: int
-    default: 1
+    default: 2
     options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
     hide: part
-  - id: ndatasyms
-    label: Data Symobols
+  - id: ntx
+    label: Number of Transmitter
     dtype: int
+    default: 2
+    options: [2, 4, 6, 8 ]
+    hide: part
+  - id: numhtsyms
+    label: HT Symbols
+    dtype: int
+    default: 0
+  - id: ndatasyms
+    label: Data Symbols
+    dtype: int
+  - id: nprecodedsyms
+    label: Precoded Symbols
+    dtype: int
+  - id: eigenmode
+    label: Eigen Mode Precoding
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
   - id: debug
     label: Debug
     dtype: bool
@@ -28,13 +46,15 @@ inputs:
   - label: in
     domain: stream
     dtype: complex
-    vlen: ${nstrms}
+    vlen: ${nss}
+  - label: csi
+    domain: message
+    optional: true
 
 outputs:
   - label: out
     domain: stream
     dtype: complex
-    multiplicity: ${nstrms}
-
+    multiplicity: ${ntx}
 
 file_format: 1
