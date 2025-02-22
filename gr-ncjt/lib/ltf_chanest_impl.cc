@@ -534,14 +534,15 @@ ltf_chanest_impl::csi_chan_est_nrx(gr_vector_const_void_star &input_items, int i
         Eigen::Map<CMatrixX> H(&d_chan_csi[d_ntx * d_nrx * k], d_ntx, d_nrx);
         H = NORM_LTF_SEQ[k] * d_Pd * Rx;
     }
-    // remove cyclic prefix
+    // remove cyclic shift
     for (int k = 0; k < d_scnum; k++)  // for all subcarriers
     {
         for (int n = 1; n < d_ntx; n++) // for all except 1st tx
         {
             for (int m = 0; m < d_nrx; m++) // for all rx
             {
-                int cidx = d_ntx * d_nrx * k + d_ntx * m + n; // column major indexing
+                // int cidx = d_ntx * d_nrx * k + d_ntx * m + n; // column major indexing
+                int cidx = d_ntx * d_nrx * k + d_nrx * n + m; // row major indexing
                 int sidx = n * d_scnum + k;
                 d_chan_csi[cidx] *= d_cshift[sidx];
             }
