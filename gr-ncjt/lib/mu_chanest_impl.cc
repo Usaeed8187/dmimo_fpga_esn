@@ -417,7 +417,7 @@ mu_chanest_impl::send_csi_message()
             if (d_remove_cyclic_shift)
                 for (int s = 1; s < d_ntx; s++) // for all except 1st stream
                 {
-                    int sidx = s * d_scnum + cidx; // shift index
+                    int sidx = (s % 2) * d_scnum + cidx; // shift index
                     for (int n = 0; n < d_nrx; n++) // for receive
                         H(s, n) *= d_cshift[sidx];
                 }
