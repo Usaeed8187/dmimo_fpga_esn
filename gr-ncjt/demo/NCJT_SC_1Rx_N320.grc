@@ -250,12 +250,12 @@ blocks:
     fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
-    symoffset: '12'
+    symoffset: '14'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [512, 328.0]
+    coordinate: [504, 328.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0
@@ -268,12 +268,12 @@ blocks:
     fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
-    symoffset: '12'
+    symoffset: '14'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [512, 360.0]
+    coordinate: [504, 360.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_detect_0
@@ -653,7 +653,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: ''
+    clock_source0: internal
     clock_source1: ''
     clock_source2: ''
     clock_source3: ''
@@ -984,7 +984,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [72, 264.0]
+    coordinate: [72, 256.0]
     rotation: 0
     state: enabled
 

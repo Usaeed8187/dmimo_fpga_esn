@@ -294,7 +294,7 @@ mu_chanest_impl::send_csi_message()
             unsigned int idx = (symidx + i) % d_npt;
             for (int k = 0; k < d_ntx; k++)  // for all streams
             {
-                int si = k % d_nss;  // stream index
+                int si = k % d_ntx;  // stream index
                 d_cur_pilot[k][i] = pilot_parity * basePilot[si][idx];
             }
         }
@@ -320,8 +320,10 @@ mu_chanest_impl::send_csi_message()
             for (int k = 0; k < d_nrx; k++)  // loop for all receiver antennas
             {
                 est_pilots[k][i] = 0;  // estimate received pilots
-                for (int n = 0; n < d_nss; n++) { // combining all Tx streams
-                    //est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * k + n] * d_cur_pilot[n][i];
+                for (int n = 0; n < d_ntx; n++) { // combining all Tx streams
+                    // row major layout: (num_sc, ntx, nrx)
+                    // est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * n + k] * d_cur_pilot[n][i];
+                    // row major layout: (num_sc, ntx, ntx)
                     est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * k + n] * d_cur_pilot[n][i];
                 }
                 // sum over all pilots and receiver antennas
@@ -373,8 +375,9 @@ mu_chanest_impl::send_csi_message()
                 for (int cidx = 0; cidx < d_scnum; cidx++) // carrier index
                 {
                     auto hest = normfactor * NORM_LTF_SEQ[cidx] * in[cidx];
-                    // row major layout: (num_sc, nrx, ntx)
+                    // row major layout: (num_sc, ntx, nrx)
                     // int caddr = d_ntx * d_nrx * cidx + d_ntx * sidx + m; // 1 tx stream only
+                    // row major layout: (num_sc, nrx, ntx)
                     int caddr = d_ntx * d_nrx * cidx + d_ntx * m + sidx; // 1 tx stream only
                     d_chan_est[caddr] = hest;
                     // out[output_offset + d_nrx * cidx + m] = hest; // separate stream in each port

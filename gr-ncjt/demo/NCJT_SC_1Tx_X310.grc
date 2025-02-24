@@ -165,7 +165,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '10'
+    value: '15'
     widget: counter_slider
   states:
     bus_sink: false
@@ -605,8 +605,8 @@ connections:
 - [ncjt_rg_mapper_0, '0', ncjt_stbc_encode_0, '0']
 - [ncjt_stbc_encode_0, '0', ncjt_ofdm_mod_0, '0']
 - [ncjt_stbc_encode_0, '1', ncjt_ofdm_mod_0_0, '0']
-- [ncjt_tx_framing_0, '0', uhd_usrp_sink_0, '0']
-- [ncjt_tx_framing_0, '1', uhd_usrp_sink_0, '1']
+- [ncjt_tx_framing_0, '0', uhd_usrp_sink_0, '1']
+- [ncjt_tx_framing_0, '1', uhd_usrp_sink_0, '0']
 
 metadata:
   file_format: 1
