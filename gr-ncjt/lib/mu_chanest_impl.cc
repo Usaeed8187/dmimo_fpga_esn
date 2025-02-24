@@ -286,7 +286,7 @@ mu_chanest_impl::send_csi_message()
                                          {1, 1, 1, -1, -1, 1, 1, 1},
                                          {1, 1, 1, -1, -1, 1, 1, 1}};
 
-        auto basePilot = (d_fftsize == 64) ? ((d_nss <= 2) ? basePilots4 : basePilots4 + 2) : basePilots8;
+        auto basePilot = (d_fftsize == 64) ? basePilots4 : basePilots8;
 
         // generate current pilots
         for (int i = 0; i < d_npt; i++) // for all pilot positions
@@ -294,7 +294,7 @@ mu_chanest_impl::send_csi_message()
             unsigned int idx = (symidx + i) % d_npt;
             for (int k = 0; k < d_ntx; k++)  // for all streams
             {
-                int si = k % d_ntx;  // stream index
+                int si = k % d_nrx;  // stream index
                 d_cur_pilot[k][i] = pilot_parity * basePilot[si][idx];
             }
         }
@@ -433,10 +433,10 @@ mu_chanest_impl::send_csi_message()
             out0[chanest_offset] = H(0, 0);  // s0,r0
             out0[chanest_offset + 1] = H(1, 0);  // s1,r0
             out0[chanest_offset + 2] = H(2, 0);  // s2,r0
-            out0[chanest_offset + 3] = H(3, 0);  // s3,r1
-            out1[chanest_offset] = H(0, 1);  // s2,r0
-            out1[chanest_offset + 1] = H(1, 1); // s2,r1
-            out1[chanest_offset + 2] = H(2, 1);  // s3,r1
+            out0[chanest_offset + 3] = H(3, 0);  // s3,r0
+            out1[chanest_offset] = H(0, 1);  // s0,r1
+            out1[chanest_offset + 1] = H(1, 1); // s1,r1
+            out1[chanest_offset + 2] = H(2, 1);  // s2,r1
             out1[chanest_offset + 3] = H(3, 1); // s3,r1
         }
     }

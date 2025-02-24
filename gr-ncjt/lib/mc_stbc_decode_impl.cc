@@ -109,8 +109,8 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
 
     // reshape inputs as a tensor of shape (Nsc, 1, Nsyms)
     Eigen::DSizes<Eigen::Index, 3> dims(d_scnum, 1, d_numsyms);
-    auto ry0 = Eigen::TensorMap<const CTensor3D>(in0 + d_ntx * d_scnum, dims);
-    auto ry1 = Eigen::TensorMap<const CTensor3D>(in1 + d_ntx * d_scnum, dims);
+    CTensor3D ry0 = Eigen::TensorMap<const CTensor3D>(in0 + d_ntx * d_scnum, dims);
+    CTensor3D ry1 = Eigen::TensorMap<const CTensor3D>(in1 + d_ntx * d_scnum, dims);
     CTensor3D ry = ry0.concatenate(ry1, 1); // (num_sc, num_rx, num_syms)
     Eigen::array<int, 3> ry_dims = {1, 2, 0}; // transpose to (num_rx, num_syms, num_sc)
     CTensor3D r = ry.shuffle(ry_dims);

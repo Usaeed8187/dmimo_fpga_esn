@@ -338,7 +338,7 @@ ltf_chanest_impl::update_pilots(int symidx)
                                      {1, 1, 1, -1, -1, 1, 1, 1},
                                      {1, 1, 1, -1, -1, 1, 1, 1}};
 
-    auto basePilot = (d_fftsize == 64) ? ((d_nss <= 2) ? basePilots4 : basePilots4 + 2) : basePilots8;
+    auto basePilot = (d_fftsize == 64) ? basePilots4 : basePilots8;
 
     // generate current pilots
     for (int i = 0; i < d_npt; i++) // for all pilot positions
