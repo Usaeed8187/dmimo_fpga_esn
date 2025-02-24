@@ -66,7 +66,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [496, 84.0]
+    coordinate: [376, 84.0]
     rotation: 0
     state: enabled
 - name: num_data_syms
@@ -78,7 +78,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 84.0]
+    coordinate: [160, 84.0]
     rotation: 0
     state: true
 - name: num_preamble_syms
@@ -90,7 +90,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 84.0]
+    coordinate: [464, 84.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -114,14 +114,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 84.0]
+    coordinate: [288, 84.0]
     rotation: 0
     state: enabled
 - name: rf_freq
   id: variable
   parameters:
     comment: ''
-    value: 2.65e9
+    value: 2.55e9
   states:
     bus_sink: false
     bus_source: false
@@ -138,10 +138,10 @@ blocks:
     min_len: '200'
     orient: QtCore.Qt.Horizontal
     rangeType: float
-    start: '1.0'
+    start: '0.0'
     step: '0.5'
-    stop: '60'
-    value: '45'
+    stop: '31.5'
+    value: '10'
     widget: counter_slider
   states:
     bus_sink: false
@@ -162,6 +162,24 @@ blocks:
     coordinate: [160, 12.0]
     rotation: 0
     state: enabled
+- name: blocks_file_sink_0_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: '"/tmp/chanest_s2.bin"'
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [880, 428.0]
+    rotation: 0
+    state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0_1
   id: blocks_file_sink
   parameters:
@@ -177,7 +195,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 252.0]
+    coordinate: [1368, 220.0]
+    rotation: 0
+    state: enabled
+- name: blocks_file_sink_0_1
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: '"/tmp/chanest_s1.bin"'
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 172.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0
@@ -196,12 +232,12 @@ blocks:
     nrx: '2'
     ntx: '2'
     nue: '2'
-    removecs: 'False'
+    removecs: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [640, 320.0]
+    coordinate: [648, 312.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -219,7 +255,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 336.0]
+    coordinate: [512, 328.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0
@@ -237,7 +273,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 368.0]
+    coordinate: [512, 360.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_detect_0
@@ -262,7 +298,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 324.0]
+    coordinate: [296, 316.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_0
@@ -282,7 +318,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 304.0]
+    coordinate: [1224, 296.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_demapper_0
@@ -304,7 +340,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1040, 300.0]
+    coordinate: [1048, 292.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_decode_0
@@ -323,10 +359,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 304.0]
+    coordinate: [856, 296.0]
     rotation: 0
     state: enabled
-- name: qtgui_const_sink_x_0_1
+- name: qtgui_const_sink_x_0_1_0
   id: qtgui_const_sink_x
   parameters:
     affinity: ''
@@ -415,7 +451,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1040, 428.0]
+    coordinate: [1048, 380.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0
@@ -512,7 +548,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 348.0]
+    coordinate: [1368, 340.0]
     rotation: 0
     state: true
 - name: uhd_usrp_source_0
@@ -617,7 +653,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: external
+    clock_source0: ''
     clock_source1: ''
     clock_source2: ''
     clock_source3: ''
@@ -690,7 +726,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"addr=192.168.60.2"'
+    dev_addr: '"addr=192.168.40.2"'
     dev_args: ''
     gain0: rx_gain
     gain1: rx_gain
@@ -935,7 +971,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: external
+    time_source0: ''
     time_source1: ''
     time_source2: ''
     time_source3: ''
@@ -948,12 +984,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 256.0]
+    coordinate: [72, 264.0]
     rotation: 0
     state: enabled
 
 connections:
+- [ncjt_mu_chanest_0, '0', blocks_file_sink_0_1, '0']
 - [ncjt_mu_chanest_0, '0', ncjt_stbc_decode_0, '0']
+- [ncjt_mu_chanest_0, '1', blocks_file_sink_0_0, '0']
 - [ncjt_mu_chanest_0, '1', ncjt_stbc_decode_0, '1']
 - [ncjt_ofdm_demod_0, '0', ncjt_mu_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_mu_chanest_0, '1']
@@ -964,7 +1002,7 @@ connections:
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0, '0']
 - [ncjt_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_stbc_decode_0, '1', ncjt_rg_demapper_0, '1']
-- [ncjt_stbc_decode_0, '2', qtgui_const_sink_x_0_1, '0']
+- [ncjt_stbc_decode_0, '2', qtgui_const_sink_x_0_1_0, '0']
 - [uhd_usrp_source_0, '0', ncjt_pkt_detect_0, '0']
 - [uhd_usrp_source_0, '1', ncjt_pkt_detect_0, '1']
 

@@ -25,8 +25,8 @@ namespace gr::ncjt {
             gr::io_signature::make(1, 8, sizeof(gr_complex)),
             gr::io_signature::make(1, 8, sizeof(gr_complex)),
             "packet_len"),
-              d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_total_frames(0), d_reset_frames(0),
-              d_remove_cyclic_shift(removecs), d_logfreq(logfreq), d_debug(debug) {
+              d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_remove_cyclic_shift(removecs),
+              d_total_frames(0), d_reset_frames(0), d_logfreq(logfreq), d_debug(debug) {
         if (fftsize == 64) {
             d_scnum = 56;
             d_npt = 4;
@@ -286,7 +286,7 @@ mu_chanest_impl::send_csi_message()
                                          {1, 1, 1, -1, -1, 1, 1, 1},
                                          {1, 1, 1, -1, -1, 1, 1, 1}};
 
-        auto basePilot = (d_fftsize == 64) ? ((d_nss == 2) ? basePilots4 : basePilots4 + 2) : basePilots8;
+        auto basePilot = (d_fftsize == 64) ? ((d_nss <= 2) ? basePilots4 : basePilots4 + 2) : basePilots8;
 
         // generate current pilots
         for (int i = 0; i < d_npt; i++) // for all pilot positions
@@ -320,9 +320,10 @@ mu_chanest_impl::send_csi_message()
             for (int k = 0; k < d_nrx; k++)  // loop for all receiver antennas
             {
                 est_pilots[k][i] = 0;  // estimate received pilots
-                for (int n = 0; n < d_ntx; n++)  // combining all Tx streams
-                    // est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * k + n] * d_cur_pilot[n][i];
-                    est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_nrx * n + k] * d_cur_pilot[n][i];
+                for (int n = 0; n < d_nss; n++) { // combining all Tx streams
+                    //est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * k + n] * d_cur_pilot[n][i];
+                    est_pilots[k][i] += d_chan_est[d_ntx * d_nrx * pidx + d_ntx * k + n] * d_cur_pilot[n][i];
+                }
                 // sum over all pilots and receiver antennas
                 auto *in = (const gr_complex *) input_items[k];
                 cpe_sum += in[input_offset + pidx] * std::conj(est_pilots[k][i]);
@@ -332,7 +333,7 @@ mu_chanest_impl::send_csi_message()
         // dout << "CPE estimate: " << d_cpe_phi << std::endl;
 
         // CPE compensation for received pilots and data
-        const float normfactor = sqrt(float(d_nss * d_scnum) / d_fftsize);
+        const float normfactor = sqrt(float(d_scnum) / d_fftsize);
         gr_complex cpe_comp = normfactor * std::exp(gr_complex(0, d_cpe_phi));
         for (int m = 0; m < d_nrx; m++) {
             auto *in = (const gr_complex *) input_items[m];
@@ -372,8 +373,9 @@ mu_chanest_impl::send_csi_message()
                 for (int cidx = 0; cidx < d_scnum; cidx++) // carrier index
                 {
                     auto hest = normfactor * NORM_LTF_SEQ[cidx] * in[cidx];
-                    // row major layout: (num_sc, nrx, nss)
-                    int caddr = d_ntx * d_nrx * cidx + d_ntx * sidx + m; // 1 stream only
+                    // row major layout: (num_sc, nrx, ntx)
+                    // int caddr = d_ntx * d_nrx * cidx + d_ntx * sidx + m; // 1 tx stream only
+                    int caddr = d_ntx * d_nrx * cidx + d_ntx * m + sidx; // 1 tx stream only
                     d_chan_est[caddr] = hest;
                     // out[output_offset + d_nrx * cidx + m] = hest; // separate stream in each port
                     // row major layout: (nss, num_sc)

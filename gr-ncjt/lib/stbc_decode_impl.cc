@@ -72,6 +72,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     auto out0 = (gr_complex *) output_items[0];
     auto out1 = (gr_complex *) output_items[1];
     auto out2 = (gr_complex *) output_items[2];
+    bool output_constl = (output_items.size() > 2);
 
     std::vector<gr::tag_t> d_tags;
     get_tags_in_window(d_tags, 0, 0, 1,
@@ -170,7 +171,8 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
             int offset = m * d_scdata + sc_cnt;
             out0[offset] = z_summed(i, m);
             out1[offset] = gr_complex(h_eq_reshaped(i, m), 0.0);
-            out2[offset] = z_summed(i, m) / h_eq_reshaped(i, m);
+            if (output_constl)
+                out2[offset] = z_summed(i, m) / h_eq_reshaped(i, m);
             sc_cnt += 1;
         }
     }
