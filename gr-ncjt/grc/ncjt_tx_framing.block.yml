@@ -4,18 +4,17 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.tx_framing(${nstrm}, ${ndatasyms}, ${filename}, ${fs}, ${duration}, ${starttime}, ${padding}, ${debug})
-
+  make: ncjt.tx_framing(${ntx}, ${ndatasyms}, ${filename}, ${fs}, ${pktspersec}, ${starttime}, ${padding}, ${txcal}, ${debug})
 
 parameters:
-  - id: nstrm
-    label: Number of Streams
+  - id: ntx
+    label: Number of Transmitter
     dtype: int
     default: 1
     options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
     hide: part
   - id: ndatasyms
-    label: Data Symobols
+    label: Data Symbols
     dtype: int
   - id: filename
     label: Beacon Data
@@ -25,19 +24,26 @@ parameters:
     label: Sampling Freq.
     dtype: real
     default: '1e6'
-  - id: duration
-    label: Repeat Duration
-    dtype: real
-    default: '1.0'
+  - id: pktspersec
+    label: Packet Per Second
+    dtype: int
+    default: '8'
   - id: starttime
     label: Start Time
-    dtype: int
-    default: '2'
+    dtype: real
+    default: '2.0'
     hide: part
   - id: padding
     label: Padding
     dtype: int
     default: 500
+    hide: part
+  - id: txcal
+    label: Tx Calibration
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
     hide: part
   - id: debug
     label: Debug
@@ -48,15 +54,21 @@ parameters:
     hide: part
 
 inputs:
+  - label: txen
+    domain: message
+    optional: true
+  - label: rxtime
+    domain: message
+    optional: true
   - label: in
     domain: stream
     dtype: complex
-    multiplicity: ${nstrm}
+    multiplicity: ${ntx}
 
 outputs:
   - label: out
     domain: stream
     dtype: complex
-    multiplicity: ${nstrm}
+    multiplicity: ${ntx}
 
 file_format: 1
