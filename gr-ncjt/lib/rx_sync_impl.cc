@@ -21,23 +21,23 @@ rx_sync::sptr
 rx_sync::make(int nchans, int preamblelen, int dataframelen,
               double samplerate, int pktspersec,
               double acorr_thrd, double xcorr_thrd,
-              int max_corr_len, bool gnbrx, bool debug)
+              int max_corr_len, bool enable_p3, bool gnbrx, bool debug)
 {
     return gnuradio::make_block_sptr<rx_sync_impl>(
         nchans, preamblelen, dataframelen, samplerate, pktspersec, acorr_thrd,
-        xcorr_thrd, max_corr_len, gnbrx, debug);
+        xcorr_thrd, max_corr_len, enable_p3, gnbrx, debug);
 }
 
 rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen,
                            double samplerate, int pktspersec,
                            double acorr_thrd, double xcorr_thrd,
-                           int max_corr_len, bool gnbrx, bool debug)
+                           int max_corr_len, bool enable_p3, bool gnbrx, bool debug)
     : gr::block("rx_sync",
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex)),
-                gr::io_signature::make(nchans, nchans, sizeof(gr_complex))),
+                gr::io_signature::make(nchans, 2 * nchans, sizeof(gr_complex))),
       d_sampling_freq(samplerate), d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd),
-      d_max_corr_len(max_corr_len),
-      d_rx_ready_cnt(0), d_gnbrx(gnbrx), d_frame_start(0), d_prev_frame_count(0), d_prev_frame_time(0.0),
+      d_max_corr_len(max_corr_len), d_rx_ready_cnt(0), d_enable_p3(enable_p3), d_gnbrx(gnbrx),
+      d_frame_start(0), d_prev_frame_count(0), d_prev_frame_time(0.0),
       d_xcorr_fir(gr::filter::kernel::fir_filter_ccc(LTF_SEQ)), d_debug(debug)
 {
     if (nchans < 1 || nchans > MAX_CHANS)
@@ -75,6 +75,7 @@ rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen,
     d_fine_foe_comp = 0.0;
     d_fine_foe_cnt = 0;
     d_current_foe_comp = 0.0;
+    d_first_frame = true;
 
     message_port_register_out(pmt::mp("uhdcmd"));
     message_port_register_out(pmt::mp("rxtime"));
@@ -205,6 +206,8 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             d_frame_start = nitems_read(0) + start_pos;
             dout << "Packet start at " << d_frame_start << std::endl;
             consume_each(start_pos);
+            for (int ch = 0; ch < 2 * d_num_chans; ch++)
+                produce(ch, 0);
             d_state = FINESYNC;
             break;
         }
@@ -230,14 +233,22 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             d_frame_start = nitems_read(0) + htsig_start;
             dout << "Frame start at " << d_frame_start << std::endl;
             d_data_samples = 0;
-            d_state = DEFRAME;
+            //d_state = DEFRAME;
             send_tagcmd();
+            if (d_first_frame)
+                d_state = DEFRAME;
+            else
+                d_state = P3FRAME;
+            d_first_frame = !d_first_frame;
 
             consume_each(htsig_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
             if (d_rx_ready_cnt == 9) // changing to ready state
                 send_rxstate(true);
             if (d_rx_ready_cnt < 100)
                 d_rx_ready_cnt += 1;
+            for (int ch = 0; ch < 2 * d_num_chans; ch++)
+                produce(ch, 0);
+
             break;
         }
         case DEFRAME:
@@ -254,7 +265,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
                 for (int ch = 0; ch < d_num_chans; ch++)
                     add_item_tag(ch,
-                                 nitems_written(0),
+                                 nitems_written(ch),
                                  pmt::string_to_symbol("frame_start"),
                                  pmt::from_long(d_frame_len),
                                  pmt::string_to_symbol(name()));
@@ -274,6 +285,54 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
 
             check_rxtime(noutput_samples);
             consume_each(noutput_samples);
+            for (int ch = 0; ch < d_num_chans; ch++)
+            {
+                produce(ch, noutput_samples);
+                produce(d_num_chans + ch, 0);
+            }
+
+            break;
+        }
+        case P3FRAME:
+        {
+            noutput_samples = std::min(min_input_items, noutput_items);
+            if (d_data_samples + noutput_samples >= d_frame_len)
+            {
+                noutput_samples = d_frame_len - d_data_samples;
+                d_state = WAIT;
+            }
+
+            // add packet frame start tag
+            if (d_data_samples == 0)
+            {
+                for (int ch = d_num_chans; ch < 2 * d_num_chans; ch++)
+                    add_item_tag(ch,
+                                 nitems_written(ch),
+                                 pmt::string_to_symbol("frame_start"),
+                                 pmt::from_long(d_frame_len),
+                                 pmt::string_to_symbol(name()));
+            }
+
+            for (int i = 0; i < noutput_samples; i++)
+            {
+                gr_complex comp_val = exp(gr_complex(0, d_current_foe_comp * (double) d_data_samples));
+                for (int ch = 0; ch < d_num_chans; ch++)
+                {
+                    auto in = (const gr_complex *) input_items[ch];
+                    auto out = (gr_complex *) output_items[d_num_chans + ch];
+                    out[i] = in[i] * comp_val;
+                }
+                d_data_samples += 1;
+            }
+
+            check_rxtime(noutput_samples);
+            consume_each(noutput_samples);
+            for (int ch = 0; ch < d_num_chans; ch++)
+            {
+                produce(ch, 0);
+                produce(d_num_chans + ch, noutput_samples);
+            }
+
             break;
         }
         case WAIT:
@@ -289,11 +348,13 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_wait_count < 2048)
                 check_rxtime(noutput_samples);
             consume_each(min_input_items);
+            for (int ch = 0; ch < 2 * d_num_chans; ch++)
+                produce(ch, 0);
             break;
         }
     }
 
-    return noutput_samples;
+    return WORK_CALLED_PRODUCE;
 }
 
 void

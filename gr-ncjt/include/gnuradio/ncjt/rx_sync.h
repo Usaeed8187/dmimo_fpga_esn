@@ -32,7 +32,7 @@ namespace gr::ncjt {
          */
         static sptr make(int nchans, int npreamblesyms, int ndatasyms,
                          double sampling_freq, int pktspersec, double acorr_thrd,
-                         double xcorr_thrd, int max_corr_len, bool gnbrx,
+                         double xcorr_thrd, int max_corr_len, bool enable_p3, bool gnbrx,
                          bool debug = false);
     };
 

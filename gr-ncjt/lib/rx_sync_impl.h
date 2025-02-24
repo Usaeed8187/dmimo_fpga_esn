@@ -37,8 +37,9 @@ private:
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
     int d_rx_ready_cnt;  // receiver synchronization counter
-    bool d_rx_demod_en;  // receiver demodulation enabled
     bool d_gnbrx;  // gNB receiver mode
+    bool d_enable_p3; // enable p3 reception
+    bool d_first_frame; // first frame (p3)
 
     float *d_pwrest_buf;
     gr_complex *d_corr_buf;
@@ -63,7 +64,7 @@ private:
 
     enum
     {
-        SEARCH, FINESYNC, DEFRAME, WAIT
+        SEARCH, FINESYNC, DEFRAME, P3FRAME, WAIT
     } d_state;
 
     int
@@ -87,7 +88,7 @@ private:
 public:
     rx_sync_impl(int nchans, int npreamblesyms, int ndatasyms,
                  double sampling_freq, int pktspersec, double acorr_thrd,
-                 double xcorr_thrd, int max_corr_len, bool gnbrx, bool debug);
+                 double xcorr_thrd, int max_corr_len, bool enable_p3, bool gnbrx, bool debug);
 
     ~rx_sync_impl();
 

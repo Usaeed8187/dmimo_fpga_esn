@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${gnbrx}, ${debug})
+  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${enablep3}, ${gnbrx}, ${debug})
 
 parameters:
   - id: nchans
@@ -41,6 +41,13 @@ parameters:
     label: Search Window
     dtype: int
     default: '4000'
+  - id: enablep3
+    label: Phase 3 Rx
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
   - id: gnbrx
     label: gNB Rx
     dtype: bool
@@ -63,10 +70,16 @@ inputs:
     multiplicity: ${nchans}
 
 outputs:
-  - label: out
+  - label: out1
     domain: stream
     dtype: complex
     multiplicity: ${nchans}
+  - label: out2
+    domain: stream
+    dtype: complex
+    multiplicity: ${nchans}
+    optional: true
+    hide: ${not enablep3}
   - label: uhdcmd
     domain: message
     optional: true

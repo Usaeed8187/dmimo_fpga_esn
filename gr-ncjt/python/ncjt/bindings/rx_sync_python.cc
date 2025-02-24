@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(rx_sync.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(2286487f00fe6b6abfbd7c4bed6289b7) */
+/* BINDTOOL_HEADER_FILE_HASH(0a4491665ab01b98bbf676f9c353dfc1) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,11 +36,12 @@ void bind_rx_sync(py::module &m) {
   py::class_<rx_sync, gr::block, gr::basic_block, std::shared_ptr<rx_sync>>(
       m, "rx_sync", D(rx_sync))
 
-      .def(
-          py::init(&rx_sync::make), py::arg("nchans"), py::arg("npreamblesyms"),
-          py::arg("ndatasyms"), py::arg("sampling_freq"), py::arg("pktspersec"),
-          py::arg("acorr_thrd"), py::arg("xcorr_thrd"), py::arg("max_corr_len"),
-          py::arg("gnbrx"), py::arg("debug") = false, D(rx_sync, make))
+      .def(py::init(&rx_sync::make), py::arg("nchans"),
+           py::arg("npreamblesyms"), py::arg("ndatasyms"),
+           py::arg("sampling_freq"), py::arg("pktspersec"),
+           py::arg("acorr_thrd"), py::arg("xcorr_thrd"),
+           py::arg("max_corr_len"), py::arg("enable_p3"), py::arg("gnbrx"),
+           py::arg("debug") = false, D(rx_sync, make))
 
       ;
 }
