@@ -40,7 +40,8 @@ list(APPEND ncjt_sources
     srsran_ldpc_encoder_impl.cc
     srsran_ldpc_decoder_impl.cc
     video_source_impl.cc
-    video_sink_impl.cc)
+    video_sink_impl.cc
+    ul_precoding_offline_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"
@@ -103,7 +104,9 @@ include(GrTest)
 # If your unit tests require special include paths, add them here
 #include_directories()
 # List all files that contain Boost.UTF unit tests here
-list(APPEND test_ncjt_sources)
+
+list(APPEND test_ncjt_sources
+)
 # Anything we need to link to for the unit tests go here
 list(APPEND GR_TEST_TARGET_DEPS gnuradio-ncjt)
 

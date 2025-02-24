@@ -20,8 +20,10 @@ class ul_precoding_impl : public ul_precoding
 private:
     const int SC_NUM = 56; // Number of valid subcarriers
     int d_nss;  // Number of spatial streams
-    int d_ntx;  // Number of transmitter antennas
-    int d_num_symbols;
+    int d_ul_ntx;  // Number of uplink transmitter antennas
+    int d_dl_ntx;  // Number of downlink transmitter antennas
+    int d_dl_nrx;  // Number of downlink transmitter antennas
+      int d_num_symbols;
     int d_num_precoded_syms;
     bool d_eigenmode_precoding;
 
@@ -57,7 +59,7 @@ protected:
     update_eigenmode_precoding(gr_complex *csidata);
 
 public:
-    ul_precoding_impl(int nss, int ntx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug);
+    ul_precoding_impl(int nss, int ul_ntx, int dl_ntx, int dl_nrx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug);
     ~ul_precoding_impl();
 
     int

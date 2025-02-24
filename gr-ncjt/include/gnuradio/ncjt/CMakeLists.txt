@@ -34,4 +34,5 @@ install(FILES api.h
     srsran_ldpc_encoder.h
     srsran_ldpc_decoder.h
     video_source.h
-    video_sink.h DESTINATION include/gnuradio/ncjt)
+    video_sink.h
+    ul_precoding_offline.h DESTINATION include/gnuradio/ncjt)

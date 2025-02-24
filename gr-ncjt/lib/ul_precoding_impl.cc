@@ -14,25 +14,31 @@ namespace gr::ncjt
 {
 
 ul_precoding::sptr
-ul_precoding::make(int nss, int ntx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode,  bool debug)
+ul_precoding::make(int nss, int ul_ntx, int dl_ntx, int dl_nrx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode,  bool debug)
 {
-    return gnuradio::make_block_sptr<ul_precoding_impl>(nss, ntx, numhtsyms, numdatasyms, numprecodedsyms, eigenmode, debug);
+    return gnuradio::make_block_sptr<ul_precoding_impl>(nss, ul_ntx, dl_ntx, dl_nrx, numhtsyms, numdatasyms, numprecodedsyms, eigenmode, debug);
 }
 
-ul_precoding_impl::ul_precoding_impl(int nss, int ntx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug)
+ul_precoding_impl::ul_precoding_impl(int nss, int ul_ntx, int dl_ntx, int dl_nrx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug)
     : gr::tagged_stream_block(
     "ul_precoding",
     gr::io_signature::make(1, 1, nss * sizeof(gr_complex)),
-    gr::io_signature::make(ntx, ntx, sizeof(gr_complex)), "packet_len"),
+    gr::io_signature::make(ul_ntx, ul_ntx, sizeof(gr_complex)), "packet_len"),
       d_debug(debug)
 {
     if (nss < 1 || nss > 8)
         throw std::runtime_error("only support 1 to 8 streams");
     d_nss = nss;
-    if (ntx != 2 && ntx != 4 && ntx != 6 && ntx != 8)
+    if (ul_ntx != 2 && ul_ntx != 4 && ul_ntx != 6 && ul_ntx != 8)
         throw std::runtime_error("only support 2/4/6/8 transmitter antennas");
-    d_ntx = ntx;
-    if (nss > ntx)
+    if (dl_ntx != 2 && dl_ntx != 4 && dl_ntx != 6 && dl_ntx != 8)
+        throw std::runtime_error("only support 2/4/6/8 transmitter antennas");
+    if (dl_nrx != 2 && dl_nrx != 4 && dl_nrx != 6 && dl_nrx != 8)
+        throw std::runtime_error("only support 2/4/6/8 transmitter antennas");
+    d_ul_ntx = ul_ntx;
+    d_dl_ntx = dl_ntx;
+    d_dl_nrx = dl_nrx;
+    if (nss > ul_ntx)
         throw std::runtime_error("number of streams must not larger than number of antennas");
 
     d_num_symbols = numhtsyms + numdatasyms;
@@ -70,16 +76,16 @@ ul_precoding_impl::process_csi_message(const pmt::pmt_t &msg)
     if (pmt::dict_has_key(csi_meta, pmt::mp("reset")))
     {
         for (int k = 0; k < SC_NUM; k++)
-            for (int m = 0; m < d_nss; m++)
-                for (int n = 0; n < d_ntx; n++)
-                    d_map_matrix[k * d_nss * d_ntx + d_ntx * m + n] = (n == m) ? 1.0 : 0.0;
+            for (int m = 0; m < d_dl_nrx; m++)
+                for (int n = 0; n < d_dl_ntx; n++)
+                    d_map_matrix[k * d_dl_nrx * d_dl_ntx + d_dl_ntx * m + n] = (n == m) ? 1.0 : 0.0;
         return;
     }
     else if (!pmt::dict_has_key(csi_meta, pmt::mp("csi")))
         throw std::runtime_error("invalid CSI data format");
 
     int dlen = (int) pmt::blob_length(csi_blob) / sizeof(gr_complex);
-    if (dlen != d_ntx * d_nss * SC_NUM)
+    if (dlen != d_dl_ntx * d_dl_nrx * SC_NUM)
     {
         dout << "CSI data length: " << dlen << std::endl;
         throw std::runtime_error("invalid CSI data length");
@@ -100,15 +106,15 @@ ul_precoding_impl::update_svd_precoding(gr_complex *csidata)
     for (int k = 0; k < SC_NUM; k++)  // for all subcarriers
     {
         // Map CSI data
-        Eigen::Map<Eigen::MatrixXcf> H(&csidata[d_ntx * d_nss * k], d_ntx, d_nss);  // (Ntx x Nss)
+        Eigen::Map<Eigen::MatrixXcf> H(&csidata[d_dl_ntx * d_dl_nrx * k], d_dl_ntx, d_dl_nrx);  // (Ntx x Nss)
 
         // Generate SVD precoding matrix
         Eigen::JacobiSVD<Eigen::MatrixXcf> svd;
-        svd.compute(H.transpose(), Eigen::ComputeFullV | Eigen::ComputeFullU);
-        Eigen::MatrixXcf V(d_ntx, d_ntx);
+        svd.compute(H, Eigen::ComputeFullV | Eigen::ComputeFullU);
+        Eigen::MatrixXcf V(d_dl_nrx, d_dl_nrx);
         V = svd.matrixV();
 
-        Eigen::Map<Eigen::MatrixXcf> W(&d_map_matrix[d_ntx * d_nss * k], d_ntx, d_nss);
+        Eigen::Map<Eigen::MatrixXcf> W(&d_map_matrix[d_dl_ntx * d_dl_nrx * k], d_dl_ntx, d_dl_nrx);
         W = V(Eigen::all, Eigen::seq(0, d_nss - 1));
     }
 }
@@ -124,18 +130,18 @@ ul_precoding_impl::update_eigenmode_precoding(gr_complex *csidata)
     for (int k = 0; k < SC_NUM; k++)  // for all subcarriers
     {
         // Map CSI data
-        Eigen::Map<Eigen::MatrixXcf> H(&csidata[d_ntx * d_nss * k], d_ntx, d_nss);  // (Ntx x Nss)
+        Eigen::Map<Eigen::MatrixXcf> H(&csidata[d_dl_ntx * d_dl_nrx * k], d_dl_ntx, d_dl_nrx);  // (Ntx x Nss)
 
         // Generate eigen-mode precoding matrix
         Eigen::JacobiSVD<Eigen::MatrixXcf> svd;
         svd.compute(H.transpose(), Eigen::ComputeFullV | Eigen::ComputeFullU);
-        Eigen::MatrixXcf V(d_ntx, d_ntx);
+        Eigen::MatrixXcf V(d_ul_ntx, d_ul_ntx);
         V = svd.matrixV();
         // Select dominant eigenmode (first column of V) for rank-1 transmission
         Eigen::MatrixXcf V1 = V.col(0);  // [Ntx1] for rank-1 transmission
 
-        Eigen::Map<Eigen::MatrixXcf> W(&d_map_matrix[d_ntx * d_nss * k], d_ntx, d_nss);
-        W = V(Eigen::all, Eigen::seq(0, d_nss - 1));
+        Eigen::Map<Eigen::MatrixXcf> W(&d_map_matrix[d_dl_ntx * d_dl_nrx * k], d_dl_ntx, d_dl_nrx);
+        W = V1(Eigen::all, Eigen::seq(0, d_nss - 1));
     }
 }
 
@@ -151,9 +157,9 @@ ul_precoding_impl::work(int noutput_items, gr_vector_int &ninput_items,
         throw std::runtime_error("input data length not correct");
 
     // Apply spatial mapping
-    if (d_nss == 2 && d_ntx == 2)
+    if (d_nss == 2 && d_ul_ntx == 2)
         apply_mapping_2tx(input_items, output_items);
-    else if (d_nss == 4 && d_ntx == 4)
+    else if (d_nss == 4 && d_ul_ntx == 4)
         apply_mapping_4tx(input_items, output_items);
     else
         apply_mapping_ntx(input_items, output_items);
@@ -171,12 +177,12 @@ ul_precoding_impl::apply_mapping_2tx(gr_vector_const_void_star &input_items,
 
     for (int n = 0; n < d_num_symbols; n++)
     {
-        int mtx_size = d_nss * d_ntx;
-        Eigen::Matrix2cf Y(d_ntx, 1);  // (Nt, 1)
+        int mtx_size = d_dl_ntx * d_dl_nrx;
+        Eigen::Matrix2cf Y(d_ul_ntx, 1);  // (Nt, 1)
         for (int k = 0; k < SC_NUM; k++)
         {
             Eigen::Map<const Eigen::Matrix2cf> X(&in[n * d_nss * SC_NUM + d_nss * k], d_nss, 1); // (Nss, 1)
-            Eigen::Map<Eigen::Matrix2cf> Q(&d_map_matrix[mtx_size * k], d_ntx, d_nss); // (Nt, Nss)
+            Eigen::Map<Eigen::Matrix2cf> Q(&d_map_matrix[mtx_size * k], d_ul_ntx, d_nss); // (Nt, Nss)
             Y = Q * X;
             out0[n * SC_NUM + k] = Y(0, 0);
             out1[n * SC_NUM + k] = Y(1, 0);
@@ -219,14 +225,14 @@ ul_precoding_impl::apply_mapping_ntx(gr_vector_const_void_star &input_items,
 
     for (int n = 0; n < d_num_precoded_syms; n++)
     {
-        int mtx_size = d_nss * d_ntx;
-        Eigen::MatrixXcf Y(d_ntx, 1);  // (Nt, 1)
+        int mtx_size = d_dl_ntx * d_dl_nrx;
+        Eigen::MatrixXcf Y(d_ul_ntx, 1);  // (Nt, 1)
         for (int k = 0; k < SC_NUM; k++)
         {
             Eigen::Map<Eigen::MatrixXcf> X(&in[n * d_nss * SC_NUM + d_nss * k], d_nss, 1); // (Nss, 1)
-            Eigen::Map<Eigen::MatrixXcf> Q(&d_map_matrix[mtx_size * k], d_ntx, d_nss); // (Nt, Nss)
+            Eigen::Map<Eigen::MatrixXcf> Q(&d_map_matrix[mtx_size * k], d_ul_ntx, d_nss); // (Nt, Nss)
             Y = Q * X;  // (Nt,Nss) * (Nss,1)
-            for (int ss = 0; ss < d_ntx; ss++)
+            for (int ss = 0; ss < d_ul_ntx; ss++)
             {
                 auto out = (gr_complex *) output_items[ss];
                 out[n * SC_NUM + k] = Y(ss, 0);
@@ -246,7 +252,7 @@ ul_precoding_impl::apply_mapping_ntx(gr_vector_const_void_star &input_items,
                 auto out = (gr_complex *) output_items[ss];
                 out[n * SC_NUM + k] = in[n * d_nss * SC_NUM + d_nss * k + ss];
             }
-            for (int ss = d_nss; ss < d_ntx; ss++)
+            for (int ss = d_nss; ss < d_ul_ntx; ss++)
             {
                 auto out = (gr_complex *) output_items[ss];
                 out[n * SC_NUM + k] = gr_complex(0, 0);

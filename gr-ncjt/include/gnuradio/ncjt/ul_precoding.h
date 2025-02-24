@@ -33,7 +33,7 @@ public:
  * creating new instances.
  */
     static sptr
-    make(int nss, int ntx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug);
+    make(int nss, int ul_ntx, int dl_ntx, int dl_nrx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug);
 };
 
 } // namespace gr::ncjt

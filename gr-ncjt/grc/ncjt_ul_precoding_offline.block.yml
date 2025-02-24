@@ -1,10 +1,10 @@
-id: ncjt_ul_precoding
-label: UL Precoding
+id: ncjt_ul_precoding_offline
+label: UL Precoding Offline
 category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.ul_precoding(${nss}, ${ul_ntx}, ${dl_ntx}, ${dl_nrx}, ${numhtsyms}, ${ndatasyms}, ${nprecodedsyms}, ${eigenmode}, ${debug})
+  make: ncjt.ul_precoding_offline(${nss}, ${ul_ntx}, ${dl_ntx}, ${dl_nrx}, ${numhtsyms}, ${ndatasyms}, ${nprecodedsyms}, ${eigenmode}, ${filename}, ${debug})
 
 parameters:
   - id: nss
@@ -46,6 +46,10 @@ parameters:
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
+  - id: filename
+    label: CSI Data
+    dtype: file_open
+    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -59,14 +63,12 @@ inputs:
     domain: stream
     dtype: complex
     vlen: ${nss}
-  - label: csi
-    domain: message
-    optional: true
 
 outputs:
   - label: out
     domain: stream
     dtype: complex
     multiplicity: ${ul_ntx}
+
 
 file_format: 1

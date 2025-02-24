@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(ul_precoding.h) */
-/* BINDTOOL_HEADER_FILE_HASH(7697ff2f3ea10b1ef356883569c218dc) */
+/* BINDTOOL_HEADER_FILE_HASH(295e668192352dde082d5847da4b5951) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,10 +36,10 @@ void bind_ul_precoding(py::module &m) {
   py::class_<ul_precoding, gr::tagged_stream_block, gr::block, gr::basic_block,
              std::shared_ptr<ul_precoding>>(m, "ul_precoding", D(ul_precoding))
 
-      .def(py::init(&ul_precoding::make), py::arg("nss"), py::arg("ntx"),
-           py::arg("numhtsyms"), py::arg("numdatasyms"),
-           py::arg("numprecodedsyms"), py::arg("eigenmode"), py::arg("debug"),
-           D(ul_precoding, make))
+      .def(py::init(&ul_precoding::make), py::arg("nss"), py::arg("ul_ntx"),
+           py::arg("dl_ntx"), py::arg("dl_nrx"), py::arg("numhtsyms"),
+           py::arg("numdatasyms"), py::arg("numprecodedsyms"),
+           py::arg("eigenmode"), py::arg("debug"), D(ul_precoding, make))
 
       ;
 }

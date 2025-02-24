@@ -48,7 +48,8 @@ list(APPEND ncjt_python_files
     srsran_ldpc_encoder_python.cc
     srsran_ldpc_decoder_python.cc
     video_source_python.cc
-    video_sink_python.cc python_bindings.cc)
+    video_sink_python.cc
+    ul_precoding_offline_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(ncjt ../../.. gr::ncjt "${ncjt_python_files}")
 

@@ -31,4 +31,5 @@ install(FILES
     ncjt_srsran_ldpc_encoder.block.yml
     ncjt_srsran_ldpc_decoder.block.yml
     ncjt_video_source.block.yml
-    ncjt_video_sink.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_video_sink.block.yml
+    ncjt_ul_precoding_offline.block.yml DESTINATION share/gnuradio/grc/blocks)
