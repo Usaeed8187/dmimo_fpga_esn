@@ -4,23 +4,23 @@
  *
  */
 
-#ifndef INCLUDED_NCJT_PKT_DETECT_IMPL_H
-#define INCLUDED_NCJT_PKT_DETECT_IMPL_H
+#ifndef INCLUDED_NCJT_RX_SYNC_IMPL_H
+#define INCLUDED_NCJT_RX_SYNC_IMPL_H
 
-#include <gnuradio/ncjt/pkt_detect.h>
+#include <gnuradio/ncjt/rx_sync.h>
 #include <gnuradio/filter/fir_filter.h>
 
 namespace gr::ncjt
 {
 
-class pkt_detect_impl : public pkt_detect
+class rx_sync_impl : public rx_sync
 {
 private:
-    const int FFT_LEN = 64;      // FFT length
-    const int SYM_LEN = 80;      // OFDM symbol length
-    const int STF_LEN = 160;     // L-STF length, 16 x 10 = 160 samples
-    const int LTF_LEN = 160;     // L-LTF length, 64 x 2 + 32 = 160 samples
-    const int CORR_DELAY = 16;   // L-STF symbol length (16)
+    const int FFT_LEN = 64;   // FFT length
+    const int SYM_LEN = 80;   // OFDM symbol length
+    const int STF_LEN = 160;  // L-STF length, 16 x 10 = 160 samples
+    const int LTF_LEN = 160;  // L-LTF length, 64 x 2 + 32 = 160 samples
+    const int CORR_DELAY = 16;  // L-STF symbol length (16)
     const int CORR_WINDOW = 48;  // Auto-corr window size
     const int CORR_BUF_LEN = 64; // Ring buffer length
     const int XCORR_DATA_LEN = LTF_LEN * 4; // Cross-correlation data buffer length
@@ -29,19 +29,16 @@ private:
     const int MAX_CHANS = 20; // Maximum number of IQ channels
 
     int d_num_chans;  // Total number of IQ data channels
-    int d_frame_len; // frame length in samples (HT preamble + data symbols)
-    double d_sampling_freq; // Baseband sampling frequency
+    int d_frame_len;  // frame length in samples (HT preamble + data symbols)
+    double d_sampling_freq;  // Baseband sampling frequency
     double d_pkt_interval;  // packet repeat interval (in seconds)
     int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
-    float d_acorr_thrd;     // Auto-correlation detection threshold
-    float d_xcorr_thrd;     // Cross-correlation detection threshold
-    int d_max_corr_len;     // Maximal auto-correlation buffer length
-    int d_rx_ready_cnt;     // receiver synchronization counter
-    bool d_rx_demod_en;      // receiver demodulation enabled
-
-    bool d_sync_all;        // wait for all receiver are synchronized
-    bool d_rx_all_sync;     // all receiver synchronization done
-    bool d_rx_all_ready;    // all receiver ready to output data
+    float d_acorr_thrd;  // Auto-correlation detection threshold
+    float d_xcorr_thrd;  // Cross-correlation detection threshold
+    int d_max_corr_len;  // Maximal auto-correlation buffer length
+    int d_rx_ready_cnt;  // receiver synchronization counter
+    bool d_rx_demod_en;  // receiver demodulation enabled
+    bool d_gnbrx;  // gNB receiver mode
 
     float *d_pwrest_buf;
     gr_complex *d_corr_buf;
@@ -50,8 +47,8 @@ private:
     float d_fine_foe_comp;
     int d_fine_foe_cnt;
     uint64_t d_frame_start;
-//    uint64_t d_prev_frame_count;
-//    double d_prev_frame_time;
+    uint64_t d_prev_frame_count;
+    double d_prev_frame_time;
     int d_data_samples;
     int d_wait_count;
 
@@ -64,7 +61,10 @@ private:
     const bool d_debug;
     pmt::pmt_t _id;
 
-    enum { SEARCH, FINESYNC, DEFRAME, WAIT } d_state;
+    enum
+    {
+        SEARCH, FINESYNC, DEFRAME, WAIT
+    } d_state;
 
     int
     sync_search(const gr_vector_const_void_star &input_items, int buffer_len);
@@ -73,16 +73,23 @@ private:
     fine_sync(const gr_vector_const_void_star &input_items, int buffer_len);
 
     void
-    process_allsync_message(const pmt::pmt_t &msg);
+    send_tagcmd();
 
     void
     send_rxstate(bool ready);
 
+    void
+    send_rxstate_message(bool ready);
+
+    double
+    check_rxtime(int rx_windows_size);
+
 public:
-    pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
-                    double samplerate, int pktspersec, double acorr_thrd,
-                    double xcorr_thrd, int max_corr_len, bool sync_all, bool debug);
-    ~pkt_detect_impl();
+    rx_sync_impl(int nchans, int npreamblesyms, int ndatasyms,
+                 double sampling_freq, int pktspersec, double acorr_thrd,
+                 double xcorr_thrd, int max_corr_len, bool gnbrx, bool debug);
+
+    ~rx_sync_impl();
 
     void
     forecast(int noutput_items, gr_vector_int &ninput_items_required);
@@ -95,4 +102,4 @@ public:
 
 } // namespace gr::ncjt
 
-#endif /* INCLUDED_NCJT_PKT_DETECT_IMPL_H */
+#endif /* INCLUDED_NCJT_RX_SYNC_IMPL_H */

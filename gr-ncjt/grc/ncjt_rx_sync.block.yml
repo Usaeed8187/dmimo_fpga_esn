@@ -1,0 +1,85 @@
+id: ncjt_rx_sync
+label: Rx Sync
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${gnbrx}, ${debug})
+
+parameters:
+  - id: nchans
+    label: Number of Channels
+    dtype: int
+    default: 1
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: preamblelen
+    label: HTPreamble Length
+    dtype: int
+    default: '400'
+  - id: dataframelen
+    label: DataFrame Length
+    dtype: int
+  - id: samplerate
+    label: Sample Rate
+    dtype: real
+    default: '1000000'
+    hide: part
+  - id: pktspersec
+    label: Packets/Sec
+    dtype: int
+    default: '8'
+  - id: acorrthrd
+    label: Search Threshold
+    dtype: float
+    default: '0.6'
+  - id: xcorrthrd
+    label: Xcorr Threshold
+    dtype: float
+    default: '0.5'
+  - id: maxcorrlen
+    label: Search Window
+    dtype: int
+    default: '4000'
+  - id: gnbrx
+    label: gNB Rx
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: complex
+    multiplicity: ${nchans}
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    multiplicity: ${nchans}
+  - label: uhdcmd
+    domain: message
+    optional: true
+  - label: rxrdy
+    domain: message
+    optional: true
+  - label: rxtime
+    domain: message
+    optional: true
+
+asserts:
+  - ${ dataframelen > 0 }
+  - ${ dataframelen > 0 }
+  - ${ pktspersec >= 1 and pktspersec <= 100 }
+
+file_format: 1

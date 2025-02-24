@@ -47,6 +47,7 @@ namespace py = pybind11;
     void bind_video_source(py::module& m);
     void bind_video_sink(py::module& m);
     void bind_ul_precoding_offline(py::module& m);
+    void bind_rx_sync(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -101,5 +102,6 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_video_source(m);
     bind_video_sink(m);
     bind_ul_precoding_offline(m);
+    bind_rx_sync(m);
     // ) END BINDING_FUNCTION_CALLS
 }
