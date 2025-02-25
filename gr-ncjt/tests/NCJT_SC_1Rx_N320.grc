@@ -196,6 +196,7 @@ blocks:
     nrx: '2'
     ntx: '2'
     nue: '2'
+    removecs: 'False'
   states:
     bus_sink: false
     bus_source: false

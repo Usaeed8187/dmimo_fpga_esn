@@ -32,14 +32,14 @@ private:
     int d_frame_len;  // frame length in samples (HT preamble + data symbols)
     double d_sampling_freq;  // Baseband sampling frequency
     double d_pkt_interval;  // packet repeat interval (in seconds)
-    int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
+    int d_wait_interval1;  // Wait interval between packets (in number of IQ samples)
+    int d_wait_interval2;  //
     float d_acorr_thrd;  // Auto-correlation detection threshold
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
     int d_rx_ready_cnt;  // receiver synchronization counter
     bool d_gnbrx;  // gNB receiver mode
     bool d_enable_p3; // enable p3 reception
-    bool d_first_frame; // first frame (p3)
 
     float *d_pwrest_buf;
     gr_complex *d_corr_buf;
@@ -64,7 +64,7 @@ private:
 
     enum
     {
-        SEARCH, FINESYNC, DEFRAME, P3FRAME, WAIT
+        SEARCH, FINESYNC, DEFRAME, P3FRAME, WAIT1, WAIT2
     } d_state;
 
     int

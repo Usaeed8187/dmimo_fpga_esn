@@ -820,7 +820,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [120, 240.0]
+    coordinate: [120, 260.0]
     rotation: 0
     state: enabled
 
@@ -844,4 +844,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: v3.10.11.0-80-g0e28fd53
+  grc_version: 3.10.11.0

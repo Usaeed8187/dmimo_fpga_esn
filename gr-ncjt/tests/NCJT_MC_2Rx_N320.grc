@@ -61,7 +61,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"64QAM"'
+    value: '"16QAM"'
   states:
     bus_sink: false
     bus_source: false
@@ -109,7 +109,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '6'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -837,7 +837,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"addr=192.168.40.2"'
+    dev_addr: '"addr=192.168.60.2"'
     dev_args: ''
     gain0: rx_gain
     gain1: rx_gain

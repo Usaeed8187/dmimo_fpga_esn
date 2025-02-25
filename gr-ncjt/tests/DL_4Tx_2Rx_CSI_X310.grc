@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.45e9
+    value: 2.55e9
   states:
     bus_sink: false
     bus_source: false
@@ -220,6 +220,7 @@ blocks:
     npreamblesyms: num_ltf_syms
     nrx: '2'
     ntx: '4'
+    removecs: 'False'
   states:
     bus_sink: false
     bus_source: false
@@ -240,11 +241,12 @@ blocks:
     minoutbuf: '32768'
     ndatasymbols: num_data_syms
     nrx: '2'
+    nss: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 376.0]
+    coordinate: [944, 372.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -1095,7 +1097,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 324.0]
+    coordinate: [80, 328.0]
     rotation: 0
     state: enabled
 
@@ -1123,4 +1125,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: v3.10.11.0-80-g0e28fd53
+  grc_version: 3.10.11.0

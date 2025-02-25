@@ -47,6 +47,9 @@ ul_precoding_impl::ul_precoding_impl(int nss, int ul_ntx, int dl_ntx, int dl_nrx
     d_num_precoded_syms = numhtsyms + numprecodedsyms;
     d_eigenmode_precoding = eigenmode;
 
+    d_map_matrix = malloc_complex(sizeof(gr_complex) * d_dl_nrx * d_dl_nrx);
+    read_csi_data("../data/csi_frame_1.bin");
+
     message_port_register_in(pmt::mp("csi"));
     set_msg_handler(pmt::mp("csi"), [this](const pmt::pmt_t &msg) { process_csi_message(msg); });
 
@@ -152,9 +155,13 @@ ul_precoding_impl::work(int noutput_items, gr_vector_int &ninput_items,
 {
     gr::thread::scoped_lock lock(fp_mutex);
 
-    int num_symbols = ninput_items[0] / SC_NUM;
-    if (num_symbols != d_num_symbols)
-        throw std::runtime_error("input data length not correct");
+//    auto in0 = (const gr_complex *) input_items[0];
+//    auto out0 = (gr_complex *) output_items[0];
+//    auto out1 = (gr_complex *) output_items[1];
+
+//    int num_outputs = std::min(noutput_items, ninput_items[0]);
+//    memcpy(out0, &in0[0], sizeof(gr_complex) * num_outputs);
+//    memset(out1, sizeof(gr_complex), num_outputs);
 
     // Apply spatial mapping
     if (d_nss == 2 && d_ul_ntx == 2)
@@ -221,7 +228,7 @@ void
 ul_precoding_impl::apply_mapping_ntx(gr_vector_const_void_star &input_items,
                                      gr_vector_void_star &output_items)
 {
-    auto in = (gr_complex *) input_items[0];
+    auto in = (const gr_complex *) input_items[0];
 
     for (int n = 0; n < d_num_precoded_syms; n++)
     {
@@ -229,7 +236,7 @@ ul_precoding_impl::apply_mapping_ntx(gr_vector_const_void_star &input_items,
         Eigen::MatrixXcf Y(d_ul_ntx, 1);  // (Nt, 1)
         for (int k = 0; k < SC_NUM; k++)
         {
-            Eigen::Map<Eigen::MatrixXcf> X(&in[n * d_nss * SC_NUM + d_nss * k], d_nss, 1); // (Nss, 1)
+            Eigen::Map<const Eigen::MatrixXcf> X(&in[n * d_nss * SC_NUM + d_nss * k], d_nss, 1); // (Nss, 1)
             Eigen::Map<Eigen::MatrixXcf> Q(&d_map_matrix[mtx_size * k], d_ul_ntx, d_nss); // (Nt, Nss)
             Y = Q * X;  // (Nt,Nss) * (Nss,1)
             for (int ss = 0; ss < d_ul_ntx; ss++)
@@ -259,6 +266,33 @@ ul_precoding_impl::apply_mapping_ntx(gr_vector_const_void_star &input_items,
             }
         }
     }
+}
+
+int
+ul_precoding_impl::read_csi_data(const char *filename) {
+    FILE *d_fp;
+    struct GR_STAT st;
+
+    if ((d_fp = fopen(filename, "rb")) == nullptr)
+        return 0;
+    if (GR_FSTAT(GR_FILENO(d_fp), &st))
+        return 0;
+
+    GR_FSEEK(d_fp, 0, SEEK_END);
+    uint64_t file_size = GR_FTELL(d_fp);
+    uint64_t data_len = file_size / sizeof(gr_complex);
+    if (data_len == 0)
+        return 0;
+
+    GR_FSEEK(d_fp, 0, SEEK_SET);
+    d_csi_data = (gr_complex *) malloc(file_size);
+    if (data_len != fread(d_csi_data, sizeof(gr_complex), data_len, d_fp)) {
+        dout << "failed to read file content" << std::endl;
+        free(d_csi_data);
+        return 0;
+    }
+
+    return (int) data_len;
 }
 
 } /* namespace gr::mumimo */

@@ -27,6 +27,7 @@ private:
     int d_num_precoded_syms;
     bool d_eigenmode_precoding;
 
+    gr_complex *d_csi_data;  // buffer for CSI data
     gr_complex *d_map_matrix;  // spatial mapping matrix (Nt, Nss)
 
     bool d_debug;
@@ -57,6 +58,9 @@ protected:
 
     void
     update_eigenmode_precoding(gr_complex *csidata);
+
+    int
+    read_csi_data(const char *filename);
 
 public:
     ul_precoding_impl(int nss, int ul_ntx, int dl_ntx, int dl_nrx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug);

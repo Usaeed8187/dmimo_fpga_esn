@@ -167,7 +167,7 @@ namespace gr::ncjt {
             }
 
             for (int s = 0; s < d_ntx; s++) {
-                auto in = (gr_complex *) input_items[s];
+                auto in = (const gr_complex *) input_items[s];
                 auto out = (gr_complex *) output_items[s];
 
                 // Add tags for burst transmission

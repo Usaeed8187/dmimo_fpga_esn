@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '40'
+    value: '20'
   states:
     bus_sink: false
     bus_source: false
@@ -303,20 +303,21 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    duration: repeat_duration
     filename: '"../data/1x1/ncjt_preamble_1x1.bin"'
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
     ndatasyms: num_data_syms
-    nstrm: '2'
+    ntx: '2'
     padding: '1000'
+    pktspersec: pkts_per_sec
     starttime: '2'
+    txcal: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [896, 220.0]
+    coordinate: [912, 192.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -421,7 +422,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: external
+    clock_source0: ''
     clock_source1: external
     clock_source2: ''
     clock_source3: ''
@@ -430,7 +431,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.60.2"'
+    dev_addr: '"addr0=192.168.30.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
@@ -580,7 +581,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: external
+    time_source0: ''
     time_source1: external
     time_source2: ''
     time_source3: ''
@@ -593,7 +594,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 128.0]
+    coordinate: [1112, 144.0]
     rotation: 0
     state: true
 

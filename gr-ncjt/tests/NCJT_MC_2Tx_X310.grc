@@ -133,7 +133,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.55e9
+    value: 2.65e9
   states:
     bus_sink: false
     bus_source: false
@@ -362,20 +362,21 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    duration: repeat_duration
     filename: '"../data/2x2/ncjt_preamble_2x2_ue1.bin"'
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
     ndatasyms: num_data_syms
-    nstrm: '2'
+    ntx: '2'
     padding: '1000'
+    pktspersec: pkts_per_sec
     starttime: '2'
+    txcal: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [896, 212.0]
+    coordinate: [904, 160.0]
     rotation: 0
     state: enabled
 - name: ncjt_tx_framing_0_0
@@ -385,20 +386,21 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    duration: repeat_duration
     filename: '"../data/2x2/ncjt_preamble_2x2_ue2.bin"'
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
     ndatasyms: num_data_syms
-    nstrm: '2'
+    ntx: '2'
     padding: '1000'
+    pktspersec: pkts_per_sec
     starttime: '2'
+    txcal: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [896, 332.0]
+    coordinate: [896, 312.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -503,7 +505,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: external
+    clock_source0: ''
     clock_source1: external
     clock_source2: ''
     clock_source3: ''
@@ -512,7 +514,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.40.2, addr1=192.168.60.2"'
+    dev_addr: '"addr0=192.168.30.2, addr1=192.168.50.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
@@ -662,7 +664,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: external
+    time_source0: ''
     time_source1: external
     time_source2: ''
     time_source3: ''
