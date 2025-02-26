@@ -99,8 +99,7 @@ namespace gr::ncjt {
             rxtime_fracs -= d_repeat_interval;
 
         // timing adjustment using latest rxtime
-        double
-                next_txtime =
+        double next_txtime =
                 (double) (d_time_secs - 1) + rxtime_fracs + 0.5 * d_repeat_interval;  // offset by 1/2 of interval
         double schedule_txtime = d_time_fracs + (double) d_time_secs;  // schedule time for next transmission
         while (next_txtime < (schedule_txtime - 0.05 * d_repeat_interval))
@@ -194,7 +193,7 @@ namespace gr::ncjt {
                 memset((void *) &out[d_frame_length - d_padding_length], 0, sizeof(gr_complex) * d_padding_length);
             }
 
-            // Calibration signals
+            // CSI signals
             if (d_csirs) {
                 int cur_ti = d_frame_cnt % d_ntx;
                 total_output_items = (d_frame_length + 2 * d_padding_length + d_beacon_len);

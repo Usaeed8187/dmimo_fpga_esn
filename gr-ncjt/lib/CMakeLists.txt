@@ -41,7 +41,8 @@ list(APPEND ncjt_sources
     srsran_ldpc_decoder_impl.cc
     video_source_impl.cc
     video_sink_impl.cc
-    ul_precoding_offline_impl.cc)
+    ul_precoding_offline_impl.cc
+    rx_sync_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"
