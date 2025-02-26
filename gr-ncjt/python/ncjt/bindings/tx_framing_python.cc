@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(tx_framing.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(b865b30c62cd56cb021054043bf30bfc) */
+/* BINDTOOL_HEADER_FILE_HASH(8c580ee8a95e14ebf7f748f48fd08c8e) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -38,8 +38,9 @@ void bind_tx_framing(py::module &m) {
 
       .def(py::init(&tx_framing::make), py::arg("ntx"), py::arg("ndatasyms"),
            py::arg("filename"), py::arg("fs"), py::arg("pktspersec"),
-           py::arg("starttime"), py::arg("padding"), py::arg("csirs") = false,
-           py::arg("debug") = false, D(tx_framing, make))
+           py::arg("starttime"), py::arg("padding"),
+           py::arg("autostart") = true, py::arg("debug") = false,
+           D(tx_framing, make))
 
       ;
 }

@@ -37,7 +37,7 @@ namespace gr::ncjt {
              int pktspersec,
              double starttime,
              int padding,
-             bool csirs = false,
+             bool autostart = true,
              bool debug = false);
     };
 
