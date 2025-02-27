@@ -54,9 +54,11 @@ tx_framing_impl::tx_framing_impl(int ntx, int ndatasyms, const char *filename,
     d_first_burst = true;
     d_txen = autostart;
 
-    d_txtime_offset = starttime;
+    // make txtime offset in range (0, repeat_interval)
+    d_txtime_offset = d_time_fracs;
     while (d_txtime_offset > d_repeat_interval)
         d_txtime_offset -= d_repeat_interval;
+    d_txtime_adjustment = 0.0;
 
     std::stringstream str;
     str << name() << unique_id();
@@ -91,27 +93,29 @@ tx_framing_impl::process_rxtime_message(const pmt::pmt_t &msg)
     //uint64_t rxtime_secs = pmt::to_uint64(pmt::tuple_ref(msg, 0));
     double rxtime_fracs = pmt::to_double(pmt::tuple_ref(msg, 1));
     //std::cout << "Packet start at " << time_secs << ":" << time_fracs << std::endl;
-    while (rxtime_fracs >= d_repeat_interval)
+    while (rxtime_fracs > d_repeat_interval)  // make it in rage [0, T]
         rxtime_fracs -= d_repeat_interval;
 
-    // timing adjustment using latest rxtime
-    double next_txtime =
-        (double) (d_time_secs - 1) + rxtime_fracs + d_txtime_offset;
-    // schedule time for next transmission
-    double schedule_txtime = d_time_fracs + (double) d_time_secs;
-    while (next_txtime < (schedule_txtime - 0.05 * d_repeat_interval))
-        next_txtime += d_repeat_interval;
-
     // avoid unnecessary timing adjustment
-    if (abs(next_txtime - schedule_txtime) < 1e-5 * d_repeat_interval)
+    if (abs(rxtime_fracs - d_txtime_adjustment) < 1e-5 * d_repeat_interval)
         return;
 
-    // update next transmission time
-    double intpart;
-    d_time_fracs = std::modf(next_txtime, &intpart);
-    d_time_secs = uint64_t(intpart);
+    // timing adjustment using latest rxtime
+    d_txtime_adjustment = rxtime_fracs;
 
-    dout << "Adjusted schedule time: " << (double) d_time_secs + d_time_fracs << " seconds" << std::endl;
+    // double next_txtime =
+    //    (double) (d_time_secs - 1) + rxtime_fracs + d_txtime_offset;
+    // schedule time for next transmission
+    //double schedule_txtime = d_time_fracs + (double) d_time_secs;
+    //while (next_txtime < (schedule_txtime - 0.05 * d_repeat_interval))
+    //    next_txtime += d_repeat_interval;
+
+    // update next transmission time
+//    double intpart;
+////    d_time_fracs = std::modf(next_txtime, &intpart);
+////    d_time_secs = uint64_t(intpart);
+
+//    dout << "Adjusted schedule time: " << (double) d_time_secs + d_time_fracs << " seconds" << std::endl;
 }
 
 void
@@ -119,6 +123,7 @@ tx_framing_impl::process_txen_message(const pmt::pmt_t &msg)
 {
     // gr::thread::scoped_lock lock(fp_mutex);
     d_txen = pmt::to_bool(msg);
+    dout << "Tx enable status: " << d_txen << std::endl;
 }
 
 int
@@ -181,8 +186,13 @@ tx_framing_impl::work(int noutput_items, gr_vector_int &ninput_items,
                          pmt::from_long(d_frame_length),
                          _id);
 
+            double intpart;
+            double tx_time_fracs = d_time_fracs + d_txtime_adjustment + d_txtime_offset;
+            tx_time_fracs = std::modf(tx_time_fracs, &intpart);
+            uint64_t tx_time_secs = d_time_secs + uint64_t(intpart);
+
             const pmt::pmt_t tx_time =
-                pmt::make_tuple(pmt::from_uint64(d_time_secs), pmt::from_double(d_time_fracs));
+                pmt::make_tuple(pmt::from_uint64(tx_time_secs), pmt::from_double(tx_time_fracs));
             add_item_tag(s,
                          nitems_written(s),
                          pmt::string_to_symbol("tx_time"),

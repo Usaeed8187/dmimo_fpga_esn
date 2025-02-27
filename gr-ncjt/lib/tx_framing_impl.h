@@ -26,6 +26,7 @@ namespace gr::ncjt {
         bool d_first_burst; // indicate first transmission bust
         double d_repeat_interval;  // repeat transmission interval
         double d_txtime_offset;  // transmission time offset relative to t0
+        double d_txtime_adjustment; // current txtime adjustment
         uint64_t d_time_secs;  // integer seconds of next transmission time
         double d_time_fracs;  // fractional seconds of next transmission time
         uint64_t d_frame_cnt;  // total frame counter
