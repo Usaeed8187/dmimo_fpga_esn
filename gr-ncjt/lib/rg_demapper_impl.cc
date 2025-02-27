@@ -118,7 +118,7 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float h6 = d_usecsi ? 3.0 * a2 * csi[di].real() : 3.0 * a2;
                 dout[0]           = (ym >= h2 && ym <= h6) ? 1 : 0;
                 dout[d_nstrm]     = (ym <= h4) ? 1 : 0;
-                dout[2 * d_nstrm] = (y < 0) ? 1 : 0;
+                dout[2 * d_nstrm] = (y <= 0) ? 1 : 0;
                 dout[3 * d_nstrm] = (xm >= h2 && xm <= h6) ? 1 : 0;
                 dout[4 * d_nstrm] = (xm <= h4) ? 1 : 0;
                 dout[5 * d_nstrm] = (x >= 0) ? 1 : 0;
