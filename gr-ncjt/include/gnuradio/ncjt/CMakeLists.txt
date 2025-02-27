@@ -36,4 +36,5 @@ install(FILES api.h
     video_source.h
     video_sink.h
     ul_precoding_offline.h
-    rx_sync.h DESTINATION include/gnuradio/ncjt)
+    rx_sync.h
+    gnb_sync.h DESTINATION include/gnuradio/ncjt)

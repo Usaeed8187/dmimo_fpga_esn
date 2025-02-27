@@ -4,16 +4,16 @@
  *
  */
 
-#ifndef INCLUDED_NCJT_RX_SYNC_IMPL_H
-#define INCLUDED_NCJT_RX_SYNC_IMPL_H
+#ifndef INCLUDED_NCJT_GNB_SYNC_IMPL_H
+#define INCLUDED_NCJT_GNB_SYNC_IMPL_H
 
-#include <gnuradio/ncjt/rx_sync.h>
+#include <gnuradio/ncjt/gnb_sync.h>
 #include <gnuradio/filter/fir_filter.h>
 
 namespace gr::ncjt
 {
 
-class rx_sync_impl : public rx_sync
+class gnb_sync_impl : public gnb_sync
 {
 private:
     const int FFT_LEN = 64;   // FFT length
@@ -89,12 +89,10 @@ private:
     check_rxtime(int rx_windows_size);
 
 public:
-    rx_sync_impl(int nchans, int npreamblesyms, int ndatasyms,
-                 double sampling_freq, int pktspersec, double acorr_thrd,
-                 double xcorr_thrd, int max_corr_len, bool gnbrx, bool rxue, bool debug);
-    explicit rx_sync_impl(float DXcorrThrd);
-
-    ~rx_sync_impl();
+    gnb_sync_impl(int nchans, int npreamblesyms, int ndatasyms,
+                  double sampling_freq, int pktspersec, double acorr_thrd,
+                  double xcorr_thrd, int max_corr_len, bool debug);
+    ~gnb_sync_impl();
 
     void
     forecast(int noutput_items, gr_vector_int &ninput_items_required);
@@ -107,4 +105,4 @@ public:
 
 } // namespace gr::ncjt
 
-#endif /* INCLUDED_NCJT_RX_SYNC_IMPL_H */
+#endif /* INCLUDED_NCJT_GNB_SYNC_IMPL_H */

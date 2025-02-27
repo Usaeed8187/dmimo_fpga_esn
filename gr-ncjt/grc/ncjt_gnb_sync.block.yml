@@ -1,10 +1,10 @@
-id: ncjt_rx_sync
-label: Rx Sync
-category: '[dMIMO]'
+id: ncjt_gnb_sync
+label: gnb_sync
+category: '[ncjt]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${gnbrx}, ${rxue}, ${debug})
+  make: ncjt.gnb_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
 
 parameters:
   - id: nchans
@@ -41,20 +41,6 @@ parameters:
     label: Search Window
     dtype: int
     default: '4000'
-  - id: gnbrx
-    label: gNB Rx
-    dtype: bool
-    default: 'False'
-    options: [ 'True', 'False' ]
-    option_labels: [ Enable, Disable ]
-    hide: part
-  - id: rxue
-    label: RxUE
-    dtype: bool
-    default: 'False'
-    options: [ 'True', 'False' ]
-    option_labels: [ Enable, Disable ]
-    hide: part
   - id: debug
     label: Debug
     dtype: bool

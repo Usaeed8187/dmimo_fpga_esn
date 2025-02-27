@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(rx_sync.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(5fc2c07c24149a5fafc18368cd154a97) */
+/* BINDTOOL_HEADER_FILE(gnb_sync.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(1f4cdb673ae4cd590a349ecfde7e81cf) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,23 +25,22 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/rx_sync.h>
+#include <gnuradio/ncjt/gnb_sync.h>
 // pydoc.h is automatically generated in the build directory
-#include <rx_sync_pydoc.h>
+#include <gnb_sync_pydoc.h>
 
-void bind_rx_sync(py::module &m) {
+void bind_gnb_sync(py::module &m) {
 
-  using rx_sync = ::gr::ncjt::rx_sync;
+  using gnb_sync = ::gr::ncjt::gnb_sync;
 
-  py::class_<rx_sync, gr::block, gr::basic_block, std::shared_ptr<rx_sync>>(
-      m, "rx_sync", D(rx_sync))
+  py::class_<gnb_sync, gr::block, gr::basic_block, std::shared_ptr<gnb_sync>>(
+      m, "gnb_sync", D(gnb_sync))
 
-      .def(py::init(&rx_sync::make), py::arg("nchans"),
+      .def(py::init(&gnb_sync::make), py::arg("nchans"),
            py::arg("npreamblesyms"), py::arg("ndatasyms"),
            py::arg("sampling_freq"), py::arg("pktspersec"),
            py::arg("acorr_thrd"), py::arg("xcorr_thrd"),
-           py::arg("max_corr_len"), py::arg("gnbrx"), py::arg("rxue"),
-           py::arg("debug") = false, D(rx_sync, make))
+           py::arg("max_corr_len"), py::arg("debug"), D(gnb_sync, make))
 
       ;
 }

@@ -4,7 +4,7 @@
  *
  */
 
-#include "rx_sync_impl.h"
+#include "gnb_sync_impl.h"
 #include <gnuradio/io_signature.h>
 #include <cmath>
 #include <volk/volk.h>
@@ -17,26 +17,26 @@ static const pmt::pmt_t TIME_KEY = pmt::string_to_symbol("rx_time");
 static const pmt::pmt_t RATE_KEY = pmt::string_to_symbol("rx_rate");
 static const pmt::pmt_t FREQ_KEY = pmt::string_to_symbol("rx_freq");
 
-rx_sync::sptr
-rx_sync::make(int nchans, int preamblelen, int dataframelen,
-              double samplerate, int pktspersec,
-              double acorr_thrd, double xcorr_thrd,
-              int max_corr_len, bool gnbrx, bool rxue, bool debug)
+gnb_sync::sptr
+gnb_sync::make(int nchans, int preamblelen, int dataframelen,
+               double samplerate, int pktspersec,
+               double acorr_thrd, double xcorr_thrd,
+               int max_corr_len, bool debug)
 {
-    return gnuradio::make_block_sptr<rx_sync_impl>(
+    return gnuradio::make_block_sptr<gnb_sync_impl>(
         nchans, preamblelen, dataframelen, samplerate, pktspersec, acorr_thrd,
-        xcorr_thrd, max_corr_len, gnbrx, rxue, debug);
+        xcorr_thrd, max_corr_len, debug);
 }
 
-rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen,
-                           double samplerate, int pktspersec,
-                           double acorr_thrd, double xcorr_thrd,
-                           int max_corr_len, bool gnbrx, bool rxue, bool debug)
-    : gr::block("rx_sync",
+gnb_sync_impl::gnb_sync_impl(int nchans, int preamblelen, int dataframelen,
+                             double samplerate, int pktspersec,
+                             double acorr_thrd, double xcorr_thrd,
+                             int max_corr_len, bool debug)
+    : gr::block("gnb_sync",
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex)),
                 gr::io_signature::make(nchans, 2 * nchans, sizeof(gr_complex))),
       d_sampling_freq(samplerate), d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd),
-      d_max_corr_len(max_corr_len), d_rx_ready_cnt(0), d_gnbrx(gnbrx), d_rxue(rxue),
+      d_max_corr_len(max_corr_len), d_rx_ready_cnt(0),
       d_frame_start(0), d_prev_frame_count(0), d_prev_frame_time(0.0),
       d_xcorr_fir(gr::filter::kernel::fir_filter_ccc(LTF_SEQ)), d_debug(debug)
 {
@@ -60,20 +60,10 @@ rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen,
     d_pkt_interval = 1.0 / (double) pktspersec;
     // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT fields
     d_wait_interval0 = 0;
-    if (d_gnbrx)
-    {
-        // gNB start from t0 + T/4 after rx_time adjustment, receive P2 and P3 transmission
-        d_wait_interval1 = (int) floor(samplerate * d_pkt_interval / 2) - d_frame_len - 8 * SYM_LEN;
-        d_wait_interval2 = (int) floor(samplerate * d_pkt_interval / 2) - d_frame_len - 8 * SYM_LEN;
-    }
-    else if (d_rxue) {
-        // RxUE start from t0 after synchronization, receive P2 transmission
-        d_wait_interval1 = (int) floor(samplerate * d_pkt_interval / 4) - d_frame_len - 8 * SYM_LEN;
-        d_wait_interval2 = (int) floor(samplerate * d_pkt_interval * 0.75) - d_frame_len - 8 * SYM_LEN;
-    }
-    else {
-        d_wait_interval1 = (int) floor(samplerate * d_pkt_interval) - d_frame_len - 8 * SYM_LEN;
-    }
+
+    // gNB start from t0 + T/4 after rx_time adjustment, receive P2 and P3 transmission
+    d_wait_interval1 = (int) floor(samplerate * d_pkt_interval / 2) - d_frame_len - 8 * SYM_LEN;
+    d_wait_interval2 = (int) floor(samplerate * d_pkt_interval / 2) - d_frame_len - 8 * SYM_LEN;
 
     d_corr_buf_pos = 0;
     d_corr_buf = malloc_complex(CORR_BUF_LEN);
@@ -103,7 +93,7 @@ rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen,
     _id = pmt::string_to_symbol(str.str());
 }
 
-rx_sync_impl::~rx_sync_impl()
+gnb_sync_impl::~gnb_sync_impl()
 {
     volk_free(d_corr_buf);
     volk_free(d_pwrest_buf);
@@ -113,8 +103,8 @@ rx_sync_impl::~rx_sync_impl()
 }
 
 void
-rx_sync_impl::forecast(int noutput_items,
-                       gr_vector_int &ninput_items_required)
+gnb_sync_impl::forecast(int noutput_items,
+                        gr_vector_int &ninput_items_required)
 {
     switch (d_state)
     {
@@ -144,16 +134,16 @@ rx_sync_impl::forecast(int noutput_items,
 }
 
 void
-rx_sync_impl::send_rxstate(bool ready)
+gnb_sync_impl::send_rxstate(bool ready)
 {
     dout << "Receiver synchronization " << (ready ? "acquired" : "lost") << std::endl;
     message_port_pub(pmt::mp("rxrdy"), pmt::from_bool(ready));
 }
 
 int
-rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
-                           gr_vector_const_void_star &input_items,
-                           gr_vector_void_star &output_items)
+gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
+                            gr_vector_const_void_star &input_items,
+                            gr_vector_void_star &output_items)
 {
     int min_input_items = ninput_items[0];
     for (int ch = 1; ch < d_num_chans; ch++)
@@ -167,12 +157,6 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             // send tag command and check current timestamp
             send_tagcmd();
 
-            if (!d_gnbrx)
-            {
-                d_state = SEARCH; // immediately search for beacon if not gNB itself
-                break;
-            }
-
             // Adjust frame start according to rx_time
             // 1) assuming gNB transmission is aligned with PPS (integer rx_time)
             // 2) TxUE transmission starts with timing offset of 1/4 pkt_interval
@@ -183,7 +167,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 double intpart;
                 double pkt_time_fracs = std::modf(time_fracs / d_pkt_interval, &intpart);
                 double pkt_start_adjust = (1.25 - pkt_time_fracs) * d_pkt_interval;
-                d_wait_interval0 = int(d_sampling_freq * pkt_start_adjust) + SYM_LEN  * 3;
+                d_wait_interval0 = int(d_sampling_freq * pkt_start_adjust) + SYM_LEN * 3;
                 d_wait_count = 0;
                 d_phase2 = true;
                 d_state = WAIT0;
@@ -276,25 +260,25 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             int htsig_start = fine_sync(input_items, 3 * LTF_LEN);
             if (htsig_start < 0)
             {
-                if (d_gnbrx)
-                {
+//                if (d_gnbrx)
+//                {
                     d_skip_frame = true;
                     htsig_start = 188; // use default value
                     if (d_phase2)
                         std::cout << "Fine synchronize failed for TxUE!" << std::endl;
                     else
                         std::cout << "Fine synchronize failed for RxUE!" << std::endl;
-                }
-                else
-                {
-                    consume_each(min_input_items);
-                    if (d_rx_ready_cnt == 0 ||
-                        d_rx_ready_cnt >= 10) // initial synchronization or changing from ready state
-                        send_rxstate(false);
-                    d_rx_ready_cnt = 0;
-                    d_state = SEARCH;
-                    break;
-                }
+//                }
+//                else
+//                {
+//                    consume_each(min_input_items);
+//                    if (d_rx_ready_cnt == 0 ||
+//                        d_rx_ready_cnt >= 10) // initial synchronization or changing from ready state
+//                        send_rxstate(false);
+//                    d_rx_ready_cnt = 0;
+//                    d_state = SEARCH;
+//                    break;
+//                }
             }
 
             d_frame_start = nitems_read(0) + htsig_start;
@@ -371,15 +355,17 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
-                if (d_gnbrx)
-                {
+//                if (d_gnbrx)
+//                {
                     d_data_samples = 0;
                     d_phase2 = false;
                     d_state = P3FRAME;
                     std::cout << "Entering P3 frame" << std::endl;
-                } else {
-                    d_state = SEARCH;
-                }
+//                }
+//                else
+//                {
+//                    d_state = SEARCH;
+//                }
             }
             if (d_wait_count < 2048)
                 check_rxtime(noutput_samples);
@@ -454,7 +440,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
 }
 
 void
-rx_sync_impl::send_tagcmd()
+gnb_sync_impl::send_tagcmd()
 {
     pmt::pmt_t cmdmsg = pmt::make_dict();
     cmdmsg = pmt::dict_add(cmdmsg, pmt::mp("tag"), pmt::mp(""));
@@ -462,7 +448,7 @@ rx_sync_impl::send_tagcmd()
 }
 
 void
-rx_sync_impl::send_rxstate_message(bool ready)
+gnb_sync_impl::send_rxstate_message(bool ready)
 {
     pmt::pmt_t dict = pmt::make_dict();
     dict = pmt::dict_add(dict, pmt::mp("rxrdy"), _id);
@@ -472,7 +458,7 @@ rx_sync_impl::send_rxstate_message(bool ready)
 // This function calculate the correct absolute time for the current frame start position
 // and send this to tx_framing block
 double
-rx_sync_impl::check_rxtime(int rx_windows_size)
+gnb_sync_impl::check_rxtime(int rx_windows_size)
 {
     // Search for rx_time tag
     std::vector<gr::tag_t> d_tags;
@@ -492,7 +478,8 @@ rx_sync_impl::check_rxtime(int rx_windows_size)
         d_prev_frame_time = time_fracs; // (double) time_secs + time_fracs;
 
         if ((d_state == DEFRAME || d_state == P3FRAME || d_state == WAIT1 || d_state == WAIT2)
-            && current_pos >= d_frame_start && d_frame_start > 0) // && current_pos < d_frame_start + uint64_t(d_wait_interval))
+            && current_pos >= d_frame_start
+            && d_frame_start > 0) // && current_pos < d_frame_start + uint64_t(d_wait_interval))
         {
             // get the actual time for current frmstart
             double frmstart_time = time_fracs + double(time_secs);
@@ -514,7 +501,7 @@ rx_sync_impl::check_rxtime(int rx_windows_size)
  * search for frame start using L-LTS auto-corr peaks
  */
 int
-rx_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buffer_len)
+gnb_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buffer_len)
 {
     float power_est = 0;  // current auto-correlation sum
     gr_complex auto_corr = 0;
@@ -615,9 +602,9 @@ rx_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buff
 }
 
 int
-rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer_len)
+gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer_len)
 {
-     // buffer_len = 3 * LTF_LEN
+    // buffer_len = 3 * LTF_LEN
 
     // compensate coarse FOE
     for (int i = 0; i < buffer_len; i++)
@@ -704,7 +691,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
         // calculate the start of the HT-LTF (removing HT-SIG and HT-STF)
         // first peak pos corresponding to the start of the first FFT block in L-LTF
         // 4 * SYM_LEN : L-SIG, HT-SIG, HT-STF
-        sig_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN ;
+        sig_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
     }
     else
     {
@@ -752,7 +739,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
 
 // conjugated and reversed LTF sequence
 const
-std::vector<gr_complex> rx_sync_impl::LTF_SEQ = {
+std::vector<gr_complex> gnb_sync_impl::LTF_SEQ = {
     gr_complex(-0.0455, -1.0679), gr_complex(0.3528, -0.9865), gr_complex(0.8594, 0.7348),
     gr_complex(0.1874, 0.2475), gr_complex(0.5309, -0.7784), gr_complex(-1.0218, -0.4897),
     gr_complex(-0.3401, -0.9423), gr_complex(0.8657, -0.2298), gr_complex(0.4734, 0.0362),

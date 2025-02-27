@@ -33,4 +33,5 @@ install(FILES
     ncjt_video_source.block.yml
     ncjt_video_sink.block.yml
     ncjt_ul_precoding_offline.block.yml
-    ncjt_rx_sync.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_rx_sync.block.yml
+    ncjt_gnb_sync.block.yml DESTINATION share/gnuradio/grc/blocks)
