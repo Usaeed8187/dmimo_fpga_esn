@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(rx_sync.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(5fc2c07c24149a5fafc18368cd154a97) */
+/* BINDTOOL_HEADER_FILE_HASH(69b4968e039b57e6e991cfb4df66f90e) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -40,8 +40,7 @@ void bind_rx_sync(py::module &m) {
            py::arg("npreamblesyms"), py::arg("ndatasyms"),
            py::arg("sampling_freq"), py::arg("pktspersec"),
            py::arg("acorr_thrd"), py::arg("xcorr_thrd"),
-           py::arg("max_corr_len"), py::arg("gnbrx"), py::arg("rxue"),
-           py::arg("debug") = false, D(rx_sync, make))
+           py::arg("max_corr_len"), py::arg("debug") = false, D(rx_sync, make))
 
       ;
 }

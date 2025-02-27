@@ -32,16 +32,11 @@ private:
     int d_frame_len;  // frame length in samples (HT preamble + data symbols)
     double d_sampling_freq;  // Baseband sampling frequency
     double d_pkt_interval;  // packet repeat interval (in seconds)
-    int d_wait_interval0;  // Wait interval between packets (in number of IQ samples)
-    int d_wait_interval1;  // Wait interval between packets (in number of IQ samples)
-    int d_wait_interval2;  //
+    int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
     float d_acorr_thrd;  // Auto-correlation detection threshold
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
     int d_rx_ready_cnt;  // receiver synchronization counter
-    bool d_gnbrx;  // gNB receiver mode
-    bool d_rxue;   // RxSquad UE receiving mode
-    bool d_phase2; // processing phase 2 signal
 
     float *d_pwrest_buf;
     gr_complex *d_corr_buf;
@@ -54,7 +49,6 @@ private:
     double d_prev_frame_time;
     int d_data_samples;
     int d_wait_count;
-    bool d_skip_frame;
 
     static const std::vector<gr_complex> LTF_SEQ;
     gr::filter::kernel::fir_filter_ccc d_xcorr_fir;
@@ -65,10 +59,7 @@ private:
     const bool d_debug;
     pmt::pmt_t _id;
 
-    enum
-    {
-        RXTIME, SEARCH, FINESYNC, DEFRAME, P3FRAME, WAIT0, WAIT1, WAIT2
-    } d_state;
+    enum { SEARCH, FINESYNC, DEFRAME, WAIT } d_state;
 
     int
     sync_search(const gr_vector_const_void_star &input_items, int buffer_len);
@@ -91,7 +82,7 @@ private:
 public:
     rx_sync_impl(int nchans, int npreamblesyms, int ndatasyms,
                  double sampling_freq, int pktspersec, double acorr_thrd,
-                 double xcorr_thrd, int max_corr_len, bool gnbrx, bool rxue, bool debug);
+                 double xcorr_thrd, int max_corr_len, bool debug);
     explicit rx_sync_impl(float DXcorrThrd);
 
     ~rx_sync_impl();

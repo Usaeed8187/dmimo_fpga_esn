@@ -57,8 +57,8 @@ pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
     d_frame_len = dataframelen + preamblelen - 3 * SYM_LEN; // 3*SYM_LEN;
 
     d_pkt_interval = 1.0 / (double) pktspersec;
-    // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG)
-    d_wait_interval = (int) floor(samplerate * d_pkt_interval) - d_frame_len - 8 * SYM_LEN; // 8 * SYM_LEN;
+    // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT fields
+    d_wait_interval = (int) floor(samplerate * d_pkt_interval) - d_frame_len - 8 * SYM_LEN;
 
     d_corr_buf_pos = 0;
     d_corr_buf = malloc_complex(CORR_BUF_LEN);

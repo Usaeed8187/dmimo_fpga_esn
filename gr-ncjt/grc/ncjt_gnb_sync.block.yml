@@ -1,6 +1,6 @@
 id: ncjt_gnb_sync
-label: gnb_sync
-category: '[ncjt]'
+label: gNB Sync
+category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt

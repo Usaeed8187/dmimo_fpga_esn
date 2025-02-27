@@ -262,12 +262,12 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
 //                if (d_gnbrx)
 //                {
-                    d_skip_frame = true;
-                    htsig_start = 188; // use default value
-                    if (d_phase2)
-                        std::cout << "Fine synchronize failed for TxUE!" << std::endl;
-                    else
-                        std::cout << "Fine synchronize failed for RxUE!" << std::endl;
+                d_skip_frame = true;
+                htsig_start = 188; // use default value
+                if (d_phase2)
+                    std::cout << "Fine synchronize failed for TxUE!" << std::endl;
+                else
+                    std::cout << "Fine synchronize failed for RxUE!" << std::endl;
 //                }
 //                else
 //                {
@@ -357,10 +357,10 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 min_input_items -= new_data_count;
 //                if (d_gnbrx)
 //                {
-                    d_data_samples = 0;
-                    d_phase2 = false;
-                    d_state = P3FRAME;
-                    std::cout << "Entering P3 frame" << std::endl;
+                d_data_samples = 0;
+                d_phase2 = false;
+                d_state = P3FRAME;
+                std::cout << "Entering P3 frame" << std::endl;
 //                }
 //                else
 //                {

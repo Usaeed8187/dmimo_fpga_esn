@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${gnbrx}, ${rxue}, ${debug})
+  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
 
 parameters:
   - id: nchans
@@ -41,20 +41,6 @@ parameters:
     label: Search Window
     dtype: int
     default: '4000'
-  - id: gnbrx
-    label: gNB Rx
-    dtype: bool
-    default: 'False'
-    options: [ 'True', 'False' ]
-    option_labels: [ Enable, Disable ]
-    hide: part
-  - id: rxue
-    label: RxUE
-    dtype: bool
-    default: 'False'
-    options: [ 'True', 'False' ]
-    option_labels: [ Enable, Disable ]
-    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -70,15 +56,10 @@ inputs:
     multiplicity: ${nchans}
 
 outputs:
-  - label: out1
+  - label: out
     domain: stream
     dtype: complex
     multiplicity: ${nchans}
-  - label: out2
-    domain: stream
-    dtype: complex
-    multiplicity: ${nchans}
-    optional: true
     hide: ${not gnbrx}
   - label: uhdcmd
     domain: message
