@@ -76,15 +76,21 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
     }
 
     // Pd: nSTS x nLTF
-    if (d_nss == 2) // 2x2, 2x4
-    {
-        d_Pd.resize(2, 2);
-        d_Pd << 1, -1, 1, 1;
-    }
-    else if (d_ntx == 4 || d_nss == 4) // 4x4, 4x2
+    if (d_ntx == 4 || d_nss == 4) // 4x4, 4x2
     {
         d_Pd.resize(4, 4);
         d_Pd << 1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1;
+        /*
+        1, -1, 1, 1, 
+        1, 1, -1, 1, 
+        1, 1, 1, -1, 
+        -1, 1, 1, 1
+        */
+    }
+    else if (d_nss == 2) // 2x2, 2x4
+    {
+        d_Pd.resize(2, 2);
+        d_Pd << 1, -1, 1, 1;
     }
 
     const float normfactor = sqrt(d_scnum / float(d_nss * d_fftsize));
@@ -535,6 +541,7 @@ ltf_chanest_impl::csi_chan_est_nrx(gr_vector_const_void_star &input_items, int i
         H = NORM_LTF_SEQ[k] * d_Pd * Rx;
     }
     // remove cyclic shift
+    if (d_remove_cyclic_shift) {
     for (int k = 0; k < d_scnum; k++)  // for all subcarriers
     {
         for (int n = 1; n < d_ntx; n++) // for all except 1st tx
@@ -547,6 +554,7 @@ ltf_chanest_impl::csi_chan_est_nrx(gr_vector_const_void_star &input_items, int i
                 d_chan_csi[cidx] *= d_cshift[sidx];
             }
         }
+    }
     }
 }
 
