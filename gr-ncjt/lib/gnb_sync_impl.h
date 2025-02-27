@@ -32,29 +32,32 @@ private:
     int d_frame_len;  // frame length in samples (HT preamble + data symbols)
     double d_sampling_freq;  // Baseband sampling frequency
     double d_pkt_interval;  // packet repeat interval (in seconds)
-    int d_wait_interval0;  // Wait interval between packets (in number of IQ samples)
-    int d_wait_interval1;  // Wait interval between packets (in number of IQ samples)
-    int d_wait_interval2;  //
+
+    int d_wait_interval0;  // wait interval for initial synchronization
+    int d_wait_interval1;  // wait interval between P2 and P3 reception
+    int d_wait_interval2;  // wait interval between P3 and new cycle
+
     float d_acorr_thrd;  // Auto-correlation detection threshold
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
-    int d_rx_ready_cnt;  // receiver synchronization counter
-    bool d_gnbrx;  // gNB receiver mode
-    bool d_rxue;   // RxSquad UE receiving mode
-    bool d_phase2; // processing phase 2 signal
+
+    int d_rx_ready_cnt1;  // receiver synchronization counter
+    int d_rx_ready_cnt2;  // receiver synchronization counter
+    bool d_skip_p2_frame; // skip current P2 frame reception
+    bool d_skip_p3_frame;  // skip current P3 frame reception
+
+    int d_corr_buf_pos;
+    float d_current_foe_comp1, d_current_foe_comp2;
+    float d_fine_foe_comp1, d_fine_foe_comp2;
+    int d_fine_foe_cnt1, d_fine_foe_cnt2;
+    uint64_t d_frame_start;
+    // uint64_t d_prev_frame_count;
+    // double d_prev_frame_time;
+    int d_data_samples;
+    int d_wait_count;
 
     float *d_pwrest_buf;
     gr_complex *d_corr_buf;
-    int d_corr_buf_pos;
-    float d_current_foe_comp;
-    float d_fine_foe_comp;
-    int d_fine_foe_cnt;
-    uint64_t d_frame_start;
-    uint64_t d_prev_frame_count;
-    double d_prev_frame_time;
-    int d_data_samples;
-    int d_wait_count;
-    bool d_skip_frame;
 
     static const std::vector<gr_complex> LTF_SEQ;
     gr::filter::kernel::fir_filter_ccc d_xcorr_fir;
@@ -67,14 +70,16 @@ private:
 
     enum
     {
-        RXTIME, SEARCH, FINESYNC, DEFRAME, P3FRAME, WAIT0, WAIT1, WAIT2
+        RXTIME, SEARCH1, SEARCH2, FINESYNC1, FINESYNC2, P2DEFRAME, P3DEFRAME, WAIT0, WAIT1, WAIT2
     } d_state;
 
     int
-    sync_search(const gr_vector_const_void_star &input_items, int buffer_len);
+    sync_search(const gr_vector_const_void_star &input_items, int buffer_len,
+                float &current_foe_comp);
 
     int
-    fine_sync(const gr_vector_const_void_star &input_items, int buffer_len);
+    fine_sync(const gr_vector_const_void_star &input_items, int buffer_len,
+              float &current_foe_comp, float &fine_foe_comp, int &rx_ready_cnt, int &fine_foe_cnt);
 
     void
     send_tagcmd();

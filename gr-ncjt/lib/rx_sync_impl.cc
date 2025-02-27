@@ -185,7 +185,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 break;
             }
             d_frame_start = nitems_read(0) + start_pos;
-            dout << "Packet start at " << d_frame_start << std::endl;
+            dout << "Packet start detected at " << d_frame_start << std::endl;
             consume_each(start_pos);
             d_state = FINESYNC;
             break;
@@ -232,6 +232,16 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_state = WAIT;
             }
 
+            // skip initial frames with unstable FOE
+            // wait for all other receiver all synced
+            if (d_rx_ready_cnt <= 20)
+            {
+                d_data_samples += noutput_samples;
+                consume_each(noutput_samples);
+                noutput_samples = 0;
+                break;
+            }
+
             // add packet frame start tag
             if (d_data_samples == 0)
             {
@@ -267,7 +277,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
-                d_state = SEARCH;
+                d_state =d_state = FINESYNC; // SEARCH;
             }
             if (d_wait_count < 2048)
                 check_rxtime(noutput_samples);
@@ -431,8 +441,8 @@ rx_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buff
         }
         d_current_foe_comp = arg(corr_foe) / (float) CORR_DELAY; // FOE compensation in radians
         float foe_comp_hz = d_current_foe_comp * d_sampling_freq / (2.0 * M_PI);
-        dout << "Coarse frequency offset compensation: " << d_current_foe_comp << " (" << foe_comp_hz << " Hz)"
-             << std::endl;
+        dout << "Coarse frequency offset compensation: "
+            << d_current_foe_comp << " (" << foe_comp_hz << " Hz)" << std::endl;
     }
 
     // return start position of the L-STF (with guard interval)
@@ -484,7 +494,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     }
 
     // scan for first and second xcorr peaks
-    int deltaCSD = 4 * 2;
+    int deltaCSD = 4;
     float first_peak = 0, second_peak = 0;
     int first_peak_pos = -1, second_peak_pos = -1;
     for (int i = 0; i < xcorr_len; i++)
@@ -499,7 +509,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
             first_peak = xcorr_val;
             first_peak_pos = i;
         }
-        else if (i <= first_peak_pos + deltaCSD)
+        else if (i <= first_peak_pos + LTF_LEN / 4 + 5)
         {
             // within scope of first peak
             if (xcorr_val > first_peak)
@@ -564,7 +574,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     else
     {
         d_fine_foe_cnt = 0;
-        d_current_foe_comp += (d_fine_foe_comp + fine_foe_comp) / 100.0;
+        d_current_foe_comp += (d_fine_foe_comp + fine_foe_comp) / 200.0;
         d_fine_foe_comp = 0.0;
         dout << "Fine frequency offset compensation: " << d_current_foe_comp << "    ("
              << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;

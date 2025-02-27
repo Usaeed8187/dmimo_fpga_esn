@@ -172,7 +172,7 @@ pkt_detect_impl::general_work(int noutput_items,
                 break;
             }
             d_frame_start = nitems_read(0) + start_pos;
-            dout << "Packet start at " << d_frame_start << std::endl;
+            dout << "Packet start detected at " << d_frame_start << std::endl;
             consume_each(start_pos);
             d_state = FINESYNC;
             break;
@@ -379,8 +379,8 @@ pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int b
         }
         d_current_foe_comp = arg(corr_foe) / (float) CORR_DELAY; // FOE compensation in radians
         float foe_comp_hz = d_current_foe_comp * d_sampling_freq / (2.0 * M_PI);
-        dout << "Coarse frequency offset compensation: " << d_current_foe_comp << " (" << foe_comp_hz << " Hz)" << std::endl;
-        // d_current_foe_comp = 0.0;
+        dout << "Coarse frequency offset compensation: "
+            << d_current_foe_comp << " (" << foe_comp_hz << " Hz)" << std::endl;
     }
 
     // return start position of the L-STF (with guard interval)
@@ -432,6 +432,7 @@ pkt_detect_impl::fine_sync(const gr_vector_const_void_star &input_items, int buf
     }
 
     // scan for first and second xcorr peaks
+    int deltaCSD = 4;
     float first_peak = 0, second_peak = 0;
     int first_peak_pos = -1, second_peak_pos = -1;
     for (int i = 0; i < xcorr_len; i++)
@@ -465,7 +466,6 @@ pkt_detect_impl::fine_sync(const gr_vector_const_void_star &input_items, int buf
     dout << "Found LTF xcorr peaks at " << first_peak_pos << ", " << second_peak_pos << std::endl;
 
     // sanity checks
-    int deltaCSD = 4;
     int sig_start = -1;
     if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - deltaCSD &&
         second_peak_pos <= first_peak_pos + FFT_LEN + deltaCSD)
@@ -513,7 +513,6 @@ pkt_detect_impl::fine_sync(const gr_vector_const_void_star &input_items, int buf
         d_fine_foe_comp = 0.0;
         dout << "Fine frequency offset compensation: " << d_current_foe_comp << "    ("
              << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;
-//         d_current_foe_comp = 0.0;
     }
 
     // return start position of L-SIG
