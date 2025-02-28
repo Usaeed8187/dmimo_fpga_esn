@@ -153,54 +153,6 @@ blocks:
     coordinate: [192, 12.0]
     rotation: 0
     state: enabled
-- name: scaling_16qam
-  id: variable
-  parameters:
-    comment: ''
-    value: '0.481730686153750'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1048, 20.0]
-    rotation: 0
-    state: true
-- name: scaling_256qam
-  id: variable
-  parameters:
-    comment: ''
-    value: '0.5'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1264, 20.0]
-    rotation: 0
-    state: true
-- name: scaling_64qam
-  id: variable
-  parameters:
-    comment: ''
-    value: '0.531729451315402'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1160, 20.0]
-    rotation: 0
-    state: true
-- name: scaling_qpsk
-  id: variable
-  parameters:
-    comment: ''
-    value: '0.560940733177977'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [944, 20.0]
-    rotation: 0
-    state: true
 - name: tx_gain
   id: variable_qtgui_range
   parameters:
@@ -229,7 +181,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../../matlab/data/2t2s/" + modtype + "/tx_strm_data_.bin"'
+    file: '"../../matlab/data/2t2s/" + modtype + "/tx_strm_data_2t2s.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -275,7 +227,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: nss
-    scaling: scaling_256qam
+    scaling: '0.5'
   states:
     bus_sink: false
     bus_source: false
@@ -295,7 +247,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: nss
-    scaling: scaling_256qam
+    scaling: '0.5'
   states:
     bus_sink: false
     bus_source: false
@@ -333,7 +285,7 @@ blocks:
     autostart: 'True'
     comment: ''
     debug: 'False'
-    filename: '"../../matlab/data/2x2/" + modtype + "/preamble_2x2.bin"'
+    filename: '"../../matlab/data/2t2s/" + modtype + "/preamble_2t2s.bin"'
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -460,7 +412,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr=192.168.30.2"'
+    dev_addr: '"addr=192.168.50.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
