@@ -3,10 +3,10 @@ addpath("./wlan", "./gnuradio/");
 save_txsig = true;
 
 % System configuration
-mimotype = '2x2';
-modtype = "256QAM"; % QPSK/16QAM/64QAM/256QAM
+mimotype = '2t2s';
+modtype = "64QAM"; % QPSK/16QAM/64QAM/256QAM
 % use 510 for QPSK, 1038 for 16QAM, 1558 for 64QAM, 2078 for 256QAM
-PSDULength = 2078;  % for 40 OFDM symbols
+PSDULength = 1558;  % for 40 OFDM symbols
 cfg = sys_config(mimotype, PSDULength, modtype, 'LDPC');
 
 % Load 802.11 beacon signals
@@ -52,22 +52,22 @@ fprintf("Tx signal scaling: %.15f\n", scaling);
 if exist('save_txsig', 'var') && save_txsig
     fprintf("Saving GNU Radio Tx data files ...\n")
     write_complex_binary(txsig(:,1), ...
-        sprintf('./data/%s/%s/txsig_2x2_s1.bin',mimotype,modtype));
+        sprintf('./data/%s/%s/txsig_%s_s1.bin',mimotype,modtype,mimotype));
     write_complex_binary(txsig(:,2), ...
-        sprintf('./data/%s/%s/txsig_2x2_s2.bin',mimotype,modtype));
+        sprintf('./data/%s/%s/txsig_%s_s2.bin',mimotype,modtype,mimotype));
     write_complex_binary(scaling*preamble, ...
-        sprintf('./data/%s/%s/preamble_2x2.bin',mimotype,modtype));
+        sprintf('./data/%s/%s/preamble_%s.bin',mimotype,modtype,mimotype));
 end
 
-fid = fopen(sprintf('./data/%s/%s/enc_data_2x2.bin',mimotype,modtype),'wb');
+fid = fopen(sprintf('./data/%s/%s/enc_data_%s.bin',mimotype,modtype,mimotype),'wb');
 fwrite(fid, encdata(:), "char");
 fclose(fid);
 
-fid = fopen(sprintf('./data/%s/%s/strm_data_2x2.bin',mimotype,modtype),'wb');
+fid = fopen(sprintf('./data/%s/%s/strm_data_%s.bin',mimotype,modtype,mimotype),'wb');
 fwrite(fid, strmdata(:), "char");
 fclose(fid);
 
-fid = fopen(sprintf('./data/%s/%s/tx_strm_data_2x2.bin',mimotype,modtype),'wb');
+fid = fopen(sprintf('./data/%s/%s/tx_strm_data_%s.bin',mimotype,modtype,mimotype),'wb');
 txstrmdata = strmdata.';
 fwrite(fid, txstrmdata, "char");
 fclose(fid);
@@ -75,10 +75,10 @@ fclose(fid);
 txdsyms = txdsyms(cfg.scInd, :, :);
 txdsyms_tmp = reshape(permute(txdsyms, [3, 1, 2]), [], 1); % (Nss, Nsc, Nsyms)
 write_complex_binary(txdsyms_tmp, ...
-    sprintf("./data/%s/%s/txdsyms_2x2.bin",mimotype,modtype));
+    sprintf("./data/%s/%s/txdsyms_%s.bin",mimotype,modtype,mimotype));
 write_complex_binary(txdsyms(:,:,1), ...
-    sprintf("./data/%s/%s/txdsyms_2x2_s1.bin",mimotype,modtype));
+    sprintf("./data/%s/%s/txdsyms_%s_s1.bin",mimotype,modtype,mimotype));
 write_complex_binary(txdsyms(:,:,2), ...
-    sprintf("./data/%s/%s/txdsyms_2x2_s2.bin",mimotype,modtype));
+    sprintf("./data/%s/%s/txdsyms_%s_s2.bin",mimotype,modtype,mimotype));
 
 
