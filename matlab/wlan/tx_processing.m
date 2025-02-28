@@ -59,13 +59,58 @@ dsyms_mapped(cfg.pilotInd, :, :) = pilotsyms;
 % Cyclic shift and direct spatial mapping
 dsyms_shifted = cyclic_shift(dsyms_mapped, cfg.Nfft);
 
-% Spatial mapping
-if cfg.spatialExpansion
-    Nt = 2 * cfg.Nss;
-    dsyms_mapped = spatialMapping(dsyms_shifted, cfg);
+if strcmpi(cfg.mode,'2t1s_svd')
+    x = dsyms_shifted(cfg.scInd, :);
+    x_precoded = zeros([size(x) cfg.Nt]);
+    
+    r1 = read_complex_binary(cfg.csi_dir);
+    h1 = reshape(r1, cfg.Nr, cfg.Nt, cfg.Nsc, []);
+
+    if cfg.wideband
+        h_current = mean(h1, [3,4]);
+
+        [~, ~, V] = svd(h_current);
+        precoding_vector = V(:,1);
+        precoding_vector = sign(precoding_vector(1,1)) .* precoding_vector;
+
+        max_len = min(size(h1, 4), size(x, 2));
+        for channel_idx=1:max_len
+            for sc_ind = 1:cfg.Nsc
+                x_current = x(sc_ind, channel_idx);    
+                x_precoded(sc_ind, channel_idx, :)= precoding_vector * x_current;
+            end
+        end
+        dsyms_mapped = x_precoded;
+        Nt = cfg.Nt;
+    else
+    
+        max_len = min(size(h1, 4), size(x, 2));
+        for channel_idx=1:max_len
+    
+            for sc_ind = 1:cfg.Nsc
+                h_current = squeeze(h1(:, :, sc_ind, channel_idx));
+                x_current = x(sc_ind, channel_idx);
+    
+                [~, ~, V] = svd(h_current);
+                precoding_vector = V(:,1);
+                % precoding_vector = sign(precoding_vector(1,1)) .* precoding_vector;
+    
+                x_precoded(sc_ind, channel_idx, :)= precoding_vector * x_current;
+    
+            end
+        end
+        dsyms_mapped = x_precoded;
+        Nt = cfg.Nt;
+    end
 else
-    Nt = cfg.Nss;
-    dsyms_mapped = dsyms_shifted;
+    % Spatial mapping
+    if cfg.spatialExpansion
+        Nt = 2 * cfg.Nss;
+        dsyms_mapped = spatialMapping(dsyms_shifted, cfg);
+    else
+        Nt = cfg.Nss;
+        dsyms_mapped = dsyms_shifted;
+    end
 end
 
 % OFDM modulation 

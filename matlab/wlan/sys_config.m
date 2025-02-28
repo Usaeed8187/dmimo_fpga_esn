@@ -40,11 +40,16 @@ else
 end
 
 cfg.spatialExpansion = false;
+cfg.mode = mode;
 if strcmpi(mode, '1x1')
     cfg.Nt = 1;  % Number of transmit antennas
     cfg.Nr = 1;  % Number of receive antennas
     cfg.Nss = 1; % Number of spatial streams
 elseif strcmpi(mode, '2t2s')
+    cfg.Nt = 2;  % Number of transmit antennas
+    cfg.Nr = 2;  % Number of receive antennas
+    cfg.Nss = 2; % Number of spatial streams
+elseif strcmpi(mode, '2t1s_svd')
     cfg.Nt = 2;  % Number of transmit antennas
     cfg.Nr = 2;  % Number of receive antennas
     cfg.Nss = 2; % Number of spatial streams
