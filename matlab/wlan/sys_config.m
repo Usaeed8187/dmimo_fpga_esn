@@ -52,7 +52,7 @@ elseif strcmpi(mode, '2t2s')
 elseif strcmpi(mode, '2t1s_svd')
     cfg.Nt = 2;  % Number of transmit antennas
     cfg.Nr = 2;  % Number of receive antennas
-    cfg.Nss = 2; % Number of spatial streams
+    cfg.Nss = 1; % Number of spatial streams per user
 elseif strcmpi(mode, '2x4')
     cfg.Nt = 2;  % Number of transmit antennas
     cfg.Nr = 4;  % Number of receive antennas

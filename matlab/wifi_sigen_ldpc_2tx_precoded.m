@@ -64,24 +64,24 @@ fprintf("Tx signal frame size: %d\n", size(txsig,1));
 if exist('save_txsig', 'var') && save_txsig
     fprintf("Saving GNU Radio Tx data files ...\n")
     write_complex_binary(txsig(:,1), ...
-        sprintf('./data/%s/%s/txsig_2x2_s1.bin',mimotype,modtype));
+        sprintf('./data/%s/%s/txsig_%s_s1.bin',mimotype,modtype,mimotype));
     write_complex_binary(txsig(:,2), ...
-        sprintf('./data/%s/%s/txsig_2x2_s2.bin',mimotype,modtype));
+        sprintf('./data/%s/%s/txsig_%s_s2.bin',mimotype,modtype,mimotype));
     write_complex_binary(scaling*preamble, ...
-        sprintf('./data/%s/preamble_2x2.bin',mimotype));
+        sprintf('./data/%s/preamble_%s.bin',mimotype,mimotype));
 end
 
-fid = fopen(sprintf('./data/%s/%s/enc_data_2x2.bin',mimotype,modtype),'wb');
+fid = fopen(sprintf('./data/%s/%s/enc_data_%s.bin',mimotype,modtype,mimotype),'wb');
 fwrite(fid, encdata(:), "char");
 fclose(fid);
 
-fid = fopen(sprintf('./data/%s/%s/strm_data_2x2.bin',mimotype,modtype),'wb');
+fid = fopen(sprintf('./data/%s/%s/strm_data_%s.bin',mimotype,modtype,mimotype),'wb');
 fwrite(fid, strmdata(:), "char");
 fclose(fid);
 
 txdsyms = txdsyms(cfg.scInd, :, :);
 txdsyms_tmp = reshape(permute(txdsyms, [3, 1, 2]), [], 1);
 write_complex_binary(txdsyms_tmp, ...
-    sprintf("./data/%s/%s/txdsyms_2x2.bin",mimotype,modtype));
+    sprintf("./data/%s/%s/txdsyms_%s.bin",mimotype,modtype,mimotype));
 
 
