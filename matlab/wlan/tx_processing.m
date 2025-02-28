@@ -60,7 +60,7 @@ dsyms_mapped(cfg.pilotInd, :, :) = pilotsyms;
 dsyms_shifted = cyclic_shift(dsyms_mapped, cfg.Nfft);
 
 if strcmpi(cfg.mode,'2t1s_svd')
-    x = dsyms_shifted(cfg.scInd, :);
+    x = dsyms_shifted;
     x_precoded = zeros([size(x) cfg.Nt]);
     
     r1 = read_complex_binary(cfg.csi_dir);
@@ -71,11 +71,12 @@ if strcmpi(cfg.mode,'2t1s_svd')
 
         [~, ~, V] = svd(h_current);
         precoding_vector = V(:,1);
-        precoding_vector = sign(precoding_vector(1,1)) .* precoding_vector;
+        % precoding_vector = precoding_vector ./ sqrt(var(precoding_vector(:)));
+        % precoding_vector = sign(precoding_vector(1,1)) .* precoding_vector;
 
         max_len = min(size(h1, 4), size(x, 2));
         for channel_idx=1:max_len
-            for sc_ind = 1:cfg.Nsc
+            for sc_ind = 1:size(x,1)
                 x_current = x(sc_ind, channel_idx);    
                 x_precoded(sc_ind, channel_idx, :)= precoding_vector * x_current;
             end
@@ -113,11 +114,11 @@ else
     end
 end
 
-dsyms_mapped_rg = zeros(cfg.Nfft,size(dsyms_mapped,2), cfg.Nt);
-dsyms_mapped_rg(cfg.scInd, :, :) = dsyms_mapped;
+% dsyms_mapped_rg = zeros(cfg.Nfft,size(dsyms_mapped,2), cfg.Nt);
+% dsyms_mapped_rg(cfg.scInd, :, :) = dsyms_mapped;
 
 % OFDM modulation 
-txsig = ofdm_mod(cfg, dsyms_mapped_rg, true);
+txsig = ofdm_mod(cfg, dsyms_mapped, true);
 
 % Signal power normalization
 normFactor = cfg.Nfft/sqrt(cfg.Nss*cfg.Nsc);

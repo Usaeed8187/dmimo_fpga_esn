@@ -241,7 +241,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.50.2"'
+    dev_addr: '"addr0=192.168.40.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain

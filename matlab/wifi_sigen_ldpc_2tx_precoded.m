@@ -6,7 +6,7 @@ save_txsig = true;
 mimotype = '2t1s_svd';
 modtype = "16QAM"; % QPSK/16QAM/64QAM/256QAM
 % use 510 for QPSK, 1038 for 16QAM, 1558 for 64QAM, 2078 for 256QAM
-PSDULength = 1038;  % for 40 OFDM symbols
+PSDULength = 510;  % for 40 OFDM symbols
 cfg = sys_config(mimotype, PSDULength, modtype, 'LDPC');
 
 % Load 802.11 beacon signals
@@ -17,7 +17,7 @@ if strcmpi(mimotype, '2t1s_svd')
     cfg.csi_dir = '/tmp/chanest_s1.bin';
     ltf_precoded_time_domain = cal_ltf_precoded_time_domain(cfg);
     htltfx = ltf_precoded_time_domain;
-    htltfx = cat(1, [htltfx(:,1), htltfx(:, 2)], [htltfx(:,1), htltfx(:, 2)]);
+    % htltfx = cat(1, [htltfx(:,1), htltfx(:, 2)], [htltfx(:,1), htltfx(:, 2)]);
 else
     hold = 1;
 end

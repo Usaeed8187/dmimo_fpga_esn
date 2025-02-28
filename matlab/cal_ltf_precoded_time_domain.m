@@ -12,6 +12,8 @@ if cfg.wideband
     
     [~, ~, V] = svd(h_current);
     precoding_vector = V(:,1);
+
+    % precoding_vector = precoding_vector ./ sqrt(var(precoding_vector(:)));
     
     % precoding_vector = precoding_vector / mean(abs(precoding_vector).^2);
     % precoding_vector = sign(precoding_vector(1,1)) .* precoding_vector;
@@ -47,5 +49,7 @@ ltfRef_precoded_rg(cfg.scInd, :) = ltfRef_precoded;
 
 ltf_precoded_time_domain = ofdm_mod(cfg, ltfRef_precoded_rg, true);
 
+normFactor = cfg.Nfft/sqrt(cfg.Nss*cfg.Nsc);
+ltf_precoded_time_domain = normFactor * ltf_precoded_time_domain;
 
 end % EOF
