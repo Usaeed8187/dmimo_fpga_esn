@@ -42,8 +42,10 @@ else
     end
 end
 
+ltfRef_precoded_rg = zeros(cfg.Nfft,cfg.Nt);
+ltfRef_precoded_rg(cfg.scInd, :) = ltfRef_precoded;
 
-ltf_precoded_time_domain = ofdm_mod(cfg, ltfRef_precoded, true);
+ltf_precoded_time_domain = ofdm_mod(cfg, ltfRef_precoded_rg, true);
 
 
 end % EOF

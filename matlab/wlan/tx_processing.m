@@ -113,8 +113,11 @@ else
     end
 end
 
+dsyms_mapped_rg = zeros(cfg.Nfft,size(dsyms_mapped,2), cfg.Nt);
+dsyms_mapped_rg(cfg.scInd, :, :) = dsyms_mapped;
+
 % OFDM modulation 
-txsig = ofdm_mod(cfg, dsyms_mapped, true);
+txsig = ofdm_mod(cfg, dsyms_mapped_rg, true);
 
 % Signal power normalization
 normFactor = cfg.Nfft/sqrt(cfg.Nss*cfg.Nsc);
