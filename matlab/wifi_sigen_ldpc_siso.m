@@ -4,9 +4,9 @@ save_txsig = true;
 
 % System configuration
 mimotype = '1x1';
-modtype = "256QAM"; % QPSK/16QAM/64QAM
+modtype = "64QAM"; % QPSK/16QAM/64QAM
 % use 250 for QPSK, 510 for 16QAM, 778 for 64QAM, 1038/1298 for 256QAM
-PSDULength = 1038; % 40/50 OFDM symbols
+PSDULength = 778; % 40/50 OFDM symbols
 cfg = sys_config(mimotype, PSDULength, modtype, 'LDPC');
 
 % Load 802.11 beacon signals
@@ -56,7 +56,7 @@ if exist('save_txsig', 'var') && save_txsig
     write_complex_binary(txsig(:,1), ...
         sprintf('./data/%s/%s/txsig_1x1_s1.bin',mimotype,modtype));
     write_complex_binary(scaling*preamble, ...
-        sprintf('./data/%s/preamble_1x1.bin',mimotype));
+        sprintf('./data/%s/ncjt_preamble_1x1.bin',mimotype));
 end
 
 fid = fopen(sprintf('./data/%s/%s/enc_data_1x1.bin',mimotype,modtype),'wb');
