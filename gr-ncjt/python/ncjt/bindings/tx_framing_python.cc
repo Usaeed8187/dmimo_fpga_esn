@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(tx_framing.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(8c580ee8a95e14ebf7f748f48fd08c8e) */
+/* BINDTOOL_HEADER_FILE_HASH(137e0461ed713fea81a6b874eae6133a) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,10 +36,9 @@ void bind_tx_framing(py::module &m) {
   py::class_<tx_framing, gr::tagged_stream_block, gr::block, gr::basic_block,
              std::shared_ptr<tx_framing>>(m, "tx_framing", D(tx_framing))
 
-      .def(py::init(&tx_framing::make), py::arg("ntx"), py::arg("ndatasyms"),
-           py::arg("filename"), py::arg("fs"), py::arg("pktspersec"),
-           py::arg("starttime"), py::arg("padding"),
-           py::arg("autostart") = true, py::arg("debug") = false,
+      .def(py::init(&tx_framing::make), py::arg("nstrm"), py::arg("ndatasyms"),
+           py::arg("filename"), py::arg("fs"), py::arg("interval"),
+           py::arg("starttime"), py::arg("padding"), py::arg("debug"),
            D(tx_framing, make))
 
       ;
