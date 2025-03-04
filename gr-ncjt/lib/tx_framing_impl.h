@@ -15,13 +15,13 @@ namespace gr::ncjt
 class tx_framing_impl : public tx_framing
 {
 private:
-    const int SYM_LEN = 80; // OFDM symbol length
+    const int SYM_LEN = 80; // OFDM symbol length (FFT+CP)
 
-    int d_nstrm;          // number of streams
+    int d_ntx;            // number of transmitter antennas
     int d_frame_length;   // full transmission frame length (beacon, data, and padding)
     int d_beacon_len;     // beacon length in samples
     int d_data_length;    // data symbols length in samples
-    int d_padding_length; // zero padding length
+    int d_padding_length; // zero padding length in samples
 
     double d_repeat_interval;
     uint64_t d_time_secs;
@@ -39,8 +39,8 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    tx_framing_impl(int nstrm, int ndatasyms, const char *filename, double fs,
-                    double interval, int starttime, int padding, bool debug);
+    tx_framing_impl(int ntx, int ndatasyms, const char *filename, double fs,
+                    int pktspersec, double starttime, int padding, bool debug);
     ~tx_framing_impl();
 
     int

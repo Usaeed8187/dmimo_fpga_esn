@@ -12,46 +12,46 @@ namespace gr::ncjt
 {
 
 tx_framing::sptr
-tx_framing::make(int nstrm, int ndatasyms,
-                 const char *filename, double fs,
-                 double interval, int starttime, int padding,
-                 bool debug)
+tx_framing::make(int ntx, int ndatasyms, const char *filename, double fs,
+                 int pktspersec, double starttime, int padding, bool debug)
 {
     return gnuradio::make_block_sptr<tx_framing_impl>(
-        nstrm, ndatasyms, filename, fs, interval, starttime, padding, debug);
+        ntx, ndatasyms, filename, fs, pktspersec, starttime, padding, debug);
 }
 
-tx_framing_impl::tx_framing_impl(int nstrm,
-                                 int ndatasyms,
-                                 const char *filename,
-                                 double fs,
-                                 double interval,
-                                 int starttime,
-                                 int padding,
-                                 bool debug)
+tx_framing_impl::tx_framing_impl(int ntx, int ndatasyms, const char *filename, double fs,
+                                 int pktspersec, double starttime, int padding, bool debug)
     : gr::tagged_stream_block("tx_framing",
-                              gr::io_signature::make(nstrm, nstrm, sizeof(gr_complex)),
-                              gr::io_signature::make(nstrm, nstrm, sizeof(gr_complex)),
+                              gr::io_signature::make(ntx, ntx, sizeof(gr_complex)),
+                              gr::io_signature::make(ntx, ntx, sizeof(gr_complex)),
                               "packet_len"),
-      d_padding_length(padding), d_repeat_interval(interval), d_debug(debug)
+      d_padding_length(padding), d_debug(debug)
 {
-    if (nstrm < 1 || nstrm > 8)
-        throw std::runtime_error("only support 1 to 8 streams");
-    d_nstrm = nstrm;
+    if (ntx < 1 || ntx > 8)
+        throw std::runtime_error("only support 1 to 8 transmitter antennas");
+    d_ntx = ntx;
+
+    if (pktspersec <= 0 || pktspersec > 200)
+        throw std::runtime_error("invalid sampling packet transmission interval specified");
+    d_repeat_interval = 1.0 / (double) pktspersec;
 
     d_beacon_data = nullptr;
     if ((d_beacon_len = read_beacon_data(filename)) <= 0)
         throw std::runtime_error("failed to read frame data");
-    d_beacon_len /= d_nstrm;
+    d_beacon_len /= d_ntx;
     std::cout << "Beacon length: " << d_beacon_len << std::endl;
 
     d_data_length = ndatasyms * SYM_LEN;
     d_frame_length = d_beacon_len + d_data_length + 2 * d_padding_length;
-    if (d_frame_length >= 0.5 * interval * fs)
+    if (d_frame_length >= int(0.5 * d_repeat_interval * fs))
         throw std::runtime_error("packet frame too large");
 
-    d_time_secs = starttime;
-    d_time_fracs = 0.0;
+    if (starttime < 0.0 || starttime > 30.0)
+        throw std::runtime_error("invalid start time specified");
+
+    double intpart;
+    d_time_fracs = std::modf(starttime, &intpart);
+    d_time_secs = uint64_t(intpart);
 
     std::stringstream str;
     str << name() << unique_id();
@@ -79,7 +79,7 @@ tx_framing_impl::work(int noutput_items, gr_vector_int &ninput_items,
                       gr_vector_void_star &output_items)
 {
     int min_input_items = ninput_items[0];
-    for (int s = 1; s < d_nstrm; s++)
+    for (int s = 1; s < d_ntx; s++)
         min_input_items = std::min(min_input_items, ninput_items[s]);
     if (min_input_items != d_data_length)
     {
@@ -93,7 +93,7 @@ tx_framing_impl::work(int noutput_items, gr_vector_int &ninput_items,
         throw std::runtime_error("output buffer size too small");
     }
 
-    for (int s = 0; s < d_nstrm; s++)
+    for (int s = 0; s < d_ntx; s++)
     {
         auto in = (const gr_complex *) input_items[s];
         auto out = (gr_complex *) output_items[s];
