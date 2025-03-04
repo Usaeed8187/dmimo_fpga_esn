@@ -2,8 +2,9 @@ backup
 data
 data*/
 testdata
-demo*/*.py
-tests*/*.py
+demo/*.py
+demo_grc/*/*.py
+*/tests*/*.py
 build
 cmake-build-debug/
 .idea

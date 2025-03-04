@@ -57,30 +57,18 @@ blocks:
     coordinate: [296, 12.0]
     rotation: 0
     state: enabled
-- name: mod_order
+- name: modulations
   id: variable
   parameters:
     comment: ''
-    value: '6'
+    value: '{2: "QPSK", 4: "16QAM", 6: "64QAM", 8: "256QAM"}'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 156.0]
+    coordinate: [984, 28.0]
     rotation: 0
-    state: true
-- name: modtype
-  id: variable
-  parameters:
-    comment: ''
-    value: '"64QAM"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [200, 156.0]
-    rotation: 0
-    state: true
+    state: enabled
 - name: num_data_syms
   id: variable
   parameters:
@@ -90,19 +78,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 84.0]
+    coordinate: [432, 84.0]
     rotation: 0
     state: true
-- name: num_preamble_syms
+- name: num_ltf_syms
   id: variable
   parameters:
     comment: ''
-    value: '3'
+    value: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 84.0]
+    coordinate: [320, 84.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -117,6 +105,30 @@ blocks:
     coordinate: [200, 84.0]
     rotation: 0
     state: true
+- name: qam_order
+  id: variable
+  parameters:
+    comment: ''
+    value: '6'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [560, 84.0]
+    rotation: 0
+    state: true
+- name: qam_type
+  id: variable
+  parameters:
+    comment: ''
+    value: modulations[qam_order]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 28.0]
+    rotation: 0
+    state: enabled
 - name: rf_freq
   id: variable
   parameters:
@@ -126,7 +138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [456, 12.0]
+    coordinate: [560, 12.0]
     rotation: 0
     state: enabled
 - name: rx_gain
@@ -141,13 +153,13 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '15'
+    value: '20'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 12.0]
+    coordinate: [688, 12.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -177,7 +189,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 540.0]
+    coordinate: [1144, 468.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0_0
@@ -195,7 +207,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 620.0]
+    coordinate: [1144, 548.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0_1
@@ -213,7 +225,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1488, 324.0]
+    coordinate: [1456, 252.0]
     rotation: 0
     state: enabled
 - name: ncjt_ltf_chanest_0
@@ -237,7 +249,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 376.0]
+    coordinate: [672, 304.0]
     rotation: 0
     state: enabled
 - name: ncjt_mimo_detect_0
@@ -258,7 +270,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 372.0]
+    coordinate: [912, 300.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -276,7 +288,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 392.0]
+    coordinate: [496, 320.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0
@@ -294,7 +306,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 424.0]
+    coordinate: [496, 352.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_detect_0
@@ -304,14 +316,14 @@ blocks:
     affinity: '2'
     alias: ''
     comment: ''
-    dataframelen: (fft_size+cp_len)*(2+num_data_syms)
+    dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
     debug: 'False'
     maxcorrlen: '4000'
     maxoutbuf: '0'
     minoutbuf: '32768'
     nchans: '2'
     pktspersec: pkts_per_sec
-    preamblelen: (fft_size+cp_len)*num_preamble_syms
+    preamblelen: (fft_size+cp_len)*3
     samplerate: samp_rate
     syncall: 'False'
     xcorrthrd: '0.5'
@@ -319,7 +331,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [312, 380.0]
+    coordinate: [280, 308.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0
@@ -330,7 +342,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../../matlab/data/2t2s/" + modtype + "/strm_data_2t2s.bin"'
+    filename: '"../../data/su_mimo/2t2s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -339,7 +351,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1344, 376.0]
+    coordinate: [1312, 304.0]
     rotation: 0
     state: enabled
 - name: ncjt_qam_demapper_0
@@ -351,14 +363,14 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    modtype: mod_order
+    modtype: qam_order
     nstrms: '2'
     usecsi: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 376.0]
+    coordinate: [1144, 304.0]
     rotation: 0
     state: enabled
 - name: pdu_pdu_to_tagged_stream_0
@@ -375,7 +387,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 556.0]
+    coordinate: [936, 484.0]
     rotation: 0
     state: true
 - name: pdu_pdu_to_tagged_stream_0_0
@@ -392,7 +404,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 636.0]
+    coordinate: [936, 564.0]
     rotation: 0
     state: true
 - name: qtgui_const_sink_x_0
@@ -484,7 +496,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 292.0]
+    coordinate: [1144, 220.0]
     rotation: 0
     state: true
 - name: qtgui_const_sink_x_0_0
@@ -576,7 +588,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 468.0]
+    coordinate: [1144, 396.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0
@@ -673,7 +685,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1488, 420.0]
+    coordinate: [1456, 348.0]
     rotation: 0
     state: true
 - name: uhd_usrp_source_0
@@ -851,7 +863,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"addr=192.168.50.2"'
+    dev_addr: '"addr=192.168.40.2"'
     dev_args: ''
     gain0: rx_gain
     gain1: rx_gain
@@ -1109,7 +1121,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [88, 328.0]
+    coordinate: [48, 252.0]
     rotation: 0
     state: enabled
 
