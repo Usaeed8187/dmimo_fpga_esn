@@ -2,13 +2,16 @@ backup
 data
 data*/
 testdata
-demo/*.py
-tests/*.py
+demo*/*.py
+tests*/*.py
 build
 cmake-build-debug/
 .idea
 .DS_Store
 .vscode/
 __pycache__
+*.mat
+*.png
+*.jpg
 *~
 
