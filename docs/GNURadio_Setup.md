@@ -23,8 +23,9 @@ export CMAKE_INSTALL_PREFIX
 ```
 Install additional packages for GNU Radio dependency.
 ```
+source ~/gnuradio/bin/activate
 pip install packaging pygobject pyqt5 pyqtgraph mako pyopengl \
-  pygccxml jsonschema pyyaml numpy=1.26.4 scipy click-plugins
+  pygccxml jsonschema pyyaml numpy==1.26.4 scipy click-plugins
 ```
 
 ## Install GNU Radio
