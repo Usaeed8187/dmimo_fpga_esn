@@ -60,7 +60,7 @@ elseif strcmpi(mode, '4t2s')
     cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)
     cfg.spatialExpansion = true;
     cfg.spatialMapping = repmat([1,0; 0,1; 1,0; 0,1].', 1, 1, 56);   
-elseif strcmpi(mode, '4x2csd')
+elseif strcmpi(mode, '4t2s_csd')
     cfg.Nt = 4;  % Number of transmit antennas
     cfg.Nss = 2; % Number of spatial streams
     cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)

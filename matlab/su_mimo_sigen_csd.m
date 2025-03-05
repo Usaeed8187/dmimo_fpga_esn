@@ -1,4 +1,7 @@
-function su_mimo_sigen(mimotype, psdulen, modtype, cctype, datadir)
+function su_mimo_sigen_csd(mimotype, psdulen, modtype, cctype, datadir)
+% Generate Tx signal for 4x2 MIMO downlink
+% using CSD for 2-stream transmission,
+% with additional 4x4 HT-LTF for CSI feedback
 
 % System configuration
 cfg = sys_config(mimotype, psdulen, modtype, cctype);
@@ -6,14 +9,15 @@ cfg = sys_config(mimotype, psdulen, modtype, cctype);
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder
 
-% Load 802.11 beacon signals
-if strcmpi(mimotype, "2t2s")
-    b = load('beacon2x2.mat');
-elseif strcmpi(mimotype, "4t4s")
-    b= load('beacon4x4.mat');
-else
-   error('Unkown MIMO setup')
-end
+% Load 4x4 HT LTF signals (for CSI feedback)
+b = load('beacon4x4.mat');
+
+% Spatial mapping for HT-LTF (for data reception)
+ltf = load('beacon2x2.mat', 'htltf').htltf;
+ltf = reshape(ltf, 80, [], 2);
+ltfx = fftshift(fft(ltf(17:end,:,:)), 1);
+htltfx = ifft(ifftshift(spatialMapping(ltfx, cfg), 1));
+htltfx = sqrt(0.5)*reshape([htltfx(49:end,:,:); htltfx], [], 4); % add CP
 
 % Set random substream
 stream = RandStream('mt19937ar','Seed',2201203);
@@ -26,7 +30,7 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 [txdata, encdata, strmdata, txdsyms] = tx_processing(cfg, txPSDU);
 
 % Time-domain preamble signals (HT-SIG, HT-STF, HT-LTF)
-preamble = [b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; b.htltf];
+preamble = sqrt(2)*[b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; b.htltf; htltfx];
 
 % Prepare transmitter signal for USRP
 txFrame = reshape([preamble; txdata], (cfg.Nfft+cfg.Ncp), [], cfg.Nt);
@@ -78,7 +82,7 @@ txdsyms_intlv = reshape(permute(txdsyms, [3, 1, 2]), [], 1); % (Nss, Nsc, Nsyms)
 write_complex_binary(txdsyms_intlv, ...
     sprintf("%s/%s/%s/txdsyms.bin",datadir,mimotype,modtype));
 
-for k=1:cfg.Nt
+for k=1:cfg.Nss
     write_complex_binary(txdsyms(:,:,k), ...
         sprintf("%s/%s/%s/txdsyms_s%d.bin",datadir,mimotype,modtype,k));
 end
