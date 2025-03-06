@@ -49,6 +49,7 @@ namespace py = pybind11;
     void bind_ul_precoding_offline(py::module& m);
     void bind_rx_sync(py::module& m);
     void bind_gnb_sync(py::module& m);
+    void bind_tx_frm_ctrl(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -105,5 +106,6 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_ul_precoding_offline(m);
     bind_rx_sync(m);
     bind_gnb_sync(m);
+    bind_tx_frm_ctrl(m);
     // ) END BINDING_FUNCTION_CALLS
 }

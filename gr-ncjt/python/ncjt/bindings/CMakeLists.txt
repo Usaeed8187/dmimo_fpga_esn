@@ -51,7 +51,8 @@ list(APPEND ncjt_python_files
     video_sink_python.cc
     ul_precoding_offline_python.cc
     rx_sync_python.cc
-    gnb_sync_python.cc python_bindings.cc)
+    gnb_sync_python.cc
+    tx_frm_ctrl_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(ncjt ../../.. gr::ncjt "${ncjt_python_files}")
 

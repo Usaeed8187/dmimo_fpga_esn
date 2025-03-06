@@ -43,7 +43,8 @@ list(APPEND ncjt_sources
     video_sink_impl.cc
     ul_precoding_offline_impl.cc
     rx_sync_impl.cc
-    gnb_sync_impl.cc)
+    gnb_sync_impl.cc
+    tx_frm_ctrl_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"

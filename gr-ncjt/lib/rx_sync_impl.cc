@@ -149,30 +149,6 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             // send tag command and check current timestamp
             send_tagcmd();
 
-            // skip self transmission period if possible (assuming gNB transmission aligns with PPS signal)
-            /*if (d_gnbrx && d_prev_frame_count > 0)
-            {
-                // get current time using previous information from rx_time tags
-                double cur_time =
-                    d_prev_frame_time + double(nitems_read(0) - d_prev_frame_count) / d_sampling_freq;
-                double intpart;
-                double time_frac = std::modf(cur_time, &intpart);
-                // while (time_frac >= d_pkt_interval)
-                //    time_frac -= d_pkt_interval;
-                time_frac = std::modf(time_frac / d_pkt_interval, &intpart) * d_pkt_interval;
-
-                int skip_samples = 0;
-                if (time_frac <= 0.1 * d_pkt_interval)
-                    skip_samples = std::min(min_input_items, int((0.2 * d_pkt_interval - time_frac) * d_sampling_freq));
-                if (time_frac >= 0.9 * d_pkt_interval)
-                    skip_samples = std::min(min_input_items, int(0.2 * d_pkt_interval * d_sampling_freq));
-                if (skip_samples > 0)
-                {
-                    consume_each(skip_samples);
-                    break;
-                }
-            }*/
-
             // search for frame start
             int buffer_len = ((min_input_items > d_max_corr_len) ? d_max_corr_len : min_input_items);
             if (buffer_len < 8 * STF_LEN)
@@ -277,7 +253,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
-                d_state =d_state = FINESYNC; // SEARCH;
+                d_state = FINESYNC; // SEARCH;
             }
             if (d_wait_count < 2048)
                 check_rxtime(noutput_samples);
@@ -328,7 +304,8 @@ rx_sync_impl::check_rxtime(int rx_windows_size)
         d_prev_frame_time = time_fracs; // (double) time_secs + time_fracs;
 
         if ((d_state == DEFRAME || d_state == WAIT)
-            && current_pos >= d_frame_start && d_frame_start > 0) // && current_pos < d_frame_start + uint64_t(d_wait_interval))
+            && current_pos >= d_frame_start
+            && d_frame_start > 0) // && current_pos < d_frame_start + uint64_t(d_wait_interval))
         {
             // get the actual time for current frmstart
             double frmstart_time = time_fracs + double(time_secs);
@@ -442,7 +419,7 @@ rx_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buff
         d_current_foe_comp = arg(corr_foe) / (float) CORR_DELAY; // FOE compensation in radians
         float foe_comp_hz = d_current_foe_comp * d_sampling_freq / (2.0 * M_PI);
         dout << "Coarse frequency offset compensation: "
-            << d_current_foe_comp << " (" << foe_comp_hz << " Hz)" << std::endl;
+             << d_current_foe_comp << " (" << foe_comp_hz << " Hz)" << std::endl;
     }
 
     // return start position of the L-STF (with guard interval)
@@ -587,28 +564,28 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
 // conjugated and reversed LTF sequence
 const
 std::vector<gr_complex> rx_sync_impl::LTF_SEQ = {
-    gr_complex(-0.0455, -1.0679), gr_complex(0.3528, -0.9865), gr_complex(0.8594, 0.7348),
-    gr_complex(0.1874, 0.2475), gr_complex(0.5309, -0.7784), gr_complex(-1.0218, -0.4897),
-    gr_complex(-0.3401, -0.9423), gr_complex(0.8657, -0.2298), gr_complex(0.4734, 0.0362),
-    gr_complex(0.0088, -1.0207), gr_complex(-1.2142, -0.4205), gr_complex(0.2172, -0.5195),
-    gr_complex(0.5207, -0.1326), gr_complex(-0.1995, 1.4259), gr_complex(1.0583, -0.0363),
-    gr_complex(0.5547, -0.5547), gr_complex(0.3277, 0.8728), gr_complex(-0.5077, 0.3488),
-    gr_complex(-1.1650, 0.5789), gr_complex(0.7297, 0.8197), gr_complex(0.6173, 0.1253),
-    gr_complex(-0.5353, 0.7214), gr_complex(-0.5011, -0.1935), gr_complex(-0.3110, -1.3392),
-    gr_complex(-1.0818, -0.1470), gr_complex(-1.1300, -0.1820), gr_complex(0.6663, -0.6571),
-    gr_complex(-0.0249, 0.4773), gr_complex(-0.8155, 1.0218), gr_complex(0.8140, 0.9396),
-    gr_complex(0.1090, 0.8662), gr_complex(-1.3868, -0.0000), gr_complex(0.1090, -0.8662),
-    gr_complex(0.8140, -0.9396), gr_complex(-0.8155, -1.0218), gr_complex(-0.0249, -0.4773),
-    gr_complex(0.6663, 0.6571), gr_complex(-1.1300, 0.1820), gr_complex(-1.0818, 0.1470),
-    gr_complex(-0.3110, 1.3392), gr_complex(-0.5011, 0.1935), gr_complex(-0.5353, -0.7214),
-    gr_complex(0.6173, -0.1253), gr_complex(0.7297, -0.8197), gr_complex(-1.1650, -0.5789),
-    gr_complex(-0.5077, -0.3488), gr_complex(0.3277, -0.8728), gr_complex(0.5547, 0.5547),
-    gr_complex(1.0583, 0.0363), gr_complex(-0.1995, -1.4259), gr_complex(0.5207, 0.1326),
-    gr_complex(0.2172, 0.5195), gr_complex(-1.2142, 0.4205), gr_complex(0.0088, 1.0207),
-    gr_complex(0.4734, -0.0362), gr_complex(0.8657, 0.2298), gr_complex(-0.3401, 0.9423),
-    gr_complex(-1.0218, 0.4897), gr_complex(0.5309, 0.7784), gr_complex(0.1874, -0.2475),
-    gr_complex(0.8594, -0.7348), gr_complex(0.3528, 0.9865), gr_complex(-0.0455, 1.0679),
-    gr_complex(1.3868, -0.0000),
+    gr_complex(0.387815, 1.383373), gr_complex(0.629355, -0.030737), gr_complex(0.461168, -0.522862),
+    gr_complex(-0.404599, -1.099085), gr_complex(0.961322, -0.288129), gr_complex(0.848315, 0.433988),
+    gr_complex(-0.044150, -0.901229), gr_complex(-0.669582, -0.310998), gr_complex(-0.332859, -0.312715),
+    gr_complex(1.009401, -0.210974), gr_complex(0.687483, 0.823841), gr_complex(-0.192325, -0.652262),
+    gr_complex(-0.480830, -0.015011), gr_complex(0.018589, 1.452701), gr_complex(-0.661930, 0.736988),
+    gr_complex(-0.832050, 0.832050), gr_complex(0.830611, -0.139572), gr_complex(-0.280670, -0.339226),
+    gr_complex(-1.193270, 0.538236), gr_complex(-0.917076, -0.584965), gr_complex(-0.414197, -0.176768),
+    gr_complex(0.962484, 0.255799), gr_complex(-0.139442, -1.321481), gr_complex(0.114882, -0.865699),
+    gr_complex(0.876366, 0.323971), gr_complex(-0.926335, -0.208639), gr_complex(-0.994119, 0.096130),
+    gr_complex(-0.704801, 1.187012), gr_complex(-0.596485, -0.153677), gr_complex(-0.042337, -0.713263),
+    gr_complex(0.652517, 1.171849), gr_complex(1.386750, 0.000000), gr_complex(0.652517, -1.171849),
+    gr_complex(-0.042337, 0.713263), gr_complex(-0.596485, 0.153677), gr_complex(-0.704801, -1.187012),
+    gr_complex(-0.994119, -0.096130), gr_complex(-0.926335, 0.208639), gr_complex(0.876366, -0.323971),
+    gr_complex(0.114882, 0.865699), gr_complex(-0.139442, 1.321481), gr_complex(0.962484, -0.255799),
+    gr_complex(-0.414197, 0.176768), gr_complex(-0.917076, 0.584965), gr_complex(-1.193270, -0.538236),
+    gr_complex(-0.280670, 0.339226), gr_complex(0.830611, 0.139572), gr_complex(-0.832050, -0.832050),
+    gr_complex(-0.661930, -0.736988), gr_complex(0.018589, -1.452701), gr_complex(-0.480830, 0.015011),
+    gr_complex(-0.192325, 0.652262), gr_complex(0.687483, -0.823841), gr_complex(1.009401, 0.210974),
+    gr_complex(-0.332859, 0.312715), gr_complex(-0.669582, 0.310998), gr_complex(-0.044150, 0.901229),
+    gr_complex(0.848315, -0.433988), gr_complex(0.961322, 0.288129), gr_complex(-0.404599, 1.099085),
+    gr_complex(0.461168, 0.522862), gr_complex(0.629355, 0.030737), gr_complex(0.387815, -1.383373),
+    gr_complex(1.386750, 0.000000)
 };
 
 } /* namespace gr::ncjt */
