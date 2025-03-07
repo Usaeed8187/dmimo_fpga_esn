@@ -18,25 +18,21 @@ static const pmt::pmt_t RATE_KEY = pmt::string_to_symbol("rx_rate");
 static const pmt::pmt_t FREQ_KEY = pmt::string_to_symbol("rx_freq");
 
 pkt_detect::sptr
-pkt_detect::make(int nchans, int preamblelen, int dataframelen,
-                 double samplerate, int pktspersec,
-                 double acorr_thrd, double xcorr_thrd,
-                 int max_corr_len, bool sync_all, bool debug)
+pkt_detect::make(int nchans, int preamblelen, int dataframelen, double samplerate, int pktspersec,
+                 double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool sync_all, bool debug)
 {
     return gnuradio::make_block_sptr<pkt_detect_impl>(
-        nchans, preamblelen, dataframelen, samplerate, pktspersec, acorr_thrd,
-        xcorr_thrd, max_corr_len, sync_all, debug);
+        nchans, preamblelen, dataframelen, samplerate, pktspersec,
+        rxpwr_thrd, acorr_thrd, xcorr_thrd, max_corr_len, sync_all, debug);
 }
 
-pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
-                                 double samplerate, int pktspersec,
-                                 double acorr_thrd, double xcorr_thrd,
-                                 int max_corr_len, bool sync_all, bool debug)
+pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen, double samplerate, int pktspersec,
+                                 double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool sync_all, bool debug)
     : gr::block("pkt_detect",
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex)),
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex))),
-      d_sampling_freq(samplerate), d_acorr_thrd(acorr_thrd),
-      d_xcorr_thrd(xcorr_thrd), d_max_corr_len(max_corr_len), d_rx_ready_cnt(0), d_sync_all(sync_all), d_fine_foe_cnt(1),
+      d_sampling_freq(samplerate), d_rxpwr_thrd(rxpwr_thrd), d_acorr_thrd(acorr_thrd),d_xcorr_thrd(xcorr_thrd),
+      d_max_corr_len(max_corr_len), d_rx_ready_cnt(0), d_sync_all(sync_all), d_fine_foe_cnt(1),
       d_xcorr_fir(gr::filter::kernel::fir_filter_ccc(LTF_SEQ)), d_debug(debug)
 {
     if (nchans < 1 || nchans > MAX_CHANS)
@@ -53,11 +49,11 @@ pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
     if (preamblelen < 0 || preamblelen > int(samplerate / pktspersec))
         throw std::runtime_error("invalid data frame length specified");
 
-    // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF
-    d_frame_len = dataframelen + preamblelen - 3 * SYM_LEN; // 3*SYM_LEN;
+    // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF (3*SYM_LEN)
+    d_frame_len = dataframelen + preamblelen - 3 * SYM_LEN;
 
     d_pkt_interval = 1.0 / (double) pktspersec;
-    // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT fields
+    // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT-SIG and HT-LTF
     d_wait_interval = (int) floor(samplerate * d_pkt_interval) - d_frame_len - 8 * SYM_LEN;
 
     d_corr_buf_pos = 0;
@@ -193,7 +189,7 @@ pkt_detect_impl::general_work(int noutput_items,
                 break;
             }
             d_frame_start = nitems_read(0) + htsig_start;
-            dout << "Frame start at " << d_frame_start << std::endl;
+            dout << "Data frame start at " << d_frame_start << std::endl;
             d_data_samples = 0;
             d_state = DEFRAME;
 
@@ -333,9 +329,9 @@ pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int b
         power_est += sig_pwr;
         d_pwrest_buf[d_corr_buf_pos] = sig_pwr;
 
-        // check auto-corr peaks, use noise lower-bound 1e-2 to avoid false detection
-        float corr_norm = norm(auto_corr) / (power_est * power_est + 1e-8f);
-        if (corr_norm >= d_acorr_thrd)
+        // check auto-corr peaks, use noise lower-bound to avoid false detection
+        float corr_norm = norm(auto_corr) / (power_est * power_est + 1e-6f);
+        if (power_est > d_rxpwr_thrd && corr_norm >= d_acorr_thrd)
         {
             if (peak_duration == 0)
                 peak_start = i;
@@ -354,10 +350,10 @@ pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int b
         power_est -= d_pwrest_buf[oldest_corr_pos];
 
         // break when S-LTF is found
-        if (peak_duration >= 3 * CORR_DELAY)
+        if (peak_duration >= PEAK_THRD * CORR_DELAY)
         {
             // frame start should be within CORR_DELAY samples before the start of L-STF
-            frame_start_pos = peak_start - 3 * CORR_DELAY;
+            frame_start_pos = peak_start - (PEAK_THRD - 2) * CORR_DELAY;
             dout << "Autocorr peak found at " << peak_start << " (peak duration " << peak_duration << ")" << std::endl;
             break;
         }
@@ -380,7 +376,7 @@ pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int b
         d_current_foe_comp = arg(corr_foe) / (float) CORR_DELAY; // FOE compensation in radians
         float foe_comp_hz = d_current_foe_comp * d_sampling_freq / (2.0 * M_PI);
         dout << "Coarse frequency offset compensation: "
-            << d_current_foe_comp << " (" << foe_comp_hz << " Hz)" << std::endl;
+             << d_current_foe_comp << " (" << foe_comp_hz << " Hz)" << std::endl;
     }
 
     // return start position of the L-STF (with guard interval)
@@ -390,8 +386,7 @@ pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int b
 int
 pkt_detect_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer_len)
 {
-
-    // compensate coarse FOE
+    // compensate for current FOE
     for (int i = 0; i < buffer_len; i++)
     {
         gr_complex comp_val = exp(gr_complex(0, d_current_foe_comp * (double) i));

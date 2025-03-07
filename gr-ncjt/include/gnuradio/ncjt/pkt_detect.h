@@ -32,9 +32,8 @@ public:
      * creating new instances.
      */
     static sptr
-    make(int nchans, int preamblelen, int dataframelen,
-         double samplerate, int pktspersec, double acorr_thrd,
-         double xcorr_thrd, int max_corr_len, bool sync_all, bool debug = false);
+    make(int nchans, int preamblelen, int dataframelen, double samplerate, int pktspersec,
+         double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool sync_all, bool debug = false);
 };
 
 } // namespace gr::ncjt

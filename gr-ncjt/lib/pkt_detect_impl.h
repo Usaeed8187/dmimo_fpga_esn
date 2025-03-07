@@ -24,20 +24,22 @@ private:
     const int CORR_WINDOW = 48;  // Auto-corr window size
     const int CORR_BUF_LEN = 64; // Ring buffer length
     const int XCORR_DATA_LEN = LTF_LEN * 4; // Cross-correlation data buffer length
-    const int MAX_XCORR_LEN = 1024; // Maximum cross-correlation output buffer length
+    const int MAX_XCORR_LEN = 1024;   // Maximum cross-correlation output buffer length
     const int MAX_PREAMBLE_SYMS = 12; // Maximal number of HT preamble symbols (HT-SIG, etc.)
-    const int MAX_CHANS = 20; // Maximum number of IQ channels
+    const int MAX_CHANS = 20;  // Maximum number of IQ channels
+    const int PEAK_THRD = 5;   // Minimum peak duration of auto-correlation windows
 
     int d_num_chans;  // Total number of IQ data channels
-    int d_frame_len; // frame length in samples (HT preamble + data symbols)
-    double d_sampling_freq; // Baseband sampling frequency
-    double d_pkt_interval;  // packet repeat interval (in seconds)
+    int d_frame_len;  // frame length in samples (HT preamble + data symbols)
+    double d_sampling_freq;  // Baseband sampling frequency
+    double d_pkt_interval;   // packet repeat interval (in seconds)
     int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
-    float d_acorr_thrd;     // Auto-correlation detection threshold
-    float d_xcorr_thrd;     // Cross-correlation detection threshold
-    int d_max_corr_len;     // Maximal auto-correlation buffer length
-    int d_rx_ready_cnt;     // receiver synchronization counter
-    bool d_rx_demod_en;      // receiver demodulation enabled
+    float d_acorr_thrd;   // Auto-correlation detection threshold
+    float d_xcorr_thrd;   // Cross-correlation detection threshold
+    float d_rxpwr_thrd;   // Receiver power threshold for signal detection
+    int d_max_corr_len;   // Maximal auto-correlation buffer length
+    int d_rx_ready_cnt;   // receiver synchronization counter
+    bool d_rx_demod_en;   // receiver demodulation enabled
 
     bool d_sync_all;        // wait for all receiver are synchronized
     bool d_rx_all_sync;     // all receiver synchronization done
@@ -79,9 +81,8 @@ private:
     send_rxstate(bool ready);
 
 public:
-    pkt_detect_impl(int nchans, int preamblelen, int dataframelen,
-                    double samplerate, int pktspersec, double acorr_thrd,
-                    double xcorr_thrd, int max_corr_len, bool sync_all, bool debug);
+    pkt_detect_impl(int nchans, int preamblelen, int dataframelen, double samplerate, int pktspersec,
+                    double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool sync_all, bool debug);
     ~pkt_detect_impl();
 
     void

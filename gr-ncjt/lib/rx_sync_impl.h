@@ -16,27 +16,29 @@ namespace gr::ncjt
 class rx_sync_impl : public rx_sync
 {
 private:
-    const int FFT_LEN = 64;   // FFT length
-    const int SYM_LEN = 80;   // OFDM symbol length
-    const int STF_LEN = 160;  // L-STF length, 16 x 10 = 160 samples
-    const int LTF_LEN = 160;  // L-LTF length, 64 x 2 + 32 = 160 samples
-    const int CORR_DELAY = 16;  // L-STF symbol length (16)
+    const int FFT_LEN = 64;      // FFT length
+    const int SYM_LEN = 80;      // OFDM symbol length
+    const int STF_LEN = 160;     // L-STF length, 16 x 10 = 160 samples
+    const int LTF_LEN = 160;     // L-LTF length, 64 x 2 + 32 = 160 samples
+    const int CORR_DELAY = 16;   // L-STF symbol length (16)
     const int CORR_WINDOW = 48;  // Auto-corr window size
     const int CORR_BUF_LEN = 64; // Ring buffer length
     const int XCORR_DATA_LEN = LTF_LEN * 4; // Cross-correlation data buffer length
-    const int MAX_XCORR_LEN = 1024; // Maximum cross-correlation output buffer length
+    const int MAX_XCORR_LEN = 1024;   // Maximum cross-correlation output buffer length
     const int MAX_PREAMBLE_SYMS = 12; // Maximal number of HT preamble symbols (HT-SIG, etc.)
-    const int MAX_CHANS = 20; // Maximum number of IQ channels
+    const int MAX_CHANS = 20;  // Maximum number of IQ channels
+    const int PEAK_THRD = 5;   // Minimum peak duration of auto-correlation windows
 
     int d_num_chans;  // Total number of IQ data channels
     int d_frame_len;  // frame length in samples (HT preamble + data symbols)
     double d_sampling_freq;  // Baseband sampling frequency
-    double d_pkt_interval;  // packet repeat interval (in seconds)
+    double d_pkt_interval;   // packet repeat interval (in seconds)
     int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
-    float d_acorr_thrd;  // Auto-correlation detection threshold
-    float d_xcorr_thrd;  // Cross-correlation detection threshold
-    int d_max_corr_len;  // Maximal auto-correlation buffer length
-    int d_rx_ready_cnt;  // receiver synchronization counter
+    float d_acorr_thrd;   // Auto-correlation detection threshold
+    float d_xcorr_thrd;   // Cross-correlation detection threshold
+    float d_rxpwr_thrd;   // Receiver power threshold for signal detection
+    int d_max_corr_len;   // Maximal auto-correlation buffer length
+    int d_rx_ready_cnt;   // receiver synchronization counter
 
     float *d_pwrest_buf;
     gr_complex *d_corr_buf;
@@ -80,9 +82,8 @@ private:
     check_rxtime(int rx_windows_size);
 
 public:
-    rx_sync_impl(int nchans, int npreamblesyms, int ndatasyms,
-                 double sampling_freq, int pktspersec, double acorr_thrd,
-                 double xcorr_thrd, int max_corr_len, bool debug);
+    rx_sync_impl(int nchans, int npreamblesyms, int ndatasyms, double sampling_freq, int pktspersec,
+                 double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug);
     explicit rx_sync_impl(float DXcorrThrd);
 
     ~rx_sync_impl();

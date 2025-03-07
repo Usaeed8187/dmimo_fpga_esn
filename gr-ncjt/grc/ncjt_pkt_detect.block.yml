@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.pkt_detect(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${syncall}, ${debug})
+  make: ncjt.pkt_detect(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${syncall}, ${debug})
 
 parameters:
   - id: nchans
@@ -29,18 +29,23 @@ parameters:
     label: Packets/Sec
     dtype: int
     default: '8'
+  - id: rxpwrthrd
+    label: Signal Power Threshold
+    dtype: float
+    default: '1e-4'
   - id: acorrthrd
     label: Search Threshold
-    dtype: real
+    dtype: float
     default: '0.6'
   - id: xcorrthrd
     label: Xcorr Threshold
-    dtype: real
+    dtype: float
     default: '0.5'
   - id: maxcorrlen
     label: Search Window
     dtype: int
     default: '4000'
+    hide: part
   - id: syncall
     label: Sync Rx
     dtype: bool

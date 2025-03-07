@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(pkt_detect.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(8cf4b91446c4a6eeb9174a14119a6e21) */
+/* BINDTOOL_HEADER_FILE_HASH(0a2f044cbac65d9a5717e7d079e30961) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -38,8 +38,9 @@ void bind_pkt_detect(py::module &m) {
 
       .def(py::init(&pkt_detect::make), py::arg("nchans"),
            py::arg("preamblelen"), py::arg("dataframelen"),
-           py::arg("samplerate"), py::arg("pktspersec"), py::arg("acorr_thrd"),
-           py::arg("xcorr_thrd"), py::arg("max_corr_len"), py::arg("sync_all"),
+           py::arg("samplerate"), py::arg("pktspersec"), py::arg("rxpwr_thrd"),
+           py::arg("acorr_thrd"), py::arg("xcorr_thrd"),
+           py::arg("max_corr_len"), py::arg("sync_all"),
            py::arg("debug") = false, D(pkt_detect, make))
 
       ;
