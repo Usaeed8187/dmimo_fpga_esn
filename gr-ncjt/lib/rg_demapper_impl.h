@@ -15,12 +15,12 @@ namespace gr::ncjt
 class rg_demapper_impl : public rg_demapper
 {
 private:
-    const int SC_NUM = 56; // number of valid subcarriers
-    const int SD_NUM = 52; // number of data subcarriers
+    // const int SC_NUM = 56; // number of valid subcarriers
+    // const int SD_NUM = 52; // number of data subcarriers
     int d_nstrm; // number of streams
     int d_framelen; // data frame length in samples
     int d_modtype;   // modulation type (number of bits per symbol)
-    bool d_usecsi;   // using CSI for QAM symbols
+    bool d_usecsi;   // using CSI for QAM symbol demapping
 
     pmt::pmt_t _id;
     bool d_debug;

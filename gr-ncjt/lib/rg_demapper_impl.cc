@@ -6,22 +6,21 @@
 
 #include "rg_demapper_impl.h"
 #include <gnuradio/io_signature.h>
+#include "utils.h"
 
 namespace gr::ncjt
 {
 
 rg_demapper::sptr
-rg_demapper::make(int nstrm, int framelen, int ndatasyms,
-                  int npilotsyms, int modtype, bool usecsi,
-                  bool debug)
+rg_demapper::make(int nstrm, int framelen, int ndatasyms, int npilotsyms,
+                  int modtype, bool usecsi, bool debug)
 {
     return gnuradio::make_block_sptr<rg_demapper_impl>(
         nstrm, framelen, ndatasyms, npilotsyms, modtype, usecsi, debug);
 }
 
-rg_demapper_impl::rg_demapper_impl(int nstrm, int framelen, int ndatasyms,
-                                   int npilotsyms, int modtype, bool usecsi,
-                                   bool debug)
+rg_demapper_impl::rg_demapper_impl(int nstrm, int framelen, int ndatasyms, int npilotsyms,
+                                   int modtype, bool usecsi, bool debug)
     : gr::tagged_stream_block(
     "stream_demapper",
     gr::io_signature::make(nstrm, 2 * nstrm, sizeof(gr_complex)),
@@ -33,9 +32,7 @@ rg_demapper_impl::rg_demapper_impl(int nstrm, int framelen, int ndatasyms,
         throw std::runtime_error("only sport 1 to 8 data channels");
     d_nstrm = nstrm;
     if (modtype != 2 && modtype != 4 && modtype != 6 && modtype != 8)
-    {
         throw std::runtime_error("unsupported modulation type");
-    }
     d_modtype = modtype;
 
     d_framelen = framelen;
@@ -60,7 +57,7 @@ rg_demapper_impl::calculate_output_stream_length(
     for (int ch = 1; ch < num_input_ports; ch++)
         min_input_items = std::min(min_input_items, ninput_items[ch]);
 
-    int num_output_items = d_nstrm * d_modtype * min_input_items * SD_NUM / SC_NUM;
+    int num_output_items = d_nstrm * d_modtype * min_input_items;
 
     return num_output_items;
 }
@@ -70,17 +67,19 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
 {
-    char *out = (char *) output_items[0];
+    char *strmdout = (char *) output_items[0];
 
     int num_input_ports = d_usecsi ? 2 * d_nstrm : d_nstrm;
     int min_input_items = ninput_items[0];
     for (int ch = 1; ch < num_input_ports; ch++)
         min_input_items = std::min(min_input_items, ninput_items[ch]);
 
-    int num_inputs = std::min(noutput_items / (d_nstrm * d_modtype), min_input_items);
-    int num_frames = (int) (num_inputs * d_nstrm * d_modtype) / d_framelen;
+    int num_frames = (int) (min_input_items * d_nstrm * d_modtype) / d_framelen;
     if (num_frames <= 0)
+    {
+        dout << "input data size (" << min_input_items << ") less than one frame" << std::endl;
         return 0;
+    }
     int total_input_items = num_frames * d_framelen / (d_modtype * d_nstrm);
 
     for (int ch = 0; ch < d_nstrm; ch++)
@@ -90,23 +89,23 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
 
         for (int di = 0; di < total_input_items; di++)
         {
-            auto dout = out + d_nstrm * d_modtype * di + ch;
+            auto sdata = strmdout + d_nstrm * d_modtype * di + ch;
             float x = in[di].real();
             float y = in[di].imag();
             if (d_modtype == 2) // QPSK
             {
-                dout[0] = (y < 0) ? 1 : 0;
-                dout[d_nstrm] = (x >= 0) ? 1 : 0;
+                sdata[0] = (y < 0) ? 1 : 0;
+                sdata[d_nstrm] = (x >= 0) ? 1 : 0;
             }
             else if (d_modtype == 4) // 16QAM
             {
                 float xm = abs(x);
                 float ym = abs(y);
                 float h2 = d_usecsi ? 2.0 / sqrt(10.0) * csi[di].real() : 2.0 / sqrt(10.0);
-                dout[0]           = (ym <= h2) ? 1 : 0;
-                dout[d_nstrm]     = (y < 0) ? 1 : 0;
-                dout[2 * d_nstrm] = (xm <= h2) ? 1 : 0;
-                dout[3 * d_nstrm] = (x >= 0) ? 1 : 0;
+                sdata[0]           = (ym <= h2) ? 1 : 0;
+                sdata[d_nstrm]     = (y < 0) ? 1 : 0;
+                sdata[2 * d_nstrm] = (xm <= h2) ? 1 : 0;
+                sdata[3 * d_nstrm] = (x >= 0) ? 1 : 0;
             }
             else if (d_modtype == 6) // 64QAM
             {
@@ -116,12 +115,12 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float h2 = d_usecsi ? a2 * csi[di].real() : a2;
                 float h4 = d_usecsi ? 2.0 * a2 * csi[di].real() : 2.0 * a2;
                 float h6 = d_usecsi ? 3.0 * a2 * csi[di].real() : 3.0 * a2;
-                dout[0]           = (ym >= h2 && ym <= h6) ? 1 : 0;
-                dout[d_nstrm]     = (ym <= h4) ? 1 : 0;
-                dout[2 * d_nstrm] = (y <= 0) ? 1 : 0;
-                dout[3 * d_nstrm] = (xm >= h2 && xm <= h6) ? 1 : 0;
-                dout[4 * d_nstrm] = (xm <= h4) ? 1 : 0;
-                dout[5 * d_nstrm] = (x >= 0) ? 1 : 0;
+                sdata[0]           = (ym >= h2 && ym <= h6) ? 1 : 0;
+                sdata[d_nstrm]     = (ym <= h4) ? 1 : 0;
+                sdata[2 * d_nstrm] = (y <= 0) ? 1 : 0;
+                sdata[3 * d_nstrm] = (xm >= h2 && xm <= h6) ? 1 : 0;
+                sdata[4 * d_nstrm] = (xm <= h4) ? 1 : 0;
+                sdata[5 * d_nstrm] = (x >= 0) ? 1 : 0;
             }
             else if (d_modtype == 8) // 256QAM
             {
@@ -131,14 +130,14 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float h2 = d_usecsi ? a2 * csi[di].real() : a2;
                 float h4 = d_usecsi ? 2.0 * a2 * csi[di].real() : 2.0 * a2;
                 float h8 = d_usecsi ? 4.0 * a2 * csi[di].real() : 4.0 * a2;
-                dout[0]           = (abs(abs(ym - h8) - h4) <= h2) ? 1 : 0;
-                dout[d_nstrm]     = (abs(ym - h8) <= h4) ? 1 : 0;
-                dout[2 * d_nstrm] = (ym <= h8) ? 1 : 0;
-                dout[3 * d_nstrm] = (y <= 0) ? 1 : 0;
-                dout[4 * d_nstrm] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
-                dout[5 * d_nstrm] = (abs(xm - h8) <= h4) ? 1 : 0;
-                dout[6 * d_nstrm] = (xm <= h8) ? 1 : 0;
-                dout[7 * d_nstrm] = (x >= 0) ? 1 : 0;
+                sdata[0]           = (abs(abs(ym - h8) - h4) <= h2) ? 1 : 0;
+                sdata[d_nstrm]     = (abs(ym - h8) <= h4) ? 1 : 0;
+                sdata[2 * d_nstrm] = (ym <= h8) ? 1 : 0;
+                sdata[3 * d_nstrm] = (y <= 0) ? 1 : 0;
+                sdata[4 * d_nstrm] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
+                sdata[5 * d_nstrm] = (abs(xm - h8) <= h4) ? 1 : 0;
+                sdata[6 * d_nstrm] = (xm <= h8) ? 1 : 0;
+                sdata[7 * d_nstrm] = (x >= 0) ? 1 : 0;
             }
         }
     }
