@@ -49,7 +49,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 2.55e9
+    value: 3.65e9
   states:
     bus_sink: false
     bus_source: false
@@ -97,7 +97,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/4x2csd/16QAM/txsig_4x2_s1.bin"'
+    filename: '"../../data/su_mimo/4t4s/16QAM/txsig_s1.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -117,7 +117,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/4x2csd/16QAM/txsig_4x2_s3.bin"'
+    filename: '"../../data/su_mimo/4t4s/16QAM/txsig_s2.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -137,7 +137,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/4x2csd/16QAM/txsig_4x2_s2.bin"'
+    filename: '"../../data/su_mimo/4t4s/16QAM/txsig_s3.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -157,7 +157,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/4x2csd/16QAM/txsig_4x2_s4.bin"'
+    filename: '"../../data/su_mimo/4t4s/16QAM/txsig_s4.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -281,7 +281,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.60.2,addr1=192.168.40.2"'
+    dev_addr: '"addr0=192.168.80.2,addr1=192.168.20.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain

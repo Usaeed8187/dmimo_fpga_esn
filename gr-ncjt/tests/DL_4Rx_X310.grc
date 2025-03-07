@@ -61,7 +61,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '10'
+    value: '40'
   states:
     bus_sink: false
     bus_source: false
@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.45e9
+    value: 3.65e9
   states:
     bus_sink: false
     bus_source: false
@@ -155,7 +155,7 @@ blocks:
     bus_structure: null
     coordinate: [1016, 220.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_sink_0_0
   id: blocks_file_sink
   parameters:
@@ -173,7 +173,7 @@ blocks:
     bus_structure: null
     coordinate: [1016, 300.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_sink_0_0_1_0_0_0
   id: blocks_file_sink
   parameters:
@@ -220,14 +220,14 @@ blocks:
     file: /tmp/pkt_err.bin
     type: int
     unbuffered: 'False'
-    vlen: '2'
+    vlen: '4'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [1488, 324.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_file_sink_0_1
   id: blocks_file_sink
   parameters:
@@ -245,7 +245,7 @@ blocks:
     bus_structure: null
     coordinate: [1024, 500.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_sink_0_2
   id: blocks_file_sink
   parameters:
@@ -263,7 +263,7 @@ blocks:
     bus_structure: null
     coordinate: [1024, 580.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_ltf_chanest_0
   id: ncjt_ltf_chanest
   parameters:
@@ -280,6 +280,7 @@ blocks:
     npreamblesyms: num_preamble_syms
     nrx: '4'
     ntx: '4'
+    removecs: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -299,15 +300,15 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '32768'
     ndatasymbols: num_data_syms
-    nrx: '2'
-    nss: '2'
+    nrx: '4'
+    nss: '4'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 376.0]
+    coordinate: [944, 368.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_ofdm_demod_0
   id: ncjt_ofdm_demod
   parameters:
@@ -413,18 +414,18 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/64QAM/strm_data_2x2.bin"'
+    filename: '"../../data/su_mimo/4t4s/64QAM/strm_data.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
-    nstrms: '2'
+    nstrms: '4'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1344, 376.0]
+    coordinate: [1344, 368.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_qam_demapper_0
   id: ncjt_qam_demapper
   parameters:
@@ -435,15 +436,15 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '32768'
     modtype: '6'
-    nstrms: '2'
+    nstrms: '4'
     usecsi: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 376.0]
+    coordinate: [1176, 368.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: pdu_pdu_to_tagged_stream_0
   id: pdu_pdu_to_tagged_stream
   parameters:
@@ -659,7 +660,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 468.0]
+    coordinate: [1168, 484.0]
     rotation: 0
     state: disabled
 - name: qtgui_time_sink_x_0
@@ -758,7 +759,7 @@ blocks:
     bus_structure: null
     coordinate: [1488, 420.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: uhd_usrp_source_0
   id: uhd_usrp_source
   parameters:
@@ -861,7 +862,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: external
+    clock_source0: ''
     clock_source1: external
     clock_source2: ''
     clock_source3: ''
@@ -934,7 +935,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"addr0=192.168.30.2,addr1=192.168.60.2"'
+    dev_addr: '"addr0=192.168.40.2,addr1=192.168.50.2"'
     dev_args: ''
     gain0: rx_gain
     gain1: rx_gain
@@ -1132,7 +1133,7 @@ blocks:
     minoutbuf: '0'
     nchan: '4'
     num_mboards: '2'
-    otw: sc16
+    otw: ''
     rx_agc0: Default
     rx_agc1: Default
     rx_agc10: Default
@@ -1179,7 +1180,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: external
+    time_source0: ''
     time_source1: external
     time_source2: ''
     time_source3: ''
@@ -1192,7 +1193,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 248.0]
+    coordinate: [88, 296.0]
     rotation: 0
     state: enabled
 
@@ -1202,13 +1203,17 @@ connections:
 - [ncjt_ltf_chanest_0, '1', blocks_file_sink_0_0, '0']
 - [ncjt_ltf_chanest_0, '1', ncjt_mimo_detect_0, '1']
 - [ncjt_ltf_chanest_0, '2', blocks_file_sink_0_1, '0']
+- [ncjt_ltf_chanest_0, '2', ncjt_mimo_detect_0, '2']
 - [ncjt_ltf_chanest_0, '3', blocks_file_sink_0_2, '0']
+- [ncjt_ltf_chanest_0, '3', ncjt_mimo_detect_0, '3']
 - [ncjt_ltf_chanest_0, cpe, pdu_pdu_to_tagged_stream_0, pdus]
 - [ncjt_ltf_chanest_0, csi, pdu_pdu_to_tagged_stream_0_0, pdus]
 - [ncjt_mimo_detect_0, '0', ncjt_qam_demapper_0, '0']
 - [ncjt_mimo_detect_0, '0', qtgui_const_sink_x_0, '0']
 - [ncjt_mimo_detect_0, '1', ncjt_qam_demapper_0, '1']
 - [ncjt_mimo_detect_0, '1', qtgui_const_sink_x_0_0, '0']
+- [ncjt_mimo_detect_0, '2', ncjt_qam_demapper_0, '2']
+- [ncjt_mimo_detect_0, '3', ncjt_qam_demapper_0, '3']
 - [ncjt_ofdm_demod_0, '0', ncjt_ltf_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_ltf_chanest_0, '1']
 - [ncjt_ofdm_demod_0_0_0, '0', ncjt_ltf_chanest_0, '2']
@@ -1221,6 +1226,8 @@ connections:
 - [ncjt_pkt_err_0, '1', qtgui_time_sink_x_0, '0']
 - [ncjt_qam_demapper_0, '0', ncjt_pkt_err_0, '0']
 - [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
+- [ncjt_qam_demapper_0, '2', ncjt_pkt_err_0, '2']
+- [ncjt_qam_demapper_0, '3', ncjt_pkt_err_0, '3']
 - [pdu_pdu_to_tagged_stream_0, '0', blocks_file_sink_0_0_1_0_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0_0, '0', blocks_file_sink_0_0_1_0_0_0_0, '0']
 - [uhd_usrp_source_0, '0', ncjt_pkt_detect_0, '0']
@@ -1230,4 +1237,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: v3.10.11.0-80-g0e28fd53
+  grc_version: 3.10.11.0

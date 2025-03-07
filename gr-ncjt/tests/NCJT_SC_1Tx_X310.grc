@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 12.0]
+    coordinate: [328, 12.0]
     rotation: 0
     state: enabled
 - name: fft_size
@@ -54,31 +54,31 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [336, 12.0]
+    coordinate: [248, 12.0]
     rotation: 0
     state: enabled
 - name: frame_data_len
   id: variable
   parameters:
     comment: ''
-    value: 52*num_data_syms*qam_order
+    value: sc_num*num_data_syms*qam_order
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [256, 84.0]
+    coordinate: [1024, 12.0]
     rotation: 0
     state: enabled
-- name: modtype
+- name: modulations
   id: variable
   parameters:
     comment: ''
-    value: '"256QAM"'
+    value: '{2: "QPSK", 4: "16QAM", 6: "64QAM", 8: "256QAM"}'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [560, 84.0]
+    coordinate: [872, 12.0]
     rotation: 0
     state: enabled
 - name: num_data_syms
@@ -90,7 +90,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [360, 84.0]
+    coordinate: [264, 84.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -109,36 +109,36 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '8'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [472, 84.0]
+    coordinate: [376, 84.0]
     rotation: 0
     state: enabled
-- name: repeat_duration
+- name: qam_type
   id: variable
   parameters:
     comment: ''
-    value: 1.0/pkts_per_sec
+    value: modulations[qam_order]
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 12.0]
+    coordinate: [776, 12.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: rf_freq
   id: variable
   parameters:
     comment: ''
-    value: 2.65e9
+    value: 3.65e9
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 12.0]
+    coordinate: [480, 12.0]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -153,6 +153,18 @@ blocks:
     coordinate: [160, 12.0]
     rotation: 0
     state: enabled
+- name: sc_num
+  id: variable
+  parameters:
+    comment: ''
+    value: '52'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 12.0]
+    rotation: 0
+    state: enabled
 - name: tx_gain
   id: variable_qtgui_range
   parameters:
@@ -165,13 +177,13 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '25'
+    value: '20'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [680, 12.0]
+    coordinate: [576, 16.0]
     rotation: 0
     state: enabled
 - name: blocks_file_source_0
@@ -181,7 +193,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../data/1x1/" + modtype + "/strm_data_1x1.bin"'
+    file: '"../data/1x1/" + qam_type + "/strm_data_1x1.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -193,7 +205,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 212.0]
+    coordinate: [8, 208.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -212,7 +224,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 236.0]
+    coordinate: [184, 228.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0
@@ -232,7 +244,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [712, 196.0]
+    coordinate: [736, 196.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0
@@ -252,7 +264,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [712, 276.0]
+    coordinate: [736, 268.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0
@@ -274,7 +286,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 228.0]
+    coordinate: [376, 224.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
@@ -293,7 +305,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 232.0]
+    coordinate: [552, 224.0]
     rotation: 0
     state: enabled
 - name: ncjt_tx_framing_0
@@ -303,7 +315,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/1x1/ncjt_preamble_1x1.bin"'
+    filename: '"../data/ncjt_preamble.bin"'
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -312,12 +324,11 @@ blocks:
     padding: '1000'
     pktspersec: pkts_per_sec
     starttime: '2'
-    txcal: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [912, 192.0]
+    coordinate: [944, 208.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -594,7 +605,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1112, 144.0]
+    coordinate: [1160, 136.0]
     rotation: 0
     state: true
 

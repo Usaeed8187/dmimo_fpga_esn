@@ -49,7 +49,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3.55e9
+    value: 3.65e9
   states:
     bus_sink: false
     bus_source: false
@@ -97,7 +97,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/2x4/16QAM/txsig_2x2_s1.bin"'
+    filename: '"../../data/mu_mimo/2t2s/16QAM/txsig_s1.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -117,7 +117,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/2x4/16QAM/txsig_2x2_s2.bin"'
+    filename: '"../../data/mu_mimo/2t2s/16QAM/txsig_s2.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -232,7 +232,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: external
+    clock_source0: ''
     clock_source1: external
     clock_source2: ''
     clock_source3: ''
@@ -391,7 +391,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: external
+    time_source0: ''
     time_source1: external
     time_source2: ''
     time_source3: ''
@@ -414,4 +414,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: v3.10.11.0-80-g0e28fd53
+  grc_version: 3.10.11.0

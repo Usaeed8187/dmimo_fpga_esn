@@ -49,7 +49,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 2.55e9
+    value: 3.65e9
   states:
     bus_sink: false
     bus_source: false
@@ -97,7 +97,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/2x4/64QAM/txsig_2x2_s1.bin"'
+    filename: '"../../data/mu_mimo/2t2s/16QAM/txsig_s1.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -117,7 +117,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    filename: '"../data/2x4/64QAM/txsig_2x2_s2.bin"'
+    filename: '"../../data/mu_mimo/2t2s/16QAM/txsig_s2.bin"'
     maxoutbuf: '0'
     minoutbuf: '0'
     pktsize: '0'
@@ -241,7 +241,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.50.2"'
+    dev_addr: '"addr0=192.168.30.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
