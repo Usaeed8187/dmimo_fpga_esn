@@ -58,6 +58,10 @@ write_complex_binary(txsig(:,1), ...
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/ncjt_preamble.bin',datadir,mimotype,modtype));
 
+% Save LTF for debugging
+write_complex_binary(scaling*htltfx, ...
+    sprintf('%s/%s/%s/htltfx.bin',datadir,mimotype,modtype));
+
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, encdata(:), "char");
 fclose(fid);
