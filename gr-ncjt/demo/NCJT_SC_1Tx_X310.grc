@@ -66,19 +66,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 84.0]
+    coordinate: [376, 84.0]
     rotation: 0
     state: enabled
-- name: modtype
+- name: modulations
   id: variable
   parameters:
     comment: ''
-    value: '"64QAM"'
+    value: '{2: "QPSK", 4: "16QAM", 6: "64QAM", 8: "256QAM"}'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [336, 84.0]
+    coordinate: [920, 12.0]
     rotation: 0
     state: enabled
 - name: num_data_syms
@@ -114,7 +114,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [256, 84.0]
+    coordinate: [488, 84.0]
+    rotation: 0
+    state: enabled
+- name: qam_type
+  id: variable
+  parameters:
+    comment: ''
+    value: modulations[qam_order]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 12.0]
     rotation: 0
     state: enabled
 - name: repeat_duration
@@ -126,7 +138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 84.0]
+    coordinate: [264, 84.0]
     rotation: 0
     state: true
 - name: rf_freq
@@ -181,7 +193,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../data/1x1/" + modtype + "/strm_data_1x1.bin"'
+    file: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -303,20 +315,20 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    duration: repeat_duration
-    filename: '''../data/1x1/ncjt_preamble_1x1.bin'''
+    filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/ncjt_preamble.bin"'
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
     ndatasyms: num_data_syms
-    nstrm: '2'
+    ntx: '2'
     padding: '1000'
+    pktspersec: pkts_per_sec
     starttime: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [896, 220.0]
+    coordinate: [904, 220.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -430,7 +442,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.60.2"'
+    dev_addr: '"addr0=192.168.50.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
@@ -593,7 +605,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1096, 144.0]
+    coordinate: [1096, 140.0]
     rotation: 0
     state: true
 
@@ -605,8 +617,8 @@ connections:
 - [ncjt_rg_mapper_0, '0', ncjt_stbc_encode_0, '0']
 - [ncjt_stbc_encode_0, '0', ncjt_ofdm_mod_0, '0']
 - [ncjt_stbc_encode_0, '1', ncjt_ofdm_mod_0_0, '0']
-- [ncjt_tx_framing_0, '0', uhd_usrp_sink_0, '1']
-- [ncjt_tx_framing_0, '1', uhd_usrp_sink_0, '0']
+- [ncjt_tx_framing_0, '0', uhd_usrp_sink_0, '0']
+- [ncjt_tx_framing_0, '1', uhd_usrp_sink_0, '1']
 
 metadata:
   file_format: 1

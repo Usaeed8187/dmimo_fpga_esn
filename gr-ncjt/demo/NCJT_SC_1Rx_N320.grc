@@ -57,16 +57,16 @@ blocks:
     coordinate: [352, 12.0]
     rotation: 0
     state: enabled
-- name: modtype
+- name: modulations
   id: variable
   parameters:
     comment: ''
-    value: '"64QAM"'
+    value: '{2: "QPSK", 4: "16QAM", 6: "64QAM", 8: "256QAM"}'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 84.0]
+    coordinate: [960, 20.0]
     rotation: 0
     state: enabled
 - name: num_data_syms
@@ -90,7 +90,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [464, 84.0]
+    coordinate: [280, 84.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -114,7 +114,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 84.0]
+    coordinate: [424, 84.0]
+    rotation: 0
+    state: enabled
+- name: qam_type
+  id: variable
+  parameters:
+    comment: ''
+    value: modulations[qam_order]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 20.0]
     rotation: 0
     state: enabled
 - name: rf_freq
@@ -291,6 +303,7 @@ blocks:
     nchans: '2'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*num_preamble_syms
+    rxpwrthrd: 5e-4
     samplerate: samp_rate
     syncall: 'False'
     xcorrthrd: '0.5'
@@ -309,7 +322,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/1x1/" + modtype + "/strm_data_1x1.bin"'
+    filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -335,6 +348,7 @@ blocks:
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrm: '1'
+    outputsyms: 'False'
     usecsi: 'True'
   states:
     bus_sink: false
@@ -984,7 +998,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [72, 256.0]
+    coordinate: [72, 252.0]
     rotation: 0
     state: enabled
 
