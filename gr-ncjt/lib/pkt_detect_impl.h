@@ -34,9 +34,9 @@ private:
     double d_sampling_freq;  // Baseband sampling frequency
     double d_pkt_interval;   // packet repeat interval (in seconds)
     int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
+    float d_rxpwr_thrd;   // Receiver power threshold for signal detection
     float d_acorr_thrd;   // Auto-correlation detection threshold
     float d_xcorr_thrd;   // Cross-correlation detection threshold
-    float d_rxpwr_thrd;   // Receiver power threshold for signal detection
     int d_max_corr_len;   // Maximal auto-correlation buffer length
     int d_rx_ready_cnt;   // receiver synchronization counter
     bool d_rx_demod_en;   // receiver demodulation enabled

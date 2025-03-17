@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(add_preamble.h) */
-/* BINDTOOL_HEADER_FILE_HASH(aec1a5b7b55118cab6d70b10ad8fbb8d) */
+/* BINDTOOL_HEADER_FILE_HASH(4ad715768f31adda8a9381d358770297) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,7 +37,7 @@ void bind_add_preamble(py::module &m) {
              std::shared_ptr<add_preamble>>(m, "add_preamble", D(add_preamble))
 
       .def(py::init(&add_preamble::make), py::arg("nstrm"), py::arg("filename"),
-           py::arg("debug"), D(add_preamble, make))
+           py::arg("delay"), py::arg("debug"), D(add_preamble, make))
 
       ;
 }

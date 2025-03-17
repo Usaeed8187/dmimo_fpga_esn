@@ -57,9 +57,24 @@ for k=1:cfg.Nt
     write_complex_binary(txsig(:,k), ...
         sprintf('%s/%s/%s/txsig_s%d.bin',datadir,mimotype,modtype,k));
 end
+
+% Save preamble signals
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/preamble.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*preamble(1:end-160,:), ...
+    sprintf('%s/%s/%s/preamble_noltfx.bin',datadir,mimotype,modtype));
 
+% Generate LTF for precoding
+ltfRef = [1, 1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, ...
+          1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, 1, ...
+          1,-1,-1, 1, 1,-1, 1,-1, 1,-1,-1,-1,-1,-1, ...
+          1, 1,-1,-1, 1,-1, 1,-1, 1, 1, 1, 1,-1,-1 ].';
+ltf2x2 = cat(3, [ltfRef, -ltfRef], [ltfRef, ltfRef]);
+ltf2x2 = reshape(ltf2x2, [], 2);
+write_complex_binary(ltf2x2, ...
+    sprintf('%s/%s/%s/ltf2x2.bin',datadir,mimotype,modtype));
+
+% Save binary data
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, encdata(:), "char");
 fclose(fid);

@@ -18,6 +18,8 @@ class add_preamble_impl : public add_preamble
 private:
     int d_nstrm;          // number of streams
     int d_preamble_len;   // preamble length in samples
+    int d_delay;   // extra sample delay
+
     gr_complex *d_preamble_data;  // preamble data buffer
 
     const bool d_debug;
@@ -30,7 +32,7 @@ protected:
     read_preamble_data(const char *filename);
 
 public:
-    add_preamble_impl(int nstrm, const char *filename, bool debug);
+    add_preamble_impl(int nstrm, const char *filename, int delay, bool debug);
     ~add_preamble_impl();
 
     int

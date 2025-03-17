@@ -24,8 +24,10 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 txdata = 1/sqrt(2) * [txdata(:), txdata(:)];
 
 % Time-domain preamble signals (HT-SIG, HT-STF, HT-LTF)
-htltfx = cat(1, [b.htltf(1:80,1), zeros(80,1)], ...
-                [zeros(80,1), b.htltf(1:80,1)]);
+% htltfx = cat(1, [b.htltf(1:80,1), zeros(80,1)], ...
+%                 [zeros(80,1), b.htltf(1:80,1)]);
+htltfx = b.htltf;
+
 preamble = [b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; htltfx];
 
 % Prepare transmitter signal for USRP
@@ -55,6 +57,10 @@ fprintf("Tx signal scaling: %.15f\n", scaling);
 fprintf("Saving GNU Radio Tx data files ...\n")
 write_complex_binary(txsig(:,1), ...
     sprintf('%s/%s/%s/txsig_s1.bin',datadir,mimotype,modtype));
+write_complex_binary(txsig(:,2), ...
+    sprintf('%s/%s/%s/txsig_s2.bin',datadir,mimotype,modtype));
+
+% Save preamble signals
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/ncjt_preamble.bin',datadir,mimotype,modtype));
 
@@ -62,6 +68,7 @@ write_complex_binary(scaling*preamble, ...
 write_complex_binary(scaling*htltfx, ...
     sprintf('%s/%s/%s/htltfx.bin',datadir,mimotype,modtype));
 
+% Save binary data
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, encdata(:), "char");
 fclose(fid);

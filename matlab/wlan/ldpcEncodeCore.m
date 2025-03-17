@@ -52,19 +52,19 @@ if strcmp(rate,'1/2') || isequal(rate,1/2)
     switch blockLength
         case 648
             if isempty(PT_1_2_648)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_1_2_648');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_1_2_648');
                 PT_1_2_648 = double(reshape(de2bi(G.PT_1_2_648,16),324,324));            
             end
             y = int8(mod(PT_1_2_648*double(infoBits),2));
         case 1296
             if isempty(PT_1_2_1296)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_1_2_1296');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_1_2_1296');
                 PT_1_2_1296 = double(reshape(de2bi(G.PT_1_2_1296,16),648,648));  
             end
             y = int8(mod(PT_1_2_1296*double(infoBits),2));
         case 1944
             if isempty(PT_1_2_1944)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_1_2_1944');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_1_2_1944');
                 PT_1_2_1944 = double(reshape(de2bi(G.PT_1_2_1944,16),972,972)); 
             end
             y = int8(mod(PT_1_2_1944*double(infoBits),2));
@@ -82,19 +82,19 @@ elseif strcmp(rate, '2/3') || isequal(rate,2/3)
     switch blockLength
         case 648
             if isempty(PT_2_3_648)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_2_3_648');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_2_3_648');
                 PT_2_3_648 = double(reshape(de2bi(G.PT_2_3_648,16),216,432)); 
             end
             y = int8(mod(PT_2_3_648*double(infoBits),2));
         case 1296
             if isempty(PT_2_3_1296)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_2_3_1296');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_2_3_1296');
                 PT_2_3_1296 = double(reshape(de2bi(G.PT_2_3_1296,16),432,864)); 
             end
             y = int8(mod(PT_2_3_1296*double(infoBits),2));
         otherwise % case 1944
             if isempty(PT_2_3_1944)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_2_3_1944');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_2_3_1944');
                 PT_2_3_1944 = double(reshape(de2bi(G.PT_2_3_1944,16),648,1296)); 
             end
             y = int8(mod(PT_2_3_1944*double(infoBits),2));
@@ -104,19 +104,19 @@ elseif (strcmp(rate, '3/4') || isequal(rate, 3/4))
     switch blockLength
         case 648
             if isempty(PT_3_4_648) 
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_3_4_648');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_3_4_648');
                 PT_3_4_648 = double(reshape(de2bi(G.PT_3_4_648,12),162,486));
             end
             y = int8(mod(PT_3_4_648*double(infoBits),2));
         case 1296
             if isempty(PT_3_4_1296)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_3_4_1296');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_3_4_1296');
                 PT_3_4_1296 = double(reshape(de2bi(G.PT_3_4_1296,16),324,972));
             end
             y = int8(mod(PT_3_4_1296*double(infoBits),2));
         case 1944
             if isempty(PT_3_4_1944)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_3_4_1944');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_3_4_1944');
                 PT_3_4_1944 = double(reshape(de2bi(G.PT_3_4_1944,12),486,1458));
             end
             y = int8(mod(PT_3_4_1944*double(infoBits),2));
@@ -134,19 +134,19 @@ elseif (strcmp(rate,'5/6') || isequal(rate,5/6))
     switch blockLength
         case 648
             if isempty(PT_5_6_648)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_5_6_648');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_5_6_648');
                 PT_5_6_648 = double(reshape(de2bi(G.PT_5_6_648,16),108,540));
             end
             y = int8(mod(PT_5_6_648*double(infoBits),2));
         case 1296
             if isempty(PT_5_6_1296)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_5_6_1296');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_5_6_1296');
                 PT_5_6_1296 = double(reshape(de2bi(G.PT_5_6_1296,16),216,1080));
             end
             y = int8(mod(PT_5_6_1296*double(infoBits),2));
         otherwise % case 1944
             if isempty(PT_5_6_1944)
-                G = coder.load('wlan/internal/ldpcMatrices.mat','PT_5_6_1944');
+                G = coder.load('wlan/ldpcMatrices.mat','PT_5_6_1944');
                 PT_5_6_1944 = double(reshape(de2bi(G.PT_5_6_1944,16),324,1620));
             end
             y = int8(mod(PT_5_6_1944*double(infoBits),2));

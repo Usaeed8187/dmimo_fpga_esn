@@ -10,11 +10,11 @@ cfg = sys_config(mimotype, psdulen, modtype, cctype);
 b = load('beacon2x2.mat');
 
 % orthonal LTF for 2 Tx
-htltfx = cat(1, [b.htltf(1:80,1), zeros(80, 1)], ...
-                [zeros(80, 1), b.htltf(81:160,2)]);
+% htltfx = cat(1, [b.htltf(1:80,1), zeros(80, 1)], ...
+%                 [zeros(80, 1), b.htltf(81:160,2)]);
 
-% htltfx = cat(1, [htltf(1:80,1), zeros(80, 1)], ...
-%                 [zeros(80, 1), htltf(1:80,1)]);
+htltfx = cat(1, [b.htltf(1:80,1), zeros(80, 1)], ...
+                [zeros(80, 1), b.htltf(1:80,1)]);
 
 % Set random substream
 stream = RandStream('mt19937ar','Seed',2201203);
@@ -60,13 +60,40 @@ for k=1:cfg.Nt
 end
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/preamble.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*preamble(1:end-160,:), ...
+    sprintf('%s/%s/%s/preamble_noltfx.bin',datadir,mimotype,modtype));
 
+% Generate LTF for precoding
+ltfRef = [1, 1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, ...
+          1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, 1, ...
+          1,-1,-1, 1, 1,-1, 1,-1, 1,-1,-1,-1,-1,-1, ...
+          1, 1,-1,-1, 1,-1, 1,-1, 1, 1, 1, 1,-1,-1 ].';
+ltf2x2 = cat(3, [ltfRef, zeros(56,1)], [zeros(56,1), ltfRef]);
+ltf2x2 = reshape(ltf2x2, [], 2);
+write_complex_binary(ltf2x2, ...
+    sprintf('%s/%s/%s/ltf2x2.bin',datadir,mimotype,modtype));
+write_complex_binary(ltf2x2(:,1), ...
+    sprintf('%s/%s/%s/ltf2x2_t1.bin',datadir,mimotype,modtype));
+write_complex_binary(ltf2x2(:,2), ...
+    sprintf('%s/%s/%s/ltf2x2_t2.bin',datadir,mimotype,modtype));
+
+% Save LTF for debugging
+write_complex_binary(scaling*htltfx, ...
+    sprintf('%s/%s/%s/htltfx.bin',datadir,mimotype,modtype));
+
+% Save binary data
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, encdata(:), "char");
 fclose(fid);
 
 fid = fopen(sprintf('%s/%s/%s/strm_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, strmdata(:), "char");
+fclose(fid);
+fid = fopen(sprintf('%s/%s/%s/strm_data_s1.bin',datadir,mimotype,modtype),'wb');
+fwrite(fid, strmdata(:,1), "char");
+fclose(fid);
+fid = fopen(sprintf('%s/%s/%s/strm_data_s2.bin',datadir,mimotype,modtype),'wb');
+fwrite(fid, strmdata(:,2), "char");
 fclose(fid);
 
 fid = fopen(sprintf('%s/%s/%s/tx_strm_data.bin',datadir,mimotype,modtype),'wb');

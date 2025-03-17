@@ -19,9 +19,12 @@ private:
     int d_scnum; // number of valid subcarriers
     int d_ndatasyms;  // total number of data OFDM symbols)
     int d_npilotsyms; // number of pilot OFDM symbols
-    int d_numsyms; // total number of OFDM symbols
+    int d_numsyms;  // total number of OFDM symbols
+    const int d_ntx = 2;  // number transmitter is always 2
+    int d_npt;  // number of tracking pilots per OFDM symbol
+    int d_ueidx; // UE index
 
-    gr_complex *d_tracking_pilots; // pilots for CPT tracking (mode 4 or 8)
+    float *d_cpt_pilot; // pilots for CPT tracking (mode 4 or 8)
 
     bool d_debug;
 
@@ -30,10 +33,10 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
     void
-    generate_tracking_pilots();
+    generate_cpt_pilots();
 
 public:
-    stbc_encode_impl(int fftsize, int ndatasyms, int npilotsyms, bool debug);
+    stbc_encode_impl(int fftsize, int ndatasyms, int npilotsyms, int ueidx, bool debug);
     ~stbc_encode_impl();
 
     int

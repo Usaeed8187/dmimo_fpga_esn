@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.ul_precoding(${nss}, ${ul_ntx}, ${dl_ntx}, ${dl_nrx}, ${numhtsyms}, ${ndatasyms}, ${nprecodedsyms}, ${eigenmode}, ${debug})
+  make: ncjt.ul_precoding(${nss}, ${ntx}, ${ntx_gnb}, ${numltfsyms}, ${ndatasyms}, ${eigenmode}, ${wideband}, ${loadcsi}, ${csifile}, ${debug})
 
 parameters:
   - id: nss
@@ -13,39 +13,46 @@ parameters:
     default: 2
     options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
     hide: part
-  - id: ul_ntx
-    label: Number of UL Transmitter
+  - id: ntx
+    label: Number of UL Antennas
     dtype: int
     default: 2
     options: [2, 4, 6, 8 ]
     hide: part
-  - id: dl_ntx
-    label: Number of DL Transmitter
+  - id: ntx_gnb
+    label: Number of gNB Antennas
     dtype: int
     default: 4
     options: [2, 4, 6, 8 ]
     hide: part
-  - id: dl_nrx
-    label: Number of DL Receiver
-    dtype: int
-    default: 2
-    options: [2, 4, 6, 8 ]
-    hide: part
-  - id: numhtsyms
-    label: HT Symbols
+  - id: numltfsyms
+    label: LTF Symbols
     dtype: int
     default: 0
   - id: ndatasyms
     label: Data Symbols
-    dtype: int
-  - id: nprecodedsyms
-    label: Precoded Symbols
     dtype: int
   - id: eigenmode
     label: Eigen Mode Precoding
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
+  - id: wideband
+    label: Wideband Precoding
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    hide: part
+  - id: loadcsi
+    label: Load Offline CSI
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    hide: part
+  - id: csifile
+    label: Offline CSI Data
+    dtype: file_open
+    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -55,18 +62,18 @@ parameters:
     hide: part
 
 inputs:
-  - label: in
-    domain: stream
-    dtype: complex
-    vlen: ${nss}
   - label: csi
     domain: message
     optional: true
+  - label: in
+    domain: stream
+    dtype: complex
+    multiplicity: ${nss}
 
 outputs:
   - label: out
     domain: stream
     dtype: complex
-    multiplicity: ${ul_ntx}
+    multiplicity: ${ntx}
 
 file_format: 1

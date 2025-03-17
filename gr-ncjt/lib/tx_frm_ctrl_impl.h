@@ -27,6 +27,8 @@ private:
     bool d_txen;  // indicate whether transmission is enabled
     bool d_first_burst; // indicate first transmission bust
     double d_repeat_interval;  // repeat transmission interval
+    int d_pkts_per_sec; // frame per second
+    uint64_t d_txtime_start;  // start time in seconds
     double d_txtime_offset;  // transmission time offset relative to t0
     double d_txtime_adjustment; // current txtime adjustment
     uint64_t d_time_secs;  // integer seconds of next transmission time
@@ -35,6 +37,8 @@ private:
 
     gr_complex *d_beacon_data;  // preamble data
 
+    boost::mutex fp_mutex;
+    int d_delay; // extra sample delay (for debugging)
     const bool d_debug;
     pmt::pmt_t _id;
 
@@ -42,8 +46,6 @@ private:
     read_beacon_data(const char *filename);
 
 protected:
-    boost::mutex fp_mutex;
-
     int
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
@@ -54,9 +56,8 @@ protected:
     process_txen_message(const pmt::pmt_t &msg);
 
 public:
-    tx_frm_ctrl_impl(int ntx, int ndatasyms, const char *filename, double fs,
-                     int pktspersec, double starttime, int padding,
-                     bool autostart, bool debug);
+    tx_frm_ctrl_impl(int ntx, int ndatasyms, const char *filename, double samplerate, int pktspersec,
+                     double starttime, int padding, bool autostart, int delay, bool debug);
     ~tx_frm_ctrl_impl();
 
     int

@@ -14,54 +14,75 @@ namespace gr::ncjt
 {
 
 static const pmt::pmt_t TIME_KEY = pmt::string_to_symbol("rx_time");
-static const pmt::pmt_t RATE_KEY = pmt::string_to_symbol("rx_rate");
-static const pmt::pmt_t FREQ_KEY = pmt::string_to_symbol("rx_freq");
+// static const pmt::pmt_t RATE_KEY = pmt::string_to_symbol("rx_rate");
+// static const pmt::pmt_t FREQ_KEY = pmt::string_to_symbol("rx_freq");
 
 gnb_sync::sptr
-gnb_sync::make(int nchans, int preamblelen, int dataframelen,
-               double samplerate, int pktspersec,
-               double acorr_thrd, double xcorr_thrd,
-               int max_corr_len, bool debug)
+gnb_sync::make(
+    int nchans, double samplerate, int pktspersec, int usrpdelay,
+    int p2_htlen, int p2_datalen, int p3_htlen, int p3_datalen, double p2_start, double p3_start,
+    double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug)
 {
     return gnuradio::make_block_sptr<gnb_sync_impl>(
-        nchans, preamblelen, dataframelen, samplerate, pktspersec, acorr_thrd,
-        xcorr_thrd, max_corr_len, debug);
+        nchans, samplerate, pktspersec, usrpdelay, p2_htlen, p2_datalen, p3_htlen, p3_datalen, p2_start, p3_start,
+        rxpwr_thrd, acorr_thrd, xcorr_thrd, max_corr_len, debug);
 }
 
-gnb_sync_impl::gnb_sync_impl(int nchans, int preamblelen, int dataframelen,
-                             double samplerate, int pktspersec,
-                             double acorr_thrd, double xcorr_thrd,
-                             int max_corr_len, bool debug)
+gnb_sync_impl::gnb_sync_impl(
+    int nchans, double samplerate, int pktspersec, int usrpdelay,
+    int p2_htlen, int p2_datalen, int p3_htlen, int p3_datalen, double p2_start, double p3_start,
+    double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug)
     : gr::block("gnb_sync",
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex)),
                 gr::io_signature::make(nchans, 2 * nchans, sizeof(gr_complex))),
-      d_sampling_freq(samplerate), d_wait_interval0(0),  d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd),
-      d_max_corr_len(max_corr_len), d_frame_start(0), // d_prev_frame_count(0), d_prev_frame_time(0.0),
-      d_xcorr_fir(gr::filter::kernel::fir_filter_ccc(LTF_SEQ)), d_debug(debug)
+      d_rxpwr_thrd(rxpwr_thrd), d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd), d_max_corr_len(max_corr_len),
+      d_xcorr_fir(gr::filter::kernel::fir_filter_ccc(LTF_SEQ)),
+      d_debug(debug)
 {
     if (nchans < 1 || nchans > MAX_CHANS)
         throw std::runtime_error("Currently support 1 to 8 IQ channels");
     d_num_chans = nchans;
 
-    if (samplerate < 10000)
+    if (samplerate < 1e6 || samplerate > 1e8)
         throw std::runtime_error("invalid sampling frequency specified");
+    d_samplerate = samplerate;
     if (pktspersec <= 0 || pktspersec > 100)
         throw std::runtime_error("invalid sampling packet transmission interval specified");
 
-    if (preamblelen < 0 || preamblelen >= SYM_LEN * MAX_PREAMBLE_SYMS)
-        throw std::runtime_error("invalid HT preamble length specified");
-    if (preamblelen < 0 || preamblelen > int(samplerate / pktspersec))
-        throw std::runtime_error("invalid data frame length specified");
+    if (usrpdelay < 0 || usrpdelay > samplerate/1000)
+        throw std::runtime_error("invalid USRP processing delay specified");
+    d_usrpdelay = usrpdelay;
 
-    // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF
-    d_frame_len = dataframelen + preamblelen - 3 * SYM_LEN; // 3*SYM_LEN;
-
+    // packet transmission cycles period in seconds
     d_pkt_interval = 1.0 / (double) pktspersec;
 
-    // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT fields
-    // gNB start from t0 + T/4 after rx_time adjustment, receive P2 and P3 transmission
-    d_wait_interval1 = (int) floor(samplerate * d_pkt_interval / 2) - d_frame_len - 8 * SYM_LEN;
-    d_wait_interval2 = (int) floor(samplerate * d_pkt_interval / 2) - d_frame_len - 8 * SYM_LEN;
+    if (p2_htlen < 0 || (p2_htlen >= SYM_LEN * MAX_PREAMBLE_SYMS))
+        throw std::runtime_error("invalid HT preamble length specified");
+    d_p2_htlen = p2_htlen;
+    if (p2_datalen < 0 || (p2_datalen > int(samplerate / pktspersec)))
+        throw std::runtime_error("invalid data frame length specified");
+
+    if (p3_htlen < 0 || (p3_htlen >= SYM_LEN * MAX_PREAMBLE_SYMS))
+        throw std::runtime_error("invalid HT preamble length specified");
+    d_p3_htlen = p3_htlen;
+    if (p3_datalen < 0 || (p3_datalen > int(samplerate / pktspersec)))
+        throw std::runtime_error("invalid data frame length specified");
+
+    if (p2_start < 0 || p2_start > 0.5 * d_pkt_interval)
+        throw std::runtime_error("invalid phase 2 start time specified");
+    d_p2_start = p2_start;
+    if (p3_start < p2_start || p3_start > d_pkt_interval)
+        throw std::runtime_error("invalid phase 3 start time specified");
+    d_p3_start = p3_start;
+
+    // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF (3*SYM_LEN)
+    d_frame_len_1 = p2_htlen + p2_datalen - 3 * SYM_LEN;
+    d_frame_len_2 = p3_htlen + p3_datalen - 3 * SYM_LEN;
+
+    // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT-SIG and HT-STF
+    d_wait_interval0 = 0;
+    d_wait_interval1 = (int) floor(samplerate * (d_p3_start - d_p2_start)) - d_frame_len_1 - 8 * SYM_LEN;
+    d_wait_interval2 = (int) floor(samplerate * (d_pkt_interval + d_p2_start - d_p3_start)) - d_frame_len_2 - 8 * SYM_LEN;
 
     d_corr_buf_pos = 0;
     d_corr_buf = malloc_complex(CORR_BUF_LEN);
@@ -71,10 +92,10 @@ gnb_sync_impl::gnb_sync_impl(int nchans, int preamblelen, int dataframelen,
     d_xcorr_buf = malloc_complex(MAX_XCORR_LEN * nchans);
     d_xcorr_val = malloc_float(1024);
 
-    d_state = RXTIME; // SEARCH;
+    d_state = RXTIME;
+
     d_wait_count = 0;
     d_data_samples = 0;
-
     d_rx_ready_cnt1 = 0;
     d_rx_ready_cnt2 = 0;
     d_fine_foe_comp2 = 0.0;
@@ -113,18 +134,11 @@ gnb_sync_impl::forecast(int noutput_items, gr_vector_int &ninput_items_required)
 {
     switch (d_state)
     {
-        case SEARCH1:
-        case SEARCH2:
+        case P2SYNC:
+        case P3SYNC:
         {
             for (int ch = 0; ch < d_num_chans; ch++)
                 ninput_items_required[ch] = 16 * LTF_LEN;
-            break;
-        }
-        case FINESYNC1:
-        case FINESYNC2:
-        {
-            for (int ch = 0; ch < d_num_chans; ch++)
-                ninput_items_required[ch] = 4 * LTF_LEN;
             break;
         }
         default: // DEFRAME
@@ -152,37 +166,40 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
     int min_input_items = ninput_items[0];
     for (int ch = 1; ch < d_num_chans; ch++)
         min_input_items = std::min(min_input_items, ninput_items[ch]);
-    int noutput_samples = 0;
+    int noutput_samples;
 
     switch (d_state)
     {
         case RXTIME:
         {
-            // send tag command and check current timestamp
+            // send tag command to check current timestamp
             send_tagcmd();
-
-            // skip first 5 seconds for gNB receiver
-            if (nitems_read(0) < uint64_t(5 * d_sampling_freq))
-            {
-                consume_each(min_input_items);
-                break;
-            }
 
             // Adjust frame start according to rx_time
             // 1) assuming gNB transmission is aligned with PPS (integer rx_time)
-            // 2) TxUE transmission starts with timing offset of 1/4 pkt_interval
-            // 3) RxUE transmission starts with timing offset of 3/4 pkt_interval
+            // 2) TxUE transmission starts with timing offset p2_start
+            // 3) RxUE transmission starts with timing offset p3_start
             double time_fracs = check_rxtime(min_input_items);
-            if (time_fracs > 0)
+            if (time_fracs >= 0)
             {
-                double intpart;
-                double pkt_time_fracs = std::modf(time_fracs / d_pkt_interval, &intpart);
-                double pkt_start_adjust = (1.25 - pkt_time_fracs) * d_pkt_interval;
-                d_wait_interval0 = int(d_sampling_freq * pkt_start_adjust); // + SYM_LEN * 3;
+                // skip first 5 seconds for gNB receiver
+                if (nitems_read(0) < uint64_t(5 * d_samplerate))
+                {
+                    d_state = RXTIME;
+                    consume_each(min_input_items);
+                    break;
+                }
+
+                // make time_fracs in range (0, d_pkt_interval)
+                while (time_fracs >= d_pkt_interval)
+                    time_fracs -= d_pkt_interval;
+                // calculate sample clocks until next P2 transmission
+                double pkt_start_adjust = (d_pkt_interval + d_p2_start - time_fracs);
+                d_wait_interval0 = int(d_samplerate * pkt_start_adjust) + d_usrpdelay;
                 d_wait_count = 0;
                 d_state = WAIT0;
                 uint64_t pkt_start = nitems_read(0) + d_wait_interval0;
-                dout << "Adjusting gNB timing: " << pkt_start << std::endl;
+                dout << "Adjusting P2 start: " << pkt_start << std::endl;
                 break;
             }
 
@@ -199,59 +216,69 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
                 d_data_samples = 0;
-                d_state = FINESYNC1; //SEARCH1;
-                std::cout << "Phase 2: entering SEARCH" << std::endl;
+                d_fine_foe_cnt1 = 0;
+                d_fine_foe_cnt2 = 0;
+                d_fine_foe_comp1 = 0.0;
+                d_fine_foe_comp2 = 0.0;
+                d_current_foe_comp1 = 0.0;
+                d_current_foe_comp2 = 0.0;
+                d_rx_ready_cnt1 =  0;
+                d_rx_ready_cnt2 =  0;
+                d_state = P2SYNC;
+                dout << "Phase 2: entering SYNC state" << std::endl;
             }
             consume_each(min_input_items);
             break;
         }
-        case SEARCH1:
+        case P2SYNC:
         {
-            d_fine_foe_cnt1 = 0;
-            d_fine_foe_comp1 = 0.0;
-            d_current_foe_comp1 = 0.0;
+            int buffer_len = ((min_input_items > d_max_corr_len) ? d_max_corr_len : min_input_items);
+            if (buffer_len < 10 * STF_LEN)
+                break;
 
             // search for frame start
-            int buffer_len = ((min_input_items > d_max_corr_len) ? d_max_corr_len : min_input_items);
-            if (buffer_len < 8 * STF_LEN)
-                break;
-            int start_pos = sync_search(input_items, buffer_len, d_current_foe_comp1);
-            if (start_pos > 0)
+            int start_pos = 0;
+            if (d_rx_ready_cnt1 == 0)
             {
-                d_frame_start = nitems_read(0) + start_pos;
-                dout << "Phase 2: Packet start at " << d_frame_start << std::endl;
-                consume_each(start_pos);
-            } /* else {
-                // frame start not found, discard samples
-                // consume_each(buffer_len - 2 * STF_LEN);
-                dout << "Phase 2: Packet start not found" << std::endl;
-                break;
-            }*/
-            d_state = FINESYNC1;
-            break;
-        }
-        case FINESYNC1:
-        {
-            check_rxtime(min_input_items);
-
-            int htsig_start = fine_sync(input_items, 3 * LTF_LEN,
-                                        d_current_foe_comp1, d_fine_foe_comp1,
-                                        d_rx_ready_cnt1, d_fine_foe_cnt1);
-            if (htsig_start < 0)
-            {
-                d_skip_p2_frame = true;
-                htsig_start = SYM_LEN * 7; // use default value
-                std::cout << "Phase 2: Fine synchronize failed for Tx UE!" << std::endl;
+                start_pos = sync_search(input_items, buffer_len, d_current_foe_comp1);
+                if (start_pos < 0)
+                {
+                    dout << "Phase 2: Packet start not detected correctly: " << start_pos << std::endl;
+                    d_current_foe_comp1 = 0.0;
+                    d_skip_p2_frame = true;
+                    consume_each(5 * SYM_LEN + d_p2_htlen); // skip the whole beacon
+                    d_data_samples = 0;
+                    d_state = P2DEFRAME;
+                    break;
+                } else
+                {
+                    consume_each(start_pos);
+                    dout << "Phase 2: Packet start detected at " << start_pos << std::endl;
+                }
             }
 
-            d_frame_start = nitems_read(0) + htsig_start;
-            dout << "Phase 2: Frame start at " << d_frame_start << std::endl;
-            d_data_samples = 0;
-            d_state = P2DEFRAME;
-            send_tagcmd();
+            int ht_start = fine_sync(input_items, 3 * LTF_LEN,
+                                     d_current_foe_comp1, d_fine_foe_comp1,
+                                     d_rx_ready_cnt1, d_fine_foe_cnt1);
+            if (ht_start < 0)
+            {
+                dout << "Phase 2: Fine synchronize failed for TX UE!" << std::endl;
+                d_current_foe_comp1 = 0.0;
+                d_skip_p2_frame = true;
+                consume_each(5 * SYM_LEN + d_p2_htlen); // skip the whole beacon
+                d_data_samples = 0;
+                d_state = P2DEFRAME;
+                break;
+            }
 
-            consume_each(htsig_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
-            if (d_rx_ready_cnt1 >= 9 && d_rx_ready_cnt2 >= 9) // changing to ready state
+            int frame_start = nitems_read(0) + ht_start;
+            dout << "Phase 2: Frame start at " << frame_start << std::endl;
+            consume_each(ht_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
+            d_data_samples = 0;
+            d_skip_p2_frame = false;
+            d_state = P2DEFRAME;
+
+            if (d_rx_ready_cnt1 >= 9 && d_rx_ready_cnt1 >= 9) // changing to ready state
                 send_rxstate(true);
             if (d_rx_ready_cnt1 < 100)
                 d_rx_ready_cnt1 += 1;
@@ -261,9 +288,9 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
         case P2DEFRAME:
         {
             noutput_samples = std::min(min_input_items, noutput_items);
-            if (d_data_samples + noutput_samples >= d_frame_len)
+            if (d_data_samples + noutput_samples >= d_frame_len_1)
             {
-                noutput_samples = d_frame_len - d_data_samples;
+                noutput_samples = d_frame_len_1 - d_data_samples;
                 d_wait_count = 0;
                 d_state = WAIT1;
             }
@@ -283,7 +310,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                     add_item_tag(ch,
                                  nitems_written(ch),
                                  pmt::string_to_symbol("frame_start"),
-                                 pmt::from_long(d_frame_len),
+                                 pmt::from_long(d_frame_len_1),
                                  pmt::string_to_symbol(name()));
             }
 
@@ -299,7 +326,6 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_data_samples += 1;
             }
 
-            check_rxtime(noutput_samples);
             consume_each(noutput_samples);
             for (int ch = 0; ch < d_num_chans; ch++)
             {
@@ -318,72 +344,74 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
                 d_data_samples = 0;
-                d_state = FINESYNC2; // SEARCH2;
+                d_state = P3SYNC;
+                dout << "Phase 3: entering SYNC state" << std::endl;
             }
-            if (d_wait_count < 2048)
-                check_rxtime(noutput_samples);
             consume_each(min_input_items);
             break;
         }
-        case SEARCH2:
+        case P3SYNC:
         {
-            d_fine_foe_cnt2 = 0;
-            d_fine_foe_comp2 = 0.0;
-            d_current_foe_comp2 = 0.0;
+            int buffer_len = ((min_input_items > d_max_corr_len) ? d_max_corr_len : min_input_items);
+            if (buffer_len < 10 * STF_LEN)
+                break;
 
             // search for frame start
-            int buffer_len = ((min_input_items > d_max_corr_len) ? d_max_corr_len : min_input_items);
-            if (buffer_len < 8 * STF_LEN)
-                break;
-            int start_pos = sync_search(input_items, buffer_len, d_current_foe_comp2);
-            if (start_pos < 0)
+            int start_pos = 0;
+            if (d_rx_ready_cnt2 == 0)
             {
-                // frame start not found, discard samples
-                consume_each(buffer_len - 2 * STF_LEN);
-                break;
+                start_pos = sync_search(input_items, buffer_len, d_current_foe_comp2);
+                if (start_pos < 0)
+                {
+                    dout << "Phase 3: Packet start not detected correctly: " << start_pos << std::endl;
+                    d_current_foe_comp2 = 0.0;
+                    d_skip_p3_frame = true;
+                    consume_each(5 * SYM_LEN + d_p3_htlen); // skip the whole beacon
+                    d_data_samples = 0;
+                    d_state = P3DEFRAME;
+                    break;
+                } else
+                {
+                    consume_each(start_pos);
+                    dout << "Phase 3: Packet start detected at " << start_pos << std::endl;
+                }
             }
-            d_frame_start = nitems_read(0) + start_pos;
-            dout << "Phase 3: Packet start at " << d_frame_start << std::endl;
-            consume_each(start_pos);
-            for (int ch = 0; ch < 2 * d_num_chans; ch++)
-                produce(ch, 0);
-            d_state = FINESYNC2;
-            break;
-        }
-        case FINESYNC2:
-        {
-            check_rxtime(min_input_items);
 
-            int htsig_start = fine_sync(input_items, 3 * LTF_LEN,
-                                        d_current_foe_comp2, d_fine_foe_comp2,
-                                        d_rx_ready_cnt2, d_fine_foe_cnt2);
-            if (htsig_start < 0)
+            int ht_start = fine_sync(input_items, 3 * LTF_LEN,
+                                     d_current_foe_comp2, d_fine_foe_comp2,
+                                     d_rx_ready_cnt2, d_fine_foe_cnt2);
+            if (ht_start < 0)
             {
+                dout << "Phase 3: Fine synchronize failed for RX UE!" << std::endl;
+                d_current_foe_comp2 = 0.0;
                 d_skip_p3_frame = true;
-                htsig_start = 188; // use default value
-                std::cout << "Phase 3 :Fine synchronize failed for RxUE!" << std::endl;
+                consume_each(5 * SYM_LEN + d_p3_htlen); // skip the whole beacon
+                d_data_samples = 0;
+                d_state = P3DEFRAME;
+                break;
             }
 
-            d_frame_start = nitems_read(0) + htsig_start;
-            dout << "Phase 3: Frame start at " << d_frame_start << std::endl;
+            int frame_start = nitems_read(0) + ht_start;
+            dout << "Phase 3: Frame start at " << frame_start << std::endl;
+            consume_each(ht_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
             d_data_samples = 0;
+            d_skip_p3_frame = false;
             d_state = P3DEFRAME;
-            send_tagcmd();
 
-            consume_each(htsig_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
-            if (d_rx_ready_cnt1 >= 9 && d_rx_ready_cnt2 >= 9) // changing to ready state
+            if (d_rx_ready_cnt2 >= 9 && d_rx_ready_cnt2 >= 9) // changing to ready state
                 send_rxstate(true);
-            if (d_rx_ready_cnt1 < 100)
-                d_rx_ready_cnt1 += 1;
+            if (d_rx_ready_cnt2 < 100)
+                d_rx_ready_cnt2 += 1;
 
             break;
         }
         case P3DEFRAME:
         {
             noutput_samples = std::min(min_input_items, noutput_items);
-            if (d_data_samples + noutput_samples >= d_frame_len)
+            if (d_data_samples + noutput_samples >= d_frame_len_2)
             {
-                noutput_samples = d_frame_len - d_data_samples;
+                noutput_samples = d_frame_len_2 - d_data_samples;
+                d_wait_count = 0;
                 d_state = WAIT2;
             }
 
@@ -398,11 +426,11 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             // add packet frame start tag
             if (d_data_samples == 0)
             {
-                for (int ch = d_num_chans; ch < 2 * d_num_chans; ch++)
-                    add_item_tag(ch,
-                                 nitems_written(ch),
+                for (int ch = 0; ch < d_num_chans; ch++)
+                    add_item_tag(d_num_chans + ch,
+                                 nitems_written(d_num_chans + ch),
                                  pmt::string_to_symbol("frame_start"),
-                                 pmt::from_long(d_frame_len),
+                                 pmt::from_long(d_frame_len_2),
                                  pmt::string_to_symbol(name()));
             }
 
@@ -418,7 +446,6 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_data_samples += 1;
             }
 
-            check_rxtime(noutput_samples);
             consume_each(noutput_samples);
             for (int ch = 0; ch < d_num_chans; ch++)
             {
@@ -436,21 +463,17 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
-                std::cout << "Returning to Sync Search" << std::endl;
-                d_state = FINESYNC1; // SEARCH1;
+                d_data_samples = 0;
+                d_state = P2SYNC;
+                dout << "Phase 2: entering SYNC state" << std::endl;
             }
-            if (d_wait_count < 2048)
-                check_rxtime(noutput_samples);
             consume_each(min_input_items);
-            for (int ch = 0; ch < 2 * d_num_chans; ch++)
-                produce(ch, 0);
             break;
         }
     }
 
     return WORK_CALLED_PRODUCE;
 }
-
 
 void
 gnb_sync_impl::send_tagcmd()
@@ -460,16 +483,9 @@ gnb_sync_impl::send_tagcmd()
     message_port_pub(pmt::mp("uhdcmd"), cmdmsg);
 }
 
-void
-gnb_sync_impl::send_rxstate_message(bool ready)
-{
-    pmt::pmt_t dict = pmt::make_dict();
-    dict = pmt::dict_add(dict, pmt::mp("rxrdy"), _id);
-    message_port_pub(pmt::mp("rxrdy"), dict);
-}
-
-// This function calculate the correct absolute time for the current frame start position
-// and send this to tx_framing block
+/*
+ * This function calculate the fractional time for the current data segment received
+ */
 double
 gnb_sync_impl::check_rxtime(int rx_windows_size)
 {
@@ -480,42 +496,31 @@ gnb_sync_impl::check_rxtime(int rx_windows_size)
     {
         // current receiver position of (first sample of the IQ  buffer)
         uint64_t current_pos = nitems_read(0);
+
         // extract integer and fractional timestamp
         auto pt = pmt::to_tuple(d_tags[0].value);
         uint64_t time_secs = pmt::to_uint64(pmt::tuple_ref(pt, 0));
         double time_fracs = pmt::to_double(pmt::tuple_ref(pt, 1));
-        // std::cout << "Current time " << time_secs << ":" << time_fracs << " (" << current_pos << ")" << std::endl;
-
-        // update hardware absolute time corresponding to the frame start
-        // d_prev_frame_count = current_pos;
-        // d_prev_frame_time = time_fracs; // (double) time_secs + time_fracs;
-
-        if ((d_state == P2DEFRAME || d_state == P3DEFRAME || d_state == WAIT1 || d_state == WAIT2)
-            && current_pos >= d_frame_start && d_frame_start > 0)
-            // && current_pos < d_frame_start + uint64_t(d_wait_interval))
-        {
-            // get the actual time for current frmstart
-            double frmstart_time = time_fracs + double(time_secs);
-            frmstart_time -= double(current_pos - d_frame_start) / d_sampling_freq;
-            double intpart;
-            double timefracs = std::modf(frmstart_time, &intpart);
-            uint64_t timesecs = uint64_t(intpart);
-            // std::cout << "Packet start at " << timesecs << ":" << timefracs << " " << (current_pos - d_frame_start) << std::endl;
-            // send frame start time via message (integer and fractional parts of the frmstart time)
-            auto rxtime_msg = pmt::make_tuple(pmt::from_uint64(timesecs), pmt::from_double(timefracs));
-            message_port_pub(pmt::mp("rxtime"), rxtime_msg);
+        // tag offset adjustment
+        time_fracs -= (double(d_tags[0].offset) - current_pos) / d_samplerate;
+        if (time_fracs < 0) {
+            time_secs -= 1;
+            time_fracs += 1.0;
         }
+        // std::cout << "Current time " << time_secs << ":"
+        //          << std::fixed << std::setprecision(8) << time_fracs
+        //          << " (" << current_pos << ")" << std::endl;
+
         return time_fracs;
     }
-    return 0;
+    return -1;
 }
 
 /*
- * search for frame start using L-LTS auto-corr peaks
+ * search for frame start using L-STF auto-corr peaks
  */
 int
-gnb_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buffer_len,
-                           float &current_foe_comp)
+gnb_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buffer_len, float &current_foe_comp)
 {
     float power_est = 0;  // current auto-correlation sum
     gr_complex auto_corr = 0;
@@ -560,9 +565,9 @@ gnb_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buf
         power_est += sig_pwr;
         d_pwrest_buf[d_corr_buf_pos] = sig_pwr;
 
-        // check auto-corr peaks, use noise lower-bound 1e-2 to avoid false detection
-        float corr_norm = norm(auto_corr) / (power_est * power_est + 1e-8f);
-        if (corr_norm >= d_acorr_thrd)
+        // check auto-corr peaks, use noise lower-bound to avoid false detection
+        float corr_norm = norm(auto_corr) / (power_est * power_est + 1e-6f);
+        if (power_est > d_rxpwr_thrd && corr_norm >= d_acorr_thrd)
         {
             if (peak_duration == 0)
                 peak_start = i;
@@ -581,11 +586,12 @@ gnb_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buf
         power_est -= d_pwrest_buf[oldest_corr_pos];
 
         // break when S-LTF is found
-        if (peak_duration >= 3 * CORR_DELAY)
+        if (peak_duration >= PEAK_THRD * CORR_DELAY)
         {
             // frame start should be within CORR_DELAY samples before the start of L-STF
-            frame_start_pos = peak_start - 3 * CORR_DELAY;
-            dout << "Autocorr peak found at " << peak_start << " (peak duration " << peak_duration << ")" << std::endl;
+            frame_start_pos = peak_start - (PEAK_THRD - 2) * CORR_DELAY;
+            dout << "Auto-correlation peak found at " << peak_start << " (peak duration " << peak_duration << ")"
+                 << std::endl;
             break;
         }
     }
@@ -594,7 +600,7 @@ gnb_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buf
     {
         gr_complex corr_foe = 0;
         // avoid the initial CORR_DELAY samples, 9*CORR_DELAY samples are usable
-        for (int k = frame_start_pos + 2 * CORR_DELAY; k < frame_start_pos + 9 * CORR_DELAY; k++)
+        for (int k = frame_start_pos + CORR_DELAY; k < frame_start_pos + 9 * CORR_DELAY; k++)
         {
             int delay_idx = k + CORR_DELAY;
             // sum over all channels, assuming same LO frequency across all receivers
@@ -605,9 +611,9 @@ gnb_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buf
             }
         }
         current_foe_comp = arg(corr_foe) / (float) CORR_DELAY; // FOE compensation in radians
-        float foe_comp_hz = current_foe_comp * d_sampling_freq / (2.0 * M_PI);
+        float foe_comp_hz = current_foe_comp * d_samplerate / (2.0 * M_PI);
         dout << "Coarse frequency offset compensation: "
-            << current_foe_comp << " (" << foe_comp_hz << " Hz)" << std::endl;
+             << current_foe_comp << " (" << foe_comp_hz << " Hz)" << std::endl;
     }
 
     // return start position of the L-STF (with guard interval)
@@ -618,13 +624,13 @@ int
 gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer_len,
                          float &current_foe_comp, float &fine_foe_comp, int &rx_ready_cnt, int &fine_foe_cnt)
 {
-    // compensate coarse FOE
+    // compensate for current FOE
     for (int i = 0; i < buffer_len; i++)
     {
         gr_complex comp_val = exp(gr_complex(0, current_foe_comp * (double) i));
         for (int ch = 0; ch < d_num_chans; ch++)
         {
-            const gr_complex *in = (const gr_complex *) input_items[ch];
+            auto in = (const gr_complex *) input_items[ch];
             d_input_buf[i + ch * XCORR_DATA_LEN] = in[i] * comp_val;
         }
     }
@@ -693,21 +699,21 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
     dout << "Found LTF xcorr peaks at " << first_peak_pos << ", " << second_peak_pos << std::endl;
 
     // sanity checks
-    int sig_start = -1;
+    int ht_start = -1;
     if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - deltaCSD &&
         second_peak_pos <= first_peak_pos + FFT_LEN + deltaCSD)
     {
-        // start of the HT preambles (HT-SIGs)
-        // sig_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;
+        // start of the HT-LTF signals
+        // ht_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;
 
         // calculate the start of the HT-LTF (removing HT-SIG and HT-STF)
         // first peak pos corresponding to the start of the first FFT block in L-LTF
         // 4 * SYM_LEN : L-SIG, HT-SIG, HT-STF
-        sig_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
+        ht_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
     }
     else
     {
-        return sig_start;
+        return ht_start;
     }
 
     // estimate fine FOE
@@ -728,7 +734,7 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
         {
             current_foe_comp += 0.1 * (fine_foe_comp + cur_fine_foe_comp);
             dout << "Fine frequency offset compensation: " << current_foe_comp << "    ("
-                 << current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;
+                 << current_foe_comp * d_samplerate / (2.0 * M_PI) << " Hz)" << std::endl;
         }
     }
     else if (fine_foe_cnt < 10)
@@ -742,11 +748,11 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
         current_foe_comp += (fine_foe_comp + cur_fine_foe_comp) / 200.0;
         fine_foe_comp = 0.0;
         dout << "Fine frequency offset compensation: " << current_foe_comp << "    ("
-             << current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;
+             << current_foe_comp * d_samplerate / (2.0 * M_PI) << " Hz)" << std::endl;
     }
 
-    // return start position of L-SIG
-    return sig_start;
+    // return start position of HT-LTF
+    return ht_start;
 }
 
 // conjugated and reversed LTF sequence

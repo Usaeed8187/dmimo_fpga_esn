@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
+  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${lltf2}, ${debug})
 
 parameters:
   - id: nchans
@@ -23,7 +23,7 @@ parameters:
   - id: samplerate
     label: Sample Rate
     dtype: real
-    default: '1000000'
+    default: '10e6'
     hide: part
   - id: pktspersec
     label: Packets/Sec
@@ -32,7 +32,7 @@ parameters:
   - id: rxpwrthrd
     label: Signal Power Threshold
     dtype: float
-    default: '1e-4'
+    default: '5e-4'
   - id: acorrthrd
     label: Search Threshold
     dtype: float
@@ -45,6 +45,13 @@ parameters:
     label: Search Window
     dtype: int
     default: '4000'
+    hide: part
+  - id: lltf2
+    label: Use LLTF v2
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
     hide: part
   - id: debug
     label: Debug

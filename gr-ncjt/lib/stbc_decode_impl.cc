@@ -74,9 +74,15 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     auto out2 = (gr_complex *) output_items[2];
     bool output_constl = (output_items.size() > 2);
 
+    int min_input_items = ninput_items[0];
+    for (int ch = 1; ch < d_nrx; ch++)
+        min_input_items = std::min(min_input_items, ninput_items[ch]);
+    int ninput_syms = min_input_items / d_scnum;
+    if ((ninput_syms - d_nrx) != d_numsyms)
+        throw std::runtime_error("total number of OFDM symbols to STBC decoder not correct");
+
     std::vector<gr::tag_t> d_tags;
-    get_tags_in_window(d_tags, 0, 0, 1,
-                       pmt::string_to_symbol("packet_start"));
+    get_tags_in_window(d_tags, 0, 0, 1, pmt::string_to_symbol("packet_start"));
     if (!d_tags.empty())
     {
         // save channel estimation
@@ -96,6 +102,19 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     else
         throw std::runtime_error("Channel estimation not received!");
 
+    // Get CPE estimation tags
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_phi1"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_phi tag");
+    d_cpe_phi = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_offset1"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_offset tag");
+    d_cpe_offset = pmt::to_float(d_tags[0].value);
+
     // reshape inputs as a tensor of shape (Nsc, 2, 1, Nsyms/2)
     Eigen::DSizes<Eigen::Index, 4> dims(d_scnum, 2, 1, d_numsyms / 2);
     CTensor4D ry0 = Eigen::TensorMap<const CTensor4D>(in0 + 2 * d_scnum, dims);
@@ -109,6 +128,22 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     Eigen::array<int, 4> bcast({1, 1, 1, d_numsyms / 2});
     CTensor4D ch = chant_est.broadcast(bcast); // (Nsc, Nrx, 2, Nsym/2)
     dout << "chanest size: " << ch.dimensions() << std::endl;
+
+    // CPE compensation
+    CTensor4D cpe_comp_all(d_scnum, d_nrx, 1, d_numsyms);
+    for (int symidx = 0; symidx < d_numsyms; symidx++)
+    {
+        float cpe_phi = -(d_cpe_offset + symidx * d_cpe_phi);
+        gr_complex cpe_comp = std::exp(gr_complex(0, cpe_phi));
+        for (int m = 0; m < d_scnum; m++)
+        {
+            cpe_comp_all(m, 0, 0, symidx) = cpe_comp;
+            cpe_comp_all(m, 1, 0, symidx) = cpe_comp;
+        }
+    }
+    Eigen::array<int, 4> cpe_dims = {d_scnum, d_nrx, 2, d_numsyms / 2};
+    auto cpe_comp_frame = Eigen::TensorMap<CTensor4D>(cpe_comp_all.data(), cpe_dims);
+    ch *= cpe_comp_frame;
 
     // STBC receiver
     // auto [z, h_eq] = alamouti_decode(ry, ch);
@@ -160,6 +195,30 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     Tensor2D h_eq_reshaped = Eigen::TensorMap<Tensor2D>(h_eq_duplicated.data(), h_eq_final_dims);
     dout << "h_eq: " << h_eq_reshaped.dimensions() << std::endl;
 
+    // Retrieve noise_var tag
+    float noise_var = 1e-3f;
+    std::vector<gr::tag_t> noise_tags;
+    // You may adjust the window range as needed
+    get_tags_in_window(noise_tags, 0, 0, 1, pmt::string_to_symbol("noise_var"));
+    if (!noise_tags.empty())
+    {
+        noise_var = pmt::to_float(noise_tags[0].value);
+        if (d_debug)
+        {
+            dout << "Retrieved noise_var=" << noise_var << " from tag" << std::endl;
+        }
+    }
+
+    // Attach noise_var as tag for downstream blocks
+    add_item_tag(0, nitems_written(0), pmt::string_to_symbol("noise_var"),
+                 pmt::from_float(noise_var), pmt::string_to_symbol(name()));
+
+    // Also attach avg_snr tag for the PDC block
+    float snr_linear = 1.0f / noise_var;
+    float snr_db = 10.0f * log10(snr_linear);
+    add_item_tag(0, nitems_written(0), pmt::string_to_symbol("avg_snr"),
+                 pmt::from_float(snr_db), pmt::string_to_symbol(name()));
+
     // symbols & csi output
     for (int m = 0; m < d_numsyms; m++)
     {
@@ -170,7 +229,8 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 continue;
             int offset = m * d_scdata + sc_cnt;
             out0[offset] = z_summed(i, m);
-            out1[offset] = gr_complex(h_eq_reshaped(i, m), 0.0);
+            // Include noise variance in CSI
+            out1[offset] = gr_complex(h_eq_reshaped(i, m), noise_var);
             if (output_constl)
                 out2[offset] = z_summed(i, m) / h_eq_reshaped(i, m);
             sc_cnt += 1;

@@ -34,11 +34,12 @@ private:
     double d_sampling_freq;  // Baseband sampling frequency
     double d_pkt_interval;   // packet repeat interval (in seconds)
     int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
-    float d_acorr_thrd;   // Auto-correlation detection threshold
-    float d_xcorr_thrd;   // Cross-correlation detection threshold
-    float d_rxpwr_thrd;   // Receiver power threshold for signal detection
-    int d_max_corr_len;   // Maximal auto-correlation buffer length
-    int d_rx_ready_cnt;   // receiver synchronization counter
+
+    float d_rxpwr_thrd;  // Receiver power threshold for signal detection
+    float d_acorr_thrd;  // Auto-correlation detection threshold
+    float d_xcorr_thrd;  // Cross-correlation detection threshold
+    int d_max_corr_len;  // Maximal auto-correlation buffer length
+    int d_rx_ready_cnt;  // receiver synchronization counter
 
     float *d_pwrest_buf;
     gr_complex *d_corr_buf;
@@ -47,12 +48,13 @@ private:
     float d_fine_foe_comp;
     int d_fine_foe_cnt;
     uint64_t d_frame_start;
-    uint64_t d_prev_frame_count;
-    double d_prev_frame_time;
+    // uint64_t d_prev_frame_count;
+    // double d_prev_frame_time;
     int d_data_samples;
     int d_wait_count;
 
-    static const std::vector<gr_complex> LTF_SEQ;
+    static const std::vector<gr_complex> LTF_SEQ_1;
+    static const std::vector<gr_complex> LTF_SEQ_2;
     gr::filter::kernel::fir_filter_ccc d_xcorr_fir;
     gr_complex *d_xcorr_buf;
     gr_complex *d_input_buf;
@@ -83,9 +85,7 @@ private:
 
 public:
     rx_sync_impl(int nchans, int npreamblesyms, int ndatasyms, double sampling_freq, int pktspersec,
-                 double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug);
-    explicit rx_sync_impl(float DXcorrThrd);
-
+                 double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool lltf2, bool debug);
     ~rx_sync_impl();
 
     void

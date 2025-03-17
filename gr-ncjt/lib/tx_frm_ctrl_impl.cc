@@ -6,21 +6,22 @@
 
 #include "tx_frm_ctrl_impl.h"
 #include <gnuradio/io_signature.h>
+#include <iomanip>
 #include "utils.h"
 
 namespace gr::ncjt
 {
 
 tx_frm_ctrl::sptr
-tx_frm_ctrl::make(int ntx, int ndatasyms, const char *filename, double fs, int pktspersec,
-                  double starttime, int padding, bool autostart, bool debug)
+tx_frm_ctrl::make(int ntx, int ndatasyms, const char *filename, double samplerate, int pktspersec,
+                  double starttime, int padding, bool autostart, int delay, bool debug)
 {
-    return gnuradio::make_block_sptr<tx_frm_ctrl_impl>(ntx, ndatasyms, filename, fs, pktspersec,
-                                                       starttime, padding, autostart, debug);
+    return gnuradio::make_block_sptr<tx_frm_ctrl_impl>(ntx, ndatasyms, filename, samplerate, pktspersec,
+                                                       starttime, padding, autostart, delay, debug);
 }
 
-tx_frm_ctrl_impl::tx_frm_ctrl_impl(int ntx, int ndatasyms, const char *filename, double fs, int pktspersec,
-                                   double starttime, int padding, bool autostart, bool debug)
+tx_frm_ctrl_impl::tx_frm_ctrl_impl(int ntx, int ndatasyms, const char *filename, double samplerate, int pktspersec,
+                                   double starttime, int padding, bool autostart, int delay, bool debug)
     : gr::tagged_stream_block(
     "tx_frm_ctrl",
     gr::io_signature::make(ntx, ntx, sizeof(gr_complex)),
@@ -34,32 +35,46 @@ tx_frm_ctrl_impl::tx_frm_ctrl_impl(int ntx, int ndatasyms, const char *filename,
 
     if (pktspersec <= 0 || pktspersec > 200)
         throw std::runtime_error("invalid sampling packet transmission interval specified");
+    d_pkts_per_sec = pktspersec;
     d_repeat_interval = 1.0 / (double) pktspersec;
+
+    if (delay < 0 || delay > 64)
+        throw std::runtime_error("invalid delay specified, maximum delay is 64");
+    d_delay = delay;
 
     d_beacon_data = nullptr;
     if ((d_beacon_len = read_beacon_data(filename)) <= 0)
         throw std::runtime_error("failed to read frame data");
     d_beacon_len /= d_ntx;
+    dout << "Beacon length: " << d_beacon_len << std::endl;
 
     d_data_length = ndatasyms * SYM_LEN;
     d_frame_length = d_beacon_len + d_data_length + 2 * d_padding_length;
-    if (d_frame_length >= int(0.5 * d_repeat_interval * fs))
+    if (d_frame_length >= int(0.5 * d_repeat_interval * samplerate))
         throw std::runtime_error("packet frame too large");
 
     if (starttime < 0.0 || starttime > 30.0)
         throw std::runtime_error("invalid start time specified");
 
+    // start time aligned with PPS, its fractional part used as offset for P0/P2/P3
     double intpart;
-    d_time_fracs = std::modf(starttime, &intpart);
-    d_time_secs = uint64_t(intpart);
-    d_first_burst = true;
-    d_txen = autostart;
+    d_txtime_offset = std::modf(starttime, &intpart);
+    d_txtime_start = uint64_t(intpart);
 
     // make txtime offset in range (0, repeat_interval)
-    d_txtime_offset = d_time_fracs;
-    while (d_txtime_offset > d_repeat_interval)
+    while (d_txtime_offset >= d_repeat_interval)
         d_txtime_offset -= d_repeat_interval;
-    d_txtime_adjustment = 0.0;
+    // adjust for zero padding before preamble
+    d_txtime_offset -= double(d_padding_length) / samplerate;
+
+    // timing adjustment from received synchronization beacon
+    d_txtime_adjustment = 0;
+
+    // initial frame
+    d_time_secs = d_txtime_start;
+    d_time_fracs = d_txtime_offset;
+    d_first_burst = true;
+    d_txen = autostart;
 
     std::stringstream str;
     str << name() << unique_id();
@@ -90,40 +105,36 @@ tx_frm_ctrl_impl::process_rxtime_message(const pmt::pmt_t &msg)
 {
     gr::thread::scoped_lock lock(fp_mutex);
 
-    //uint64_t rxtime_secs = pmt::to_uint64(pmt::tuple_ref(msg, 0));
+    uint64_t rxtime_secs = pmt::to_uint64(pmt::tuple_ref(msg, 0));
     double rxtime_fracs = pmt::to_double(pmt::tuple_ref(msg, 1));
-    //std::cout << "Packet start at " << time_secs << ":" << time_fracs << std::endl;
-    while (rxtime_fracs > d_repeat_interval)  // make it in rage [0, T]
+    dout << "Packet start at " << rxtime_secs << " "
+          << std::fixed << std::setprecision(8)
+          << rxtime_fracs << std::endl;
+
+    while (rxtime_fracs >= d_repeat_interval)  // make it in rage [0, T]
         rxtime_fracs -= d_repeat_interval;
 
     // avoid unnecessary timing adjustment
-    if (abs(rxtime_fracs - d_txtime_adjustment) < 1e-5 * d_repeat_interval)
-        return;
+    //double time_shift = abs(rxtime_fracs - d_txtime_adjustment);
+    //if (time_shift < 1e-4 * d_repeat_interval  || time_shift > 1e-2 * d_repeat_interval)
+    //    return;
 
     // timing adjustment using latest rxtime
     d_txtime_adjustment = rxtime_fracs;
 
-    // double next_txtime =
-    //    (double) (d_time_secs - 1) + rxtime_fracs + d_txtime_offset;
-    // schedule time for next transmission
-    //double schedule_txtime = d_time_fracs + (double) d_time_secs;
-    //while (next_txtime < (schedule_txtime - 0.05 * d_repeat_interval))
-    //    next_txtime += d_repeat_interval;
-
-    // update next transmission time
-//    double intpart;
-////    d_time_fracs = std::modf(next_txtime, &intpart);
-////    d_time_secs = uint64_t(intpart);
-
-//    dout << "Adjusted schedule time: " << (double) d_time_secs + d_time_fracs << " seconds" << std::endl;
+    // dout << "Tx time adjustment: " << std::fixed << std::setprecision(8) << rxtime_fracs << std::endl;
 }
 
 void
 tx_frm_ctrl_impl::process_txen_message(const pmt::pmt_t &msg)
 {
-    // gr::thread::scoped_lock lock(fp_mutex);
-    d_txen = pmt::to_bool(msg);
-    dout << "Tx enable status: " << d_txen << std::endl;
+    gr::thread::scoped_lock lock(fp_mutex);
+    bool txen = pmt::to_bool(msg);
+    if (txen != d_txen)
+    {
+        d_txen = txen;
+        dout << "Update TX status: " << d_txen << std::endl;
+    }
 }
 
 int
@@ -200,23 +211,19 @@ tx_frm_ctrl_impl::work(int noutput_items, gr_vector_int &ninput_items,
                          _id);
 
             // zero-padding and copy beacon symbols
-            memset((void *) &out[0], 0, sizeof(gr_complex) * d_padding_length);
-            memcpy(&out[d_padding_length], &d_beacon_data[s * d_beacon_len], sizeof(gr_complex) * d_beacon_len);
+            memset((void *) &out[0], 0, sizeof(gr_complex) * (d_padding_length + d_delay));
+            memcpy(&out[d_padding_length + d_delay], &d_beacon_data[s * d_beacon_len], sizeof(gr_complex) * d_beacon_len);
             // copy data symbols
-            memcpy(&out[d_padding_length + d_beacon_len], &in[0], sizeof(gr_complex) * d_data_length);
+            memcpy(&out[d_padding_length + d_beacon_len + d_delay], &in[0], sizeof(gr_complex) * d_data_length);
             // zero-padding after frame
-            memset((void *) &out[d_frame_length - d_padding_length], 0, sizeof(gr_complex) * d_padding_length);
+            memset((void *) &out[d_frame_length - d_padding_length + d_delay], 0, sizeof(gr_complex) * (d_padding_length - d_delay));
         }
     }
 
     // Update next time stamps
-    gr::thread::scoped_lock lock(fp_mutex);
-    double intpart; // normalize
     d_frame_cnt += 1;
-    d_time_fracs += d_repeat_interval;
-    d_time_fracs = std::modf(d_time_fracs, &intpart);
-    d_time_secs += uint64_t(intpart);
-    dout << "Next schedule time: " << (double) d_time_secs + d_time_fracs << " seconds" << std::endl;
+    d_time_secs = d_txtime_start + (d_frame_cnt / d_pkts_per_sec);
+    d_time_fracs = double(d_frame_cnt % d_pkts_per_sec) / (double) d_pkts_per_sec;
 
     return total_output_items;
 }

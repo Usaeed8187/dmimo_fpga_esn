@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(tx_frm_ctrl.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(37f92fa7a6b7170ec072432c3f14720c) */
+/* BINDTOOL_HEADER_FILE_HASH(21d4df7c140e0b021af162015b72b03e) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,9 +37,9 @@ void bind_tx_frm_ctrl(py::module &m) {
              std::shared_ptr<tx_frm_ctrl>>(m, "tx_frm_ctrl", D(tx_frm_ctrl))
 
       .def(py::init(&tx_frm_ctrl::make), py::arg("ntx"), py::arg("ndatasyms"),
-           py::arg("filename"), py::arg("fs"), py::arg("pktspersec"),
+           py::arg("filename"), py::arg("samplerate"), py::arg("pktspersec"),
            py::arg("starttime"), py::arg("padding"), py::arg("autostart"),
-           py::arg("debug"), D(tx_frm_ctrl, make))
+           py::arg("delay"), py::arg("debug"), D(tx_frm_ctrl, make))
 
       ;
 }

@@ -39,7 +39,7 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    tx_framing_impl(int ntx, int ndatasyms, const char *filename, double fs,
+    tx_framing_impl(int ntx, int ndatasyms, const char *filename, double samplerate,
                     int pktspersec, double starttime, int padding, bool debug);
     ~tx_framing_impl();
 

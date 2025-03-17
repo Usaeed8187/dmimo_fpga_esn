@@ -16,30 +16,38 @@ namespace gr::ncjt
 class gnb_sync_impl : public gnb_sync
 {
 private:
-    const int FFT_LEN = 64;   // FFT length
-    const int SYM_LEN = 80;   // OFDM symbol length
-    const int STF_LEN = 160;  // L-STF length, 16 x 10 = 160 samples
-    const int LTF_LEN = 160;  // L-LTF length, 64 x 2 + 32 = 160 samples
-    const int CORR_DELAY = 16;  // L-STF symbol length (16)
+    const int FFT_LEN = 64;      // FFT length
+    const int SYM_LEN = 80;      // OFDM symbol length
+    const int STF_LEN = 160;     // L-STF length, 16 x 10 = 160 samples
+    const int LTF_LEN = 160;     // L-LTF length, 64 x 2 + 32 = 160 samples
+    const int CORR_DELAY = 16;   // L-STF symbol length (16)
     const int CORR_WINDOW = 48;  // Auto-corr window size
     const int CORR_BUF_LEN = 64; // Ring buffer length
     const int XCORR_DATA_LEN = LTF_LEN * 4; // Cross-correlation data buffer length
-    const int MAX_XCORR_LEN = 1024; // Maximum cross-correlation output buffer length
+    const int MAX_XCORR_LEN = 1024;   // Maximum cross-correlation output buffer length
     const int MAX_PREAMBLE_SYMS = 12; // Maximal number of HT preamble symbols (HT-SIG, etc.)
-    const int MAX_CHANS = 20; // Maximum number of IQ channels
+    const int MAX_CHANS = 8;   // Maximum number of IQ channels
+    const int PEAK_THRD = 5;   // Minimum peak duration of auto-correlation windows
 
-    int d_num_chans;  // Total number of IQ data channels
-    int d_frame_len;  // frame length in samples (HT preamble + data symbols)
-    double d_sampling_freq;  // Baseband sampling frequency
-    double d_pkt_interval;  // packet repeat interval (in seconds)
+    int d_num_chans;         // Total number of IQ data channels
+    double d_samplerate;     // Baseband sampling frequency
+    double d_pkt_interval;   // packet repeat interval (in seconds)
+    int d_usrpdelay;         // Estimated USRP TX/RX processing delay
 
-    int d_wait_interval0;  // wait interval for initial synchronization
-    int d_wait_interval1;  // wait interval between P2 and P3 reception
-    int d_wait_interval2;  // wait interval between P3 and new cycle
-
+    float d_rxpwr_thrd;  // Receiver power threshold for signal detection
     float d_acorr_thrd;  // Auto-correlation detection threshold
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
+
+    double d_p2_start;     // phase 2 transmission start time
+    double d_p3_start;     // phase 3 transmission start time
+    int d_p2_htlen;        // P2 HT preamble length (excluding HT-LTFs)
+    int d_p3_htlen;        // P3 HT preamble length (excluding HT-LTFs)
+    int d_frame_len_1;     // P2 frame length in samples (HT preamble + data symbols)
+    int d_frame_len_2;     // P3 frame length in samples (HT preamble + data symbols)
+    int d_wait_interval0;  // wait interval for initial synchronization
+    int d_wait_interval1;  // wait interval between P2 and P3 reception
+    int d_wait_interval2;  // wait interval between P3 and new cycle
 
     int d_rx_ready_cnt1;  // receiver synchronization counter
     int d_rx_ready_cnt2;  // receiver synchronization counter
@@ -50,9 +58,7 @@ private:
     float d_current_foe_comp1, d_current_foe_comp2;
     float d_fine_foe_comp1, d_fine_foe_comp2;
     int d_fine_foe_cnt1, d_fine_foe_cnt2;
-    uint64_t d_frame_start;
-    // uint64_t d_prev_frame_count;
-    // double d_prev_frame_time;
+    // uint64_t d_frame_start;
     int d_data_samples;
     int d_wait_count;
 
@@ -70,7 +76,7 @@ private:
 
     enum
     {
-        RXTIME, SEARCH1, SEARCH2, FINESYNC1, FINESYNC2, P2DEFRAME, P3DEFRAME, WAIT0, WAIT1, WAIT2
+        RXTIME, P2SYNC, P3SYNC, P2DEFRAME, P3DEFRAME, WAIT0, WAIT1, WAIT2
     } d_state;
 
     int
@@ -87,16 +93,13 @@ private:
     void
     send_rxstate(bool ready);
 
-    void
-    send_rxstate_message(bool ready);
-
     double
     check_rxtime(int rx_windows_size);
 
 public:
-    gnb_sync_impl(int nchans, int npreamblesyms, int ndatasyms,
-                  double sampling_freq, int pktspersec, double acorr_thrd,
-                  double xcorr_thrd, int max_corr_len, bool debug);
+    gnb_sync_impl(int nchans, double samplerate, int pktspersec, int usrpdelay,
+                  int p2_htlen, int p2_datalen, int p3_htlen, int p3_datalen, double p2_start, double p3_start,
+                  double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug);
     ~gnb_sync_impl();
 
     void

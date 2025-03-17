@@ -23,6 +23,9 @@ private:
     int d_npilotsyms; // number of pilot OFDM symbols
     int d_numsyms; // total number of OFDM symbols
 
+    float d_cpe_phi; // CPE estimation slope
+    float d_cpe_offset; // CPE estimation offset
+
     gr_complex *d_chan_est; // channel estimation using H-LTFs
 
     bool d_debug;

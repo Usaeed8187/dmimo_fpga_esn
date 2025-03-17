@@ -13,12 +13,12 @@ namespace gr::ncjt
 {
 
 stbc_encode::sptr
-stbc_encode::make(int fftsize, int ndatasyms, int npilotsyms, bool debug)
+stbc_encode::make(int fftsize, int ndatasyms, int npilotsyms, int ueidx, bool debug)
 {
-    return gnuradio::make_block_sptr<stbc_encode_impl>(fftsize, ndatasyms, npilotsyms, debug);
+    return gnuradio::make_block_sptr<stbc_encode_impl>(fftsize, ndatasyms, npilotsyms, ueidx, debug);
 }
 
-stbc_encode_impl::stbc_encode_impl(int fftsize, int ndatasyms, int npilotsyms, bool debug)
+stbc_encode_impl::stbc_encode_impl(int fftsize, int ndatasyms, int npilotsyms, int ueidx, bool debug)
     : gr::tagged_stream_block(
     "stbc_encode",
     gr::io_signature::make(1, 1, sizeof(gr_complex)),
@@ -33,21 +33,27 @@ stbc_encode_impl::stbc_encode_impl(int fftsize, int ndatasyms, int npilotsyms, b
     else
         throw std::runtime_error("Unsupported OFDM FFT size");
 
+    d_npt = (d_fftsize == 64) ? 4 : 8;
+
     if (ndatasyms <= 0 || ndatasyms % 2 != 0 || npilotsyms < 0 || npilotsyms > 2)
         throw std::runtime_error("Invalid number of data/pilot OFDM symbols");
 
     d_ndatasyms = ndatasyms;
     d_npilotsyms = npilotsyms;
-    d_numsyms = ndatasyms + npilotsyms;
+    d_numsyms = d_ndatasyms + d_npilotsyms;
 
-    d_tracking_pilots = malloc_complex(16 * d_numsyms);
-    generate_tracking_pilots();
+    if (ueidx < -1 || ueidx > 8)
+        throw std::runtime_error("Invalid UE index");
+    d_ueidx = ueidx;
+
+    d_cpt_pilot = malloc_float(d_ntx * d_npt * d_numsyms);
+    generate_cpt_pilots();
 }
 
 stbc_encode_impl::~stbc_encode_impl()
 {
-    if (d_tracking_pilots != nullptr)
-        volk_free(d_tracking_pilots);
+    if (d_cpt_pilot != nullptr)
+        volk_free(d_cpt_pilot);
 }
 
 int
@@ -58,11 +64,10 @@ stbc_encode_impl::calculate_output_stream_length(const gr_vector_int &ninput_ite
 }
 
 void
-stbc_encode_impl::generate_tracking_pilots()
+stbc_encode_impl::generate_cpt_pilots()
 {
-    // LSFR state for pilot parity sequence
+    // initial state for first data symbol
     unsigned d_pilot_lsfr = (d_fftsize == 64) ? 0x78 : 0x70; // offset = 3 or 4
-    int d_npt = (d_fftsize == 64) ? 4 : 8;
 
     // base pilot sequence for 64-FFT & 2/4-stream case
     const float basePilots4[6][8] = {{1, 1, -1, -1}, {1, -1, -1, 1}, // 2Rx
@@ -87,10 +92,13 @@ stbc_encode_impl::generate_tracking_pilots()
         for (int i = 0; i < d_npt; i++) // for all pilot positions
         {
             unsigned int idx = (symidx + i) % d_npt;
-            for (int k = 0; k < 2; k++) // for all streams
+            for (int k = 0; k < d_ntx; k++)  // for all streams
             {
-                int offset = symidx * d_npt * 2 + d_npt * k + i;
-                d_tracking_pilots[offset] = gr_complex(float(pilot_parity * basePilot[k][idx]), 0.0);
+                int offset = symidx * d_npt * d_ntx + k * d_npt + i;
+                if (d_ueidx >=0 && symidx % d_ntx != d_ueidx)
+                    d_cpt_pilot[offset] = 0;
+                else
+                    d_cpt_pilot[offset] = pilot_parity * basePilot[k][idx];
             }
         }
     }
@@ -129,14 +137,14 @@ stbc_encode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     for (int n = 0; n < d_numsyms; n++)
     {
         int offset = d_scnum * n;
-        out0[offset + 7] = d_tracking_pilots[8 * n];
-        out0[offset + 21] = d_tracking_pilots[8 * n + 1];
-        out0[offset + 34] = d_tracking_pilots[8 * n + 2];
-        out0[offset + 48] = d_tracking_pilots[8 * n + 3];
-        out1[offset + 7] = d_tracking_pilots[8 * n + 4];
-        out1[offset + 21] = d_tracking_pilots[8 * n + 5];
-        out1[offset + 34] = d_tracking_pilots[8 * n + 6];
-        out1[offset + 48] = d_tracking_pilots[8 * n + 7];
+        out0[offset + 7]  = d_cpt_pilot[8 * n];
+        out0[offset + 21] = d_cpt_pilot[8 * n + 1];
+        out0[offset + 34] = d_cpt_pilot[8 * n + 2];
+        out0[offset + 48] = d_cpt_pilot[8 * n + 3];
+        out1[offset + 7]  = d_cpt_pilot[8 * n + 4];
+        out1[offset + 21] = d_cpt_pilot[8 * n + 5];
+        out1[offset + 34] = d_cpt_pilot[8 * n + 6];
+        out1[offset + 48] = d_cpt_pilot[8 * n + 7];
     }
 
     return d_scnum * d_numsyms;

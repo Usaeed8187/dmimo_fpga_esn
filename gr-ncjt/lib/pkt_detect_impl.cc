@@ -51,7 +51,7 @@ pkt_detect_impl::pkt_detect_impl(int nchans, int preamblelen, int dataframelen, 
 
     // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF (3*SYM_LEN)
     d_frame_len = dataframelen + preamblelen - 3 * SYM_LEN;
-
+    // packet frame burst transmission period in seconds
     d_pkt_interval = 1.0 / (double) pktspersec;
     // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT-SIG and HT-LTF
     d_wait_interval = (int) floor(samplerate * d_pkt_interval) - d_frame_len - 8 * SYM_LEN;
@@ -188,14 +188,19 @@ pkt_detect_impl::general_work(int noutput_items,
                 d_state = SEARCH;
                 break;
             }
+
+            if (d_rx_demod_en && (d_rx_ready_cnt % 100) == 0) {
+                std::cout << "Fine frequency offset compensation: " << d_current_foe_comp << "    ("
+                          << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;
+            }
+
             d_frame_start = nitems_read(0) + htsig_start;
             dout << "Data frame start at " << d_frame_start << std::endl;
             d_data_samples = 0;
             d_state = DEFRAME;
 
             consume_each(htsig_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
-            if (d_rx_ready_cnt < 100)
-                d_rx_ready_cnt += 1;
+            d_rx_ready_cnt += 1;
             break;
         }
         case DEFRAME:
@@ -354,7 +359,7 @@ pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int b
         {
             // frame start should be within CORR_DELAY samples before the start of L-STF
             frame_start_pos = peak_start - (PEAK_THRD - 2) * CORR_DELAY;
-            dout << "Autocorr peak found at " << peak_start << " (peak duration " << peak_duration << ")" << std::endl;
+            dout << "Auto-correlation peak found at " << peak_start << " (peak duration " << peak_duration << ")" << std::endl;
             break;
         }
     }
@@ -362,8 +367,8 @@ pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int b
     if (frame_start_pos >= 0)
     {
         gr_complex corr_foe = 0;
-        // avoid the initial CORR_DELAY samples, 9*CORR_DELAY samples are usable
-        for (int k = frame_start_pos + 2 * CORR_DELAY; k < frame_start_pos + 9 * CORR_DELAY; k++)
+        // avoid the initial/last CORR_DELAY samples, 8*CORR_DELAY samples are usable
+        for (int k = frame_start_pos + CORR_DELAY; k < frame_start_pos + 9 * CORR_DELAY; k++)
         {
             int delay_idx = k + CORR_DELAY;
             // sum over all channels, assuming same LO frequency across all receivers
@@ -485,18 +490,18 @@ pkt_detect_impl::fine_sync(const gr_vector_const_void_star &input_items, int buf
     }
     float fine_foe_comp = arg(corr_foe) / (float) FFT_LEN; // FOE compensation in radians
 
-    if (d_rx_ready_cnt < 10)
+    if (d_rx_ready_cnt < 20)
     {
         if (d_rx_ready_cnt % 2 == 0)
             d_fine_foe_comp = fine_foe_comp;
         else
         {
-            d_current_foe_comp += 0.1 * (d_fine_foe_comp + fine_foe_comp);
+            d_current_foe_comp += 0.05 * (d_fine_foe_comp + fine_foe_comp);
             dout << "Fine frequency offset compensation: " << d_current_foe_comp << "    ("
                  << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;
         }
     }
-    else if (d_fine_foe_cnt < 10)
+    else if (d_fine_foe_cnt < 20)
     {
         d_fine_foe_cnt += 1;
         d_fine_foe_comp += fine_foe_comp;

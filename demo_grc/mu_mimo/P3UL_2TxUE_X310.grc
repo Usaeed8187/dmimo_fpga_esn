@@ -213,7 +213,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '25'
+    value: '20'
     widget: counter_slider
   states:
     bus_sink: false
@@ -241,7 +241,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 272.0]
+    coordinate: [16, 268.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -260,7 +260,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 292.0]
+    coordinate: [200, 292.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0
@@ -280,7 +280,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 268.0]
+    coordinate: [600, 260.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0
@@ -306,46 +306,54 @@ blocks:
 - name: ncjt_rg_mapper_0
   id: ncjt_rg_mapper
   parameters:
-    addcs: 'True'
+    addcs: 'False'
+    addltf: 'True'
     affinity: ''
     alias: ''
     comment: ''
     debug: 'False'
     framelen: frame_data_len
+    ltfdata: '"../../data/mu_mimo/2t2s/" + qam_type + "/ltf2x2.bin"'
     maxoutbuf: '0'
     minoutbuf: '65536'
     modtype: qam_order
+    mucpt: 'False'
+    nctrlsyms: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrms: nss
+    numue: '1'
+    ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 288.0]
+    coordinate: [400, 284.0]
     rotation: 0
     state: enabled
-- name: ncjt_tx_framing_0
-  id: ncjt_tx_framing
+- name: ncjt_tx_frm_ctrl_0
+  id: ncjt_tx_frm_ctrl
   parameters:
     affinity: ''
     alias: ''
+    autostart: 'True'
     comment: ''
     debug: 'False'
-    filename: '"../../data/mu_mimo/2t2s/" + qam_type + "/preamble.bin"'
+    delay: '0'
+    filename: '"../../data/mu_mimo/2t2s/" + qam_type + "/preamble_noltfx.bin"'
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
-    ndatasyms: num_data_syms
-    ntx: nss
+    ndatasyms: num_data_syms+2
+    ntx: '2'
     padding: '1000'
     pktspersec: pkts_per_sec
-    starttime: '2'
+    starttime: '2.0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 296.0]
+    coordinate: [792, 224.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -622,19 +630,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [976, 192.0]
+    coordinate: [984, 140.0]
     rotation: 0
     state: true
 
 connections:
 - [blocks_file_source_0, '0', blocks_stream_to_tagged_stream_0, '0']
 - [blocks_stream_to_tagged_stream_0, '0', ncjt_rg_mapper_0, '0']
-- [ncjt_ofdm_mod_0, '0', ncjt_tx_framing_0, '0']
-- [ncjt_ofdm_mod_0_0, '0', ncjt_tx_framing_0, '1']
+- [ncjt_ofdm_mod_0, '0', ncjt_tx_frm_ctrl_0, '0']
+- [ncjt_ofdm_mod_0_0, '0', ncjt_tx_frm_ctrl_0, '1']
 - [ncjt_rg_mapper_0, '0', ncjt_ofdm_mod_0, '0']
 - [ncjt_rg_mapper_0, '1', ncjt_ofdm_mod_0_0, '0']
-- [ncjt_tx_framing_0, '0', uhd_usrp_sink_0, '0']
-- [ncjt_tx_framing_0, '1', uhd_usrp_sink_0, '1']
+- [ncjt_tx_frm_ctrl_0, '0', uhd_usrp_sink_0, '0']
+- [ncjt_tx_frm_ctrl_0, '1', uhd_usrp_sink_0, '1']
 
 metadata:
   file_format: 1

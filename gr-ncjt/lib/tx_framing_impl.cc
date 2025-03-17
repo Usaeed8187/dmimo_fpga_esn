@@ -12,14 +12,14 @@ namespace gr::ncjt
 {
 
 tx_framing::sptr
-tx_framing::make(int ntx, int ndatasyms, const char *filename, double fs,
+tx_framing::make(int ntx, int ndatasyms, const char *filename, double samplerate,
                  int pktspersec, double starttime, int padding, bool debug)
 {
     return gnuradio::make_block_sptr<tx_framing_impl>(
-        ntx, ndatasyms, filename, fs, pktspersec, starttime, padding, debug);
+        ntx, ndatasyms, filename, samplerate, pktspersec, starttime, padding, debug);
 }
 
-tx_framing_impl::tx_framing_impl(int ntx, int ndatasyms, const char *filename, double fs,
+tx_framing_impl::tx_framing_impl(int ntx, int ndatasyms, const char *filename, double samplerate,
                                  int pktspersec, double starttime, int padding, bool debug)
     : gr::tagged_stream_block("tx_framing",
                               gr::io_signature::make(ntx, ntx, sizeof(gr_complex)),
@@ -39,11 +39,11 @@ tx_framing_impl::tx_framing_impl(int ntx, int ndatasyms, const char *filename, d
     if ((d_beacon_len = read_beacon_data(filename)) <= 0)
         throw std::runtime_error("failed to read frame data");
     d_beacon_len /= d_ntx;
-    std::cout << "Beacon length: " << d_beacon_len << std::endl;
+    dout << "Beacon length: " << d_beacon_len << std::endl;
 
     d_data_length = ndatasyms * SYM_LEN;
     d_frame_length = d_beacon_len + d_data_length + 2 * d_padding_length;
-    if (d_frame_length >= int(0.5 * d_repeat_interval * fs))
+    if (d_frame_length >= int(0.5 * d_repeat_interval * samplerate))
         throw std::runtime_error("packet frame too large");
 
     if (starttime < 0.0 || starttime > 30.0)
@@ -67,8 +67,7 @@ tx_framing_impl::~tx_framing_impl()
 }
 
 int
-tx_framing_impl::calculate_output_stream_length(
-    const gr_vector_int &ninput_items)
+tx_framing_impl::calculate_output_stream_length(const gr_vector_int &ninput_items)
 {
     return d_frame_length;
 }

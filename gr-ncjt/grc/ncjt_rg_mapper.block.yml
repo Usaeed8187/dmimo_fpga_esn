@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rg_mapper(${nstrms}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${addcs}, ${debug})
+  make: ncjt.rg_mapper(${nstrms}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${nctrlsyms}, ${modtype}, ${numue}, ${ueidx}, ${mucpt}, ${ltfdata}, ${addltf}, ${addcs}, ${debug})
 
 parameters:
   - id: nstrms
@@ -24,12 +24,43 @@ parameters:
     dtype: int
     default: '0'
     hide: part
+  - id: nctrlsyms
+    label: Data Symbols
+    dtype: int
+    default: '0'
+    hide: part
   - id: modtype
     label: Modulation
     dtype: int
     default: 2
     options: [ 2, 4, 6, 8 ]
     option_labels: [ 'QPSK', '16QAM', '64QAM', '256QAM' ]
+  - id: numue
+    label: Number of UEs
+    dtype: int
+    default: '1'
+    hide: part
+  - id: ueidx
+    label: UE index
+    dtype: int
+    default: '-1'
+    hide: part
+  - id: mucpt
+    label: MU CPT
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    hide: part
+  - id: ltfdata
+    label: Beacon Data
+    dtype: file_open
+    hide: part
+  - id: addltf
+    label: Add LTF
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    hide: part
   - id: addcs
     label: Add Cyclic Shift
     dtype: bool

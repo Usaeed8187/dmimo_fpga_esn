@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.stbc_encode(${fftsize}, ${ndatasyms}, ${npilotsyms}, ${debug})
+  make: ncjt.stbc_encode(${fftsize}, ${ndatasyms}, ${npilotsyms}, ${ueidx}, ${debug})
 
 parameters:
   - id: fftsize
@@ -19,6 +19,11 @@ parameters:
     label: Pilot Symbols
     dtype: int
     default: '0'
+    hide: part
+  - id: ueidx
+    label: UE Index
+    dtype: int
+    default: '-1'
     hide: part
   - id: debug
     label: Debug

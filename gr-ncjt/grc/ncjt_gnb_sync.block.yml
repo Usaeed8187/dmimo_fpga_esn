@@ -4,31 +4,56 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.gnb_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
+  make: ncjt.gnb_sync(${nchans}, ${samplerate}, ${pktspersec}, ${usrpdelay}, ${p2preamblelen}, ${p2datalen}, ${p3preamblelen}, ${p3datalen}, ${p2start}, ${p3start}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
 
 parameters:
   - id: nchans
     label: Number of Channels
     dtype: int
-    default: 1
+    default: 2
     options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
     hide: part
-  - id: preamblelen
-    label: HTPreamble Length
-    dtype: int
-    default: '400'
-  - id: dataframelen
-    label: DataFrame Length
-    dtype: int
   - id: samplerate
     label: Sample Rate
     dtype: real
-    default: '1000000'
+    default: '10e6'
     hide: part
   - id: pktspersec
-    label: Packets/Sec
+    label: Cycles/sec
     dtype: int
     default: '8'
+  - id: usrpdelay
+    label: Tx/Rx Delay
+    dtype: int
+    default: '0'
+  - id: p2preamblelen
+    label: P2 HTPreamble Length
+    dtype: int
+    hide: part
+  - id: p2datalen
+    label: P2 DataFrame Length
+    dtype: int
+    hide: part
+  - id: p3preamblelen
+    label: P3 HTPreamble Length
+    dtype: int
+    hide: part
+  - id: p3datalen
+    label: P3 DataFrame Length
+    dtype: int
+    hide: part
+  - id: p2start
+    label: P2 Start Time
+    dtype: float
+    default: '0.25'
+  - id: p3start
+    label: P3 Start Time
+    dtype: float
+    default: '0.75'
+  - id: rxpwrthrd
+    label: Signal Threshold
+    dtype: float
+    default: '5e-4'
   - id: acorrthrd
     label: Search Threshold
     dtype: float
@@ -41,6 +66,7 @@ parameters:
     label: Search Window
     dtype: int
     default: '4000'
+    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -77,8 +103,9 @@ outputs:
     optional: true
 
 asserts:
-  - ${ dataframelen > 0 }
-  - ${ dataframelen > 0 }
-  - ${ pktspersec >= 1 and pktspersec <= 100 }
+  - ${ (pktspersec >= 1) and (pktspersec <= 100) }
+  - ${ (p2preamblelen > 0) and (p3preamblelen > 0) }
+  - ${ (p2datalen > 0) and (p3datalen > 0) }
+  - ${ (p2start > 0) and (p3start > 0) and (p2start < p3start) }
 
 file_format: 1

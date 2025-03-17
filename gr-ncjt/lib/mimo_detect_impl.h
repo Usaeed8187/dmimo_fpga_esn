@@ -21,13 +21,14 @@ private:
     int d_num_symbols; // number of symbols per frame/packet
     int d_cur_symbol; // current OFDM symbol index
     int d_total_pkts; // total number of packets received
-
     int d_scnum; // number of valid subcarriers
     int d_scdata; // number data subcarriers
 
+    float d_cpe_phi1, d_cpe_phi2; // CPE estimation slope
+    float d_cpe_offset1, d_cpe_offset2; // CPE estimation offset
+
     gr_complex *d_chan_est_buf; // channel estimation using H-LTFs
     gr_complex *d_mmse_coef; // MMSE channel equalization coefficients
-    bool d_chan_est_ready;
 
     const int d_logfreq;
     const bool d_debug;

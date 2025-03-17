@@ -68,6 +68,24 @@ mc_stbc_decode_impl::calculate_output_stream_length(const gr_vector_int &ninput_
     return noutput_items;
 }
 
+void
+mc_stbc_decode_impl::add_packet_tag(uint64_t offset, int packet_len)
+{
+    for (int ch = 0; ch < d_nrx; ch++)
+    {
+        add_item_tag(ch,
+                     offset,
+                     pmt::string_to_symbol("packet_len"),
+                     pmt::from_long(packet_len / 2),
+                     pmt::string_to_symbol(name()));
+        add_item_tag(ch,
+                     offset + packet_len / 2,
+                     pmt::string_to_symbol("packet_len"),
+                     pmt::from_long(packet_len / 2),
+                     pmt::string_to_symbol(name()));
+    }
+}
+
 int
 mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
                           gr_vector_const_void_star &input_items,
@@ -78,12 +96,13 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     auto out0 = (gr_complex *) output_items[0];
     auto out1 = (gr_complex *) output_items[1];
 
-    if (ninput_items[0] < d_scnum * (4 + d_numsyms) ||
-        ninput_items[1] < d_scnum * (4 + d_numsyms))
+    int min_input_items = std::min(ninput_items[0], ninput_items[1]);
+    if (min_input_items != d_scnum * (d_ntx + d_numsyms))
     {
         dout << "Input data length: " << ninput_items[0] << std::endl;
         throw std::runtime_error("Input data length incorrect!");
     }
+    int ninput_syms = min_input_items / d_scnum;
 
     std::vector<gr::tag_t> d_tags;
     get_tags_in_window(d_tags, 0, 0, 1,
@@ -107,6 +126,31 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     else
         throw std::runtime_error("Channel estimation not received!");
 
+    // Get CPE estimation tags
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_phi1"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_phi1 tag");
+    d_cpe_phi1 = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_offset1"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_offset1 tag");
+    d_cpe_offset1 = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_phi2"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_phi2 tag");
+    d_cpe_phi2 = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_offset2"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_offset2 tag");
+    d_cpe_offset2 = pmt::to_float(d_tags[0].value);
+
     // reshape inputs as a tensor of shape (Nsc, 1, Nsyms)
     Eigen::DSizes<Eigen::Index, 3> dims(d_scnum, 1, d_numsyms);
     CTensor3D ry0 = Eigen::TensorMap<const CTensor3D>(in0 + d_ntx * d_scnum, dims);
@@ -120,29 +164,45 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     Eigen::DSizes<Eigen::Index, 4> chest_dims(d_nrx, d_ntx, 1, d_scnum);
     auto chant_est = Eigen::TensorMap<const CTensor4D>(d_chan_est, chest_dims);
     Eigen::array<int, 4> bcast({1, 1, d_numsyms, 1});
-    CTensor4D h = chant_est.broadcast(bcast);  // (num_rx, num_tx, num_syms, num_sc)
-    dout << "ch size: " << h.dimensions() << std::endl;
+    CTensor4D ch = chant_est.broadcast(bcast);  // (num_rx, num_tx, num_syms, num_sc)
+    dout << "ch size: " << ch.dimensions() << std::endl;
 
-    // double-cluster STBC receiver
-    // auto [z, h_eq] = alamouti_decode_zf_sic_double(ry_transposed, ch, d_modtype);
-    // dout << "output size: " << z.dimensions() << std::endl;
+    // CPE compensation
+    CTensor4D cpe_comp_all(d_nrx, d_ntx, d_numsyms, d_scnum);
+    for (int symidx = 0; symidx < d_numsyms; symidx++)
+    {
+        float cpe_phi1 = -(d_cpe_offset1 + symidx * d_cpe_phi1);
+        gr_complex cpe_comp1 = std::exp(gr_complex(0, cpe_phi1));
+        float cpe_phi2 = -(d_cpe_offset2 + symidx * d_cpe_phi2);
+        gr_complex cpe_comp2 = std::exp(gr_complex(0, cpe_phi2));
+        for (int m = 0; m < d_scnum; m++)
+        {
+            for (int n = 0; n < 2; n++)
+            {
+                cpe_comp_all(0, n, symidx, m) = cpe_comp1;
+                cpe_comp_all(1, n, symidx, m) = cpe_comp1;
+            }
+            for (int n = 2; n < 4; n++)
+            {
+                cpe_comp_all(0, n, symidx, m) = cpe_comp2;
+                cpe_comp_all(1, n, symidx, m) = cpe_comp2;
+            }
+        }
+    }
+    Eigen::array<int, 4> cpe_dims = {d_scnum, d_nrx, 2, d_numsyms / 2};
+    auto cpe_comp_frame = Eigen::TensorMap<CTensor4D>(cpe_comp_all.data(), cpe_dims);
+    ch *= cpe_comp_frame;
 
     int M_r = r.dimension(0);
     int num_syms = r.dimension(1);
     int num_subcarriers = r.dimension(2);
     int num_syms_half = num_syms / 2;
 
-//    assert(M_r % 2 == 0 && "M_r must be even.");
-//    assert(h.dimension(0) == M_r && "Mismatch between M_r of the received signal and channel.");
-//    assert(h.dimension(1) == 4 && "N_t (2nd dimension of h) must be 4.");
-//    assert(h.dimension(2) == num_syms && "Mismatch between num_syms of the received signal and channel.");
-//    assert(h.dimension(3) == num_subcarriers && "Mismatch between num_subcarriers of the received signal and channel.");
-
     CTensor4D r_reshaped = Eigen::TensorMap<CTensor4D>(
         r.data(), Eigen::array<int, 4>{M_r, 2, num_syms_half, num_subcarriers});
 
     Eigen::array<int, 4> transpose_dims = {1, 0, 2, 3}; // Transpose to [N_t, M_r, num_syms, num_subcarriers]
-    CTensor4D h_transposed = h.shuffle(transpose_dims);
+    CTensor4D h_transposed = ch.shuffle(transpose_dims);
 
     // Reshape to [N_t, M_r, 2, num_syms/2, num_subcarriers]
     Eigen::array<int, 5> reshape_dims = {4, M_r, 2, num_syms_half, num_subcarriers};
@@ -155,79 +215,6 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     // y: [2, num_syms, num_subcarriers], gains: [2, num_syms, num_subcarriers]
     auto [y, gains] = alamouti_decode_zf_double(r_reshaped, h_avg);
 
-    CTensor2D comparison = (gains.chip(0, 0) >= gains.chip(1, 0)).cast<gr_complex>();
-    CTensor4D cluster0isbetter = Eigen::TensorMap<CTensor4D>(
-        comparison.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
-    comparison = (gains.chip(0, 0) < gains.chip(1, 0)).cast<gr_complex>();
-    CTensor4D cluster1isbetter = Eigen::TensorMap<CTensor4D>(
-        comparison.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
-    // shape = (num_syms_half * 2, num_subcarriers)
-
-    CTensor2D y_chipped = y.chip(0, 0);
-    CTensor4D x0 = remap_4d(
-        Eigen::TensorMap<CTensor4D>(y_chipped.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers}),
-        d_modtype
-    );
-
-    y_chipped = y.chip(1, 0);
-    CTensor4D x1 = remap_4d(
-        Eigen::TensorMap<CTensor4D>(y_chipped.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers}),
-        d_modtype
-    ); // TODO: Use modulator2 here
-
-    CTensor4D better_x = cluster0isbetter * x0 + cluster1isbetter * x1;
-    Eigen::array<Eigen::Index, 4> offsets = {0, 0, 0, 0};
-    Eigen::array<Eigen::Index, 4> extents = {h.dimension(0), 2, h.dimension(2), h.dimension(3)};
-    CTensor4D channel0 = h.slice(offsets, extents);
-    offsets = {0, 2, 0, 0};
-    CTensor4D channel1 = h.slice(offsets, extents);
-
-    CTensor2D better_x_reshaped = Eigen::TensorMap<CTensor2D>(
-        better_x.data(), Eigen::array<int, 2>{num_syms, num_subcarriers});
-    CTensor4D better_x_alamouti = Eigen::TensorMap<CTensor4D>(
-        alamouti_encode(better_x_reshaped).data(),
-        Eigen::array<int, 4>{2, 1, num_syms, num_subcarriers}); // {2, 1 , num_syms , num_subcarriers}
-
-    CTensor4D channel_better_cluster = (
-        channel0 * cluster0isbetter.broadcast(Eigen::array<int, 4>{M_r, 2, 1, 1}) +
-            channel1 * cluster1isbetter.broadcast(Eigen::array<int, 4>{M_r, 2, 1, 1})
-    ); // {M_r, 2, num_syms, num_subcarriers}
-    CTensor4D channel_worse_cluster = (
-        channel0 * cluster1isbetter.broadcast(Eigen::array<int, 4>{M_r, 2, 1, 1}) +
-            channel1 * cluster0isbetter.broadcast(Eigen::array<int, 4>{M_r, 2, 1, 1})
-    ); // {M_r, 2, num_syms, num_subcarriers}
-
-    CTensor4D better_cluster_effect = Eigen::TensorMap<CTensor4D>(
-        matmul_4d(channel_better_cluster, better_x_alamouti).data(),
-        Eigen::array<int, 4>{M_r, 2, num_syms_half, num_subcarriers}
-    ); // {M_r, 2, num_syms_half, num_subcarriers}
-
-    // Remove the effect form the received signal
-    CTensor4D ry_all_new = r_reshaped - better_cluster_effect; // {M_r, 2, num_syms_half, num_subcarriers}
-    Eigen::array<int, 4> stride_array = {1, 1, 2, 1}; // Choose every second element in the num_syms dimension
-    offsets = {0, 0, 1, 0};
-    extents = {M_r, 2, num_syms - 1, num_subcarriers};
-    CTensor4D channel_worse_cluster_reshaped = (channel_worse_cluster.stride(stride_array) +
-        channel_worse_cluster.slice(offsets, extents).stride(stride_array))
-        / gr_complex(2, 0); // {M_r, 2, num_syms/2, num_subcarriers}
-
-    auto [new_y, new_SNR] =
-        alamouti_decode(ry_all_new, channel_worse_cluster_reshaped.shuffle(Eigen::array<int, 4>{1, 0, 2, 3}));
-    new_y = new_y / (new_SNR.cast<gr_complex>());
-    CTensor4D new_y_reshaped =
-        Eigen::TensorMap<CTensor4D>(new_y.data(), Eigen::array<int, 4>{1, 1, num_syms, num_subcarriers});
-
-    // CTensor4D new_x =  new_y_reshaped;
-    // TODO: Make this modulator1 and modulator2 if the modulation order is different across clusters
-    x0 = cluster0isbetter * better_x + cluster1isbetter * new_y_reshaped;
-    x1 = cluster1isbetter * better_x + cluster0isbetter * new_y_reshaped;
-
-    CTensor3D equalized_x(2, num_syms, num_subcarriers);
-    equalized_x.chip(0, 0) = x0.chip(0, 0).chip(0, 0);
-    equalized_x.chip(1, 0) = x1.chip(0, 0).chip(0, 0);
-
-    dout << "output size: " << equalized_x.dimensions() << std::endl;
-
     // symbols & csi output
     for (int m = 0; m < d_numsyms; m++)
     {
@@ -238,19 +225,14 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 continue;
             // output has row-major layout, shape  (num_syms, num_sc)
             int offset = m * d_scdata + sc_cnt;
-            out0[offset] = equalized_x(0, m, i);
-            out1[offset] = equalized_x(1, m, i);
+            out0[offset] = y(0, m, i);
+            out1[offset] = y(1, m, i);
             sc_cnt += 1;
         }
     }
 
     noutput_items = (d_scdata * d_numsyms);
-    for (int ch = 0; ch < 2; ch++)
-        add_item_tag(ch,
-                     nitems_written(ch),
-                     pmt::string_to_symbol("packet_len"),
-                     pmt::from_long(noutput_items),
-                     pmt::string_to_symbol(name()));
+    add_packet_tag(nitems_written(0), noutput_items);
 
     return noutput_items;
 }

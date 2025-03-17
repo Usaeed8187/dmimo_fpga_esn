@@ -27,6 +27,9 @@ private:
     int d_modtype; // modulation order (2-QPSK, 4-16QAM, 6-64QAm, 8-256QAM)
     std::vector<gr_complex> QAM_CONST;
 
+    float d_cpe_phi1, d_cpe_phi2; // CPE estimation slope
+    float d_cpe_offset1, d_cpe_offset2; // CPE estimation offset
+
     gr_complex *d_chan_est_buf; // channel estimation using H-LTFs
     gr_complex *d_mmse_weight; // MMSE channel equalization coefficients
     gr_complex *d_chan_coef; // channel coefficients for canceling streams

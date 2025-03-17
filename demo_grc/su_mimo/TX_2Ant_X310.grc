@@ -283,17 +283,23 @@ blocks:
   id: ncjt_rg_mapper
   parameters:
     addcs: 'True'
+    addltf: 'False'
     affinity: ''
     alias: ''
     comment: ''
     debug: 'False'
     framelen: frame_data_len
+    ltfdata: ''
     maxoutbuf: '0'
     minoutbuf: '65536'
     modtype: qam_order
+    mucpt: 'False'
+    nctrlsyms: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrms: nss
+    numue: '1'
+    ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false

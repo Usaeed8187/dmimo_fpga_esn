@@ -19,15 +19,19 @@ private:
     const int MAX_NSS = 8; // maximum number of streams/antennas supported
     int d_fftsize; // OFDM FFT size (64 or 256)
     int d_scnum;  // number of valid subcarriers
-    int d_ntx;  // number of transmitter antennas
+    int d_ntx;  // number of transmitter antennas for all Tx UEs
     int d_nss;  // number of streams per Tx UE
     int d_nrx;  // number of receive antennas
     int d_nue;  // number of Tx UEs
-    int d_npt; // number of tracking pilots per symbol
+    int d_ncpt; // number of continuous tracking pilots per OFDM symbol
+    bool d_mucpt;  // Use orthogonal CPT pilots for multiple Tx UEs
     int d_preamble_symbols; // total number of HT preamble symbols
     int d_data_symbols;        // total number of data symbols per packet
-    int d_last_sym, d_cur_sym; // previous and current OFDM symbol index
-    float d_cpe_phi;           // CPE in radian
+
+    float d_cpe_phi1;           // CPE in radian
+    float d_cpe_offset1;        // CPE initial offset
+    float d_cpe_phi2;           // CPE in radian
+    float d_cpe_offset2;        // CPE initial offset
     float d_sigpwr_est;        // signal power estimation
     float d_noise_est;         // noise power estimation
     double d_sigpwr_sum;       // signal power sum
@@ -35,7 +39,9 @@ private:
     bool d_remove_cyclic_shift; // remove cyclic shift from channel estimation
 
     unsigned d_pilot_lsfr; // LSFR state for pilot parity sequence
-    float d_cur_pilot[8][8]; // pilots for current OFDM symbol (mode 4 or 8)
+    float *d_cpt_pilot; // pilots for current OFDM symbol (mode 4 or 8)
+    float *d_cpe_est; // CPE estimation for OFDM symbols
+    gr_complex *d_est_pilots; // estimated pilots
     gr_complex *d_chan_est; // channel estimate for data reception (Nt,Nr,Nsc)
     gr_complex *d_cshift; // cyclic shift compensation
     Eigen::MatrixXcf d_Pd; // P matrix for MMSE detection
@@ -63,11 +69,12 @@ private:
     ltf_chan_est_nrx(gr_vector_const_void_star &input_items, gr_vector_void_star &output_items, int output_offset);
 
     void
-    update_pilots(int symidx);
+    generate_cpt_pilots();
 
     void
-    cpe_estimate_comp(gr_vector_const_void_star &input_items, gr_vector_void_star &output_items,
-                      int nsymcnt, int noutsymcnt);
+    cpe_estimate_comp(gr_vector_const_void_star &input_items,
+                      gr_vector_void_star &output_items,
+                      int noutsymcnt);
 
     void
     send_cpe_message();
@@ -87,13 +94,16 @@ private:
     void
     add_power_noise_tag(uint64_t offset, float signal_pwr, float noise_est);
 
+    void
+    add_cpe_est_tag(uint64_t offset, float cpe_phi1, float cpe_offset1, float cpe_phi2, float cpe_offset2);
+
 protected:
     int
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
     mu_chanest_impl(int fftsize, int ntx, int nrx, int nue, int npreamblesyms,
-                    int ndatasyms, bool removecs, int logfreq, bool debug);
+                    int ndatasyms, bool mucpt, bool removecs, int logfreq, bool debug);
     ~mu_chanest_impl();
 
     int

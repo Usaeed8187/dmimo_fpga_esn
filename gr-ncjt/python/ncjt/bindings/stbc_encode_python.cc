@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(stbc_encode.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(d302085636d2d3f8a5271ac81bd34a23) */
+/* BINDTOOL_HEADER_FILE_HASH(9ce4763c0b9eb72e966bfffe0f408b05) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,8 +37,8 @@ void bind_stbc_encode(py::module &m) {
              std::shared_ptr<stbc_encode>>(m, "stbc_encode", D(stbc_encode))
 
       .def(py::init(&stbc_encode::make), py::arg("fftsize"),
-           py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("debug"),
-           D(stbc_encode, make))
+           py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("ueidx"),
+           py::arg("debug"), D(stbc_encode, make))
 
       ;
 }

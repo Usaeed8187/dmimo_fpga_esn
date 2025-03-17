@@ -25,6 +25,11 @@ private:
     int d_numsyms; // total number of OFDM symbols
     int d_modtype; // modulation order
 
+    float d_cpe_phi1; // CPE estimation slope
+    float d_cpe_phi2; // CPE estimation slope
+    float d_cpe_offset1; // CPE estimation offset
+    float d_cpe_offset2; // CPE estimation offset
+
     gr_complex *d_chan_est; // channel estimation using H-LTFs
 
     bool d_debug;
@@ -32,6 +37,9 @@ private:
 protected:
     int
     calculate_output_stream_length(const gr_vector_int &ninput_items);
+
+    void
+    add_packet_tag(uint64_t offset, int packet_len);
 
 public:
     mc_stbc_decode_impl(int fftsize, int ndatasyms, int npilotsyms, int modtype, bool debug);

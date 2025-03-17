@@ -9,8 +9,7 @@
 
 #include <gnuradio/ncjt/ul_precoding.h>
 #include <gnuradio/message.h>
-#include <Eigen/Dense>
-#include <Eigen/SVD>
+#include "cmatrix.h"
 
 namespace gr::ncjt
 {
@@ -19,15 +18,16 @@ class ul_precoding_impl : public ul_precoding
 {
 private:
     const int SC_NUM = 56; // Number of valid subcarriers
-    int d_nss;  // Number of spatial streams
-    int d_ul_ntx;  // Number of uplink transmitter antennas
-    int d_dl_ntx;  // Number of downlink transmitter antennas
-    int d_dl_nrx;  // Number of downlink transmitter antennas
-      int d_num_symbols;
-    int d_num_precoded_syms;
-    bool d_eigenmode_precoding;
+    int d_nss;  // Number of uplink spatial streams
+    int d_ntx;  // Number of uplink transmitter antennas = number of downlink receive antennas
+    int d_ntx_gnb;  // Number of downlink transmitter antennas
+    int d_nrx_ue;   // Number of downlink receive antennas
+    int d_num_symbols; // Total number of OFDM symbols
+    bool d_wideband; // Use wideband precoding method
+    bool d_loadcsi; // Load offline CSI at the beginning
 
-    gr_complex *d_csi_data;  // buffer for CSI data
+    bool d_eigenmode_precoding;  // Use eigen-mode precoding instead of SVD precoding
+    gr_complex *d_csi_data;  // buffer for CSI data (Nt, Nr)
     gr_complex *d_map_matrix;  // spatial mapping matrix (Nt, Nss)
 
     bool d_debug;
@@ -54,16 +54,17 @@ protected:
     process_csi_message(const pmt::pmt_t &msg);
 
     void
-    update_svd_precoding(gr_complex *csidata);
+    update_svd_precoding(const gr_complex *csidata);
 
     void
-    update_eigenmode_precoding(gr_complex *csidata);
+    update_eigenmode_precoding(const gr_complex *csidata);
 
     int
-    read_csi_data(const char *filename);
+    read_offline_csi(const char *filename, int csidlen);
 
 public:
-    ul_precoding_impl(int nss, int ul_ntx, int dl_ntx, int dl_nrx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug);
+    ul_precoding_impl(int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
+                      bool eigenmode, bool wideband, bool loadcsi, const char *csifile, bool debug);
     ~ul_precoding_impl();
 
     int

@@ -7,6 +7,7 @@
 #include "rx_sync_impl.h"
 #include <gnuradio/io_signature.h>
 #include <cmath>
+#include <iomanip>
 #include <volk/volk.h>
 #include "utils.h"
 
@@ -19,21 +20,23 @@ static const pmt::pmt_t FREQ_KEY = pmt::string_to_symbol("rx_freq");
 
 rx_sync::sptr
 rx_sync::make(int nchans, int preamblelen, int dataframelen, double samplerate, int pktspersec,
-              double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug)
+              double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len,
+              bool lltf2, bool debug)
 {
     return gnuradio::make_block_sptr<rx_sync_impl>(
         nchans, preamblelen, dataframelen, samplerate, pktspersec,
-        rxpwr_thrd, acorr_thrd, xcorr_thrd, max_corr_len, debug);
+        rxpwr_thrd, acorr_thrd, xcorr_thrd, max_corr_len, lltf2, debug);
 }
 
 rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen, double samplerate, int pktspersec,
-                           double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug)
+                           double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len,
+                           bool lltf2, bool debug)
     : gr::block("rx_sync",
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex)),
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex))),
       d_sampling_freq(samplerate), d_rxpwr_thrd(rxpwr_thrd), d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd),
-      d_max_corr_len(max_corr_len), d_rx_ready_cnt(0), d_frame_start(0), d_prev_frame_count(0), d_prev_frame_time(0.0),
-      d_xcorr_fir(gr::filter::kernel::fir_filter_ccc(LTF_SEQ)), d_debug(debug)
+      d_max_corr_len(max_corr_len), d_rx_ready_cnt(0), d_frame_start(0), // d_prev_frame_count(0), d_prev_frame_time(0.0),
+      d_xcorr_fir(gr::filter::kernel::fir_filter_ccc(lltf2 ? LTF_SEQ_2 : LTF_SEQ_1)), d_debug(debug)
 {
     if (nchans < 1 || nchans > MAX_CHANS)
         throw std::runtime_error("Currently support 1 to 8 IQ channels");
@@ -51,7 +54,7 @@ rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen, double
 
     // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF (3*SYM_LEN)
     d_frame_len = dataframelen + preamblelen - 3 * SYM_LEN;
-
+    // packet frame burst transmission period in seconds
     d_pkt_interval = 1.0 / (double) pktspersec;
     // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT-SIG and HT-LTF
     d_wait_interval = (int) floor(samplerate * d_pkt_interval) - d_frame_len - 8 * SYM_LEN;
@@ -145,9 +148,6 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
     {
         case SEARCH:
         {
-            // send tag command and check current timestamp
-            send_tagcmd();
-
             // search for frame start
             int buffer_len = ((min_input_items > d_max_corr_len) ? d_max_corr_len : min_input_items);
             if (buffer_len < 8 * STF_LEN)
@@ -167,14 +167,15 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
         }
         case FINESYNC:
         {
-            // int input_len = min(min_input_items, 3 * LTF_LEN);
+            // send tag command and check current timestamp
+            send_tagcmd();
+
             if (min_input_items < 3 * LTF_LEN)
                 break;
-            check_rxtime(min_input_items);
 
             // fine_sync return the start of the first HT-LTF field
-            int htsig_start = fine_sync(input_items, 3 * LTF_LEN);
-            if (htsig_start < 0)
+            int ht_start = fine_sync(input_items, 3 * LTF_LEN);
+            if (ht_start < 0)
             {
                 dout << "Fine synchronize failed!" << std::endl;
                 consume_each(min_input_items);
@@ -185,13 +186,13 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_state = SEARCH;
                 break;
             }
-            d_frame_start = nitems_read(0) + htsig_start;
+            d_frame_start = nitems_read(0) + ht_start;
             dout << "Data frame start at " << d_frame_start << std::endl;
             d_data_samples = 0;
             d_state = DEFRAME;
-            send_tagcmd();
 
-            consume_each(htsig_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
+            check_rxtime(min_input_items);
+            consume_each(ht_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
             if (d_rx_ready_cnt == 9) // changing to ready state
                 send_rxstate(true);
             if (d_rx_ready_cnt < 100)
@@ -200,6 +201,9 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
         }
         case DEFRAME:
         {
+            // send tag command and check current timestamp
+            send_tagcmd();
+
             noutput_samples = std::min(min_input_items, noutput_items);
             if (d_data_samples + noutput_samples >= d_frame_len)
             {
@@ -255,8 +259,8 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 min_input_items -= new_data_count;
                 d_state = FINESYNC; // SEARCH;
             }
-            if (d_wait_count < 2048)
-                check_rxtime(noutput_samples);
+            // if (d_wait_count < 4096)
+            check_rxtime(noutput_samples);
             consume_each(min_input_items);
             break;
         }
@@ -281,8 +285,10 @@ rx_sync_impl::send_rxstate_message(bool ready)
     message_port_pub(pmt::mp("rxrdy"), dict);
 }
 
-// This function calculate the correct absolute time for the current frame start position
-// and send this to tx_framing block
+/*
+ * Calculate the correct absolute time for the current frame start position
+ * and send this to the frame control block
+ */
 double
 rx_sync_impl::check_rxtime(int rx_windows_size)
 {
@@ -293,19 +299,27 @@ rx_sync_impl::check_rxtime(int rx_windows_size)
     {
         // current receiver position of (first sample of the IQ  buffer)
         uint64_t current_pos = nitems_read(0);
+
         // extract integer and fractional timestamp
         auto pt = pmt::to_tuple(d_tags[0].value);
         uint64_t time_secs = pmt::to_uint64(pmt::tuple_ref(pt, 0));
         double time_fracs = pmt::to_double(pmt::tuple_ref(pt, 1));
-        // std::cout << "Current time " << time_secs << ":" << time_fracs << " (" << current_pos << ")" << std::endl;
+        // tag offset adjustment
+        time_fracs -= (double(d_tags[0].offset) - current_pos) / d_sampling_freq;
+        if (time_fracs < 0) {
+            time_secs -= 1;
+            time_fracs += 1.0;
+        }
+        // std::cout << "Current time " << time_secs << ":"
+        //          << std::fixed << std::setprecision(8) << time_fracs
+        //          << " (" << current_pos << ")" << std::endl;
+
+        // d_prev_frame_count = current_pos;
+        // d_prev_frame_time = time_fracs; // (double) time_secs + time_fracs;
 
         // update hardware absolute time corresponding to the frame start
-        d_prev_frame_count = current_pos;
-        d_prev_frame_time = time_fracs; // (double) time_secs + time_fracs;
-
-        if ((d_state == DEFRAME || d_state == WAIT)
-            && current_pos >= d_frame_start
-            && d_frame_start > 0) // && current_pos < d_frame_start + uint64_t(d_wait_interval))
+        if (d_frame_start > 0 && current_pos >= d_frame_start &&
+            current_pos < d_frame_start + uint64_t(d_wait_interval))
         {
             // get the actual time for current frmstart
             double frmstart_time = time_fracs + double(time_secs);
@@ -314,6 +328,7 @@ rx_sync_impl::check_rxtime(int rx_windows_size)
             double timefracs = std::modf(frmstart_time, &intpart);
             uint64_t timesecs = uint64_t(intpart);
             // std::cout << "Packet start at " << timesecs << ":" << timefracs << " " << (current_pos - d_frame_start) << std::endl;
+
             // send frame start time via message (integer and fractional parts of the frmstart time)
             auto rxtime_msg = pmt::make_tuple(pmt::from_uint64(timesecs), pmt::from_double(timefracs));
             message_port_pub(pmt::mp("rxtime"), rxtime_msg);
@@ -324,7 +339,7 @@ rx_sync_impl::check_rxtime(int rx_windows_size)
 }
 
 /*
- * search for frame start using L-LTS auto-corr peaks
+ * search for frame start using L-STF auto-corr peaks
  */
 int
 rx_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buffer_len)
@@ -397,7 +412,7 @@ rx_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buff
         {
             // frame start should be within CORR_DELAY samples before the start of L-STF
             frame_start_pos = peak_start - (PEAK_THRD - 2) * CORR_DELAY;
-            dout << "Autocorr peak found at " << peak_start << " (peak duration " << peak_duration << ")" << std::endl;
+            dout << "Auto-correlation peak found at " << peak_start << " (peak duration " << peak_duration << ")" << std::endl;
             break;
         }
     }
@@ -405,8 +420,8 @@ rx_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buff
     if (frame_start_pos >= 0)
     {
         gr_complex corr_foe = 0;
-        // avoid the initial CORR_DELAY samples, 9*CORR_DELAY samples are usable
-        for (int k = frame_start_pos + 2 * CORR_DELAY; k < frame_start_pos + 9 * CORR_DELAY; k++)
+        // avoid the initial/last CORR_DELAY samples, 8*CORR_DELAY samples are usable
+        for (int k = frame_start_pos + CORR_DELAY; k < frame_start_pos + 9 * CORR_DELAY; k++)
         {
             int delay_idx = k + CORR_DELAY;
             // sum over all channels, assuming same LO frequency across all receivers
@@ -504,21 +519,21 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     dout << "Found LTF xcorr peaks at " << first_peak_pos << ", " << second_peak_pos << std::endl;
 
     // sanity checks
-    int sig_start = -1;
+    int ht_start = -1;
     if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - deltaCSD &&
         second_peak_pos <= first_peak_pos + FFT_LEN + deltaCSD)
     {
-        // start of the HT preambles (HT-SIGs)
-        // sig_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;
+        // start of the HT-LTF signal
+        // ht_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;
 
         // calculate the start of the HT-LTF (removing HT-SIG and HT-STF)
         // first peak pos corresponding to the start of the first FFT block in L-LTF
         // 4 * SYM_LEN : L-SIG, HT-SIG, HT-STF
-        sig_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
+        ht_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
     }
     else
     {
-        return sig_start;
+        return ht_start;
     }
 
     // estimate fine FOE
@@ -542,7 +557,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
                  << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;
         }
     }
-    else if (d_fine_foe_cnt < 10)
+    else if (d_fine_foe_cnt < 20)
     {
         d_fine_foe_cnt += 1;
         d_fine_foe_comp += fine_foe_comp;
@@ -556,35 +571,62 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
              << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;
     }
 
-    // return start position of L-SIG
-    return sig_start;
+    // return start position of HT-LTF
+    return ht_start;
 }
 
 // conjugated and reversed LTF sequence
 const
-std::vector<gr_complex> rx_sync_impl::LTF_SEQ = {
-    gr_complex(0.387815, 1.383373), gr_complex(0.629355, -0.030737), gr_complex(0.461168, -0.522862),
-    gr_complex(-0.404599, -1.099085), gr_complex(0.961322, -0.288129), gr_complex(0.848315, 0.433988),
-    gr_complex(-0.044150, -0.901229), gr_complex(-0.669582, -0.310998), gr_complex(-0.332859, -0.312715),
-    gr_complex(1.009401, -0.210974), gr_complex(0.687483, 0.823841), gr_complex(-0.192325, -0.652262),
-    gr_complex(-0.480830, -0.015011), gr_complex(0.018589, 1.452701), gr_complex(-0.661930, 0.736988),
-    gr_complex(-0.832050, 0.832050), gr_complex(0.830611, -0.139572), gr_complex(-0.280670, -0.339226),
-    gr_complex(-1.193270, 0.538236), gr_complex(-0.917076, -0.584965), gr_complex(-0.414197, -0.176768),
-    gr_complex(0.962484, 0.255799), gr_complex(-0.139442, -1.321481), gr_complex(0.114882, -0.865699),
-    gr_complex(0.876366, 0.323971), gr_complex(-0.926335, -0.208639), gr_complex(-0.994119, 0.096130),
-    gr_complex(-0.704801, 1.187012), gr_complex(-0.596485, -0.153677), gr_complex(-0.042337, -0.713263),
-    gr_complex(0.652517, 1.171849), gr_complex(1.386750, 0.000000), gr_complex(0.652517, -1.171849),
-    gr_complex(-0.042337, 0.713263), gr_complex(-0.596485, 0.153677), gr_complex(-0.704801, -1.187012),
-    gr_complex(-0.994119, -0.096130), gr_complex(-0.926335, 0.208639), gr_complex(0.876366, -0.323971),
-    gr_complex(0.114882, 0.865699), gr_complex(-0.139442, 1.321481), gr_complex(0.962484, -0.255799),
-    gr_complex(-0.414197, 0.176768), gr_complex(-0.917076, 0.584965), gr_complex(-1.193270, -0.538236),
-    gr_complex(-0.280670, 0.339226), gr_complex(0.830611, 0.139572), gr_complex(-0.832050, -0.832050),
-    gr_complex(-0.661930, -0.736988), gr_complex(0.018589, -1.452701), gr_complex(-0.480830, 0.015011),
-    gr_complex(-0.192325, 0.652262), gr_complex(0.687483, -0.823841), gr_complex(1.009401, 0.210974),
-    gr_complex(-0.332859, 0.312715), gr_complex(-0.669582, 0.310998), gr_complex(-0.044150, 0.901229),
-    gr_complex(0.848315, -0.433988), gr_complex(0.961322, 0.288129), gr_complex(-0.404599, 1.099085),
-    gr_complex(0.461168, 0.522862), gr_complex(0.629355, 0.030737), gr_complex(0.387815, -1.383373),
-    gr_complex(1.386750, 0.000000)
+std::vector<gr_complex> rx_sync_impl::LTF_SEQ_1 = {
+    gr_complex(-0.0455, -1.0679), gr_complex(0.3528, -0.9865), gr_complex(0.8594, 0.7348),
+    gr_complex(0.1874, 0.2475), gr_complex(0.5309, -0.7784), gr_complex(-1.0218, -0.4897),
+    gr_complex(-0.3401, -0.9423), gr_complex(0.8657, -0.2298), gr_complex(0.4734, 0.0362),
+    gr_complex(0.0088, -1.0207), gr_complex(-1.2142, -0.4205), gr_complex(0.2172, -0.5195),
+    gr_complex(0.5207, -0.1326), gr_complex(-0.1995, 1.4259), gr_complex(1.0583, -0.0363),
+    gr_complex(0.5547, -0.5547), gr_complex(0.3277, 0.8728), gr_complex(-0.5077, 0.3488),
+    gr_complex(-1.1650, 0.5789), gr_complex(0.7297, 0.8197), gr_complex(0.6173, 0.1253),
+    gr_complex(-0.5353, 0.7214), gr_complex(-0.5011, -0.1935), gr_complex(-0.3110, -1.3392),
+    gr_complex(-1.0818, -0.1470), gr_complex(-1.1300, -0.1820), gr_complex(0.6663, -0.6571),
+    gr_complex(-0.0249, 0.4773), gr_complex(-0.8155, 1.0218), gr_complex(0.8140, 0.9396),
+    gr_complex(0.1090, 0.8662), gr_complex(-1.3868, -0.0000), gr_complex(0.1090, -0.8662),
+    gr_complex(0.8140, -0.9396), gr_complex(-0.8155, -1.0218), gr_complex(-0.0249, -0.4773),
+    gr_complex(0.6663, 0.6571), gr_complex(-1.1300, 0.1820), gr_complex(-1.0818, 0.1470),
+    gr_complex(-0.3110, 1.3392), gr_complex(-0.5011, 0.1935), gr_complex(-0.5353, -0.7214),
+    gr_complex(0.6173, -0.1253), gr_complex(0.7297, -0.8197), gr_complex(-1.1650, -0.5789),
+    gr_complex(-0.5077, -0.3488), gr_complex(0.3277, -0.8728), gr_complex(0.5547, 0.5547),
+    gr_complex(1.0583, 0.0363), gr_complex(-0.1995, -1.4259), gr_complex(0.5207, 0.1326),
+    gr_complex(0.2172, 0.5195), gr_complex(-1.2142, 0.4205), gr_complex(0.0088, 1.0207),
+    gr_complex(0.4734, -0.0362), gr_complex(0.8657, 0.2298), gr_complex(-0.3401, 0.9423),
+    gr_complex(-1.0218, 0.4897), gr_complex(0.5309, 0.7784), gr_complex(0.1874, -0.2475),
+    gr_complex(0.8594, -0.7348), gr_complex(0.3528, 0.9865), gr_complex(-0.0455, 1.0679),
+    gr_complex(1.3868, -0.0000),
+};
+
+// conjugated and reversed LTF sequence
+const
+std::vector<gr_complex> rx_sync_impl::LTF_SEQ_2 = {
+    gr_complex(0.387815, -1.383373), gr_complex(0.629355, 0.030737), gr_complex(0.461168, 0.522862),
+    gr_complex(-0.404599, 1.099085), gr_complex(0.961322, 0.288129), gr_complex(0.848315, -0.433988),
+    gr_complex(-0.044150, 0.901229), gr_complex(-0.669582, 0.310998), gr_complex(-0.332859, 0.312715),
+    gr_complex(1.009401, 0.210974), gr_complex(0.687483, -0.823841), gr_complex(-0.192325, 0.652262),
+    gr_complex(-0.480830, 0.015011), gr_complex(0.018589, -1.452701), gr_complex(-0.661930, -0.736988),
+    gr_complex(-0.832050, -0.832050), gr_complex(0.830611, 0.139572), gr_complex(-0.280670, 0.339226),
+    gr_complex(-1.193270, -0.538236), gr_complex(-0.917076, 0.584965), gr_complex(-0.414197, 0.176768),
+    gr_complex(0.962484, -0.255799), gr_complex(-0.139442, 1.321481), gr_complex(0.114882, 0.865699),
+    gr_complex(0.876366, -0.323971), gr_complex(-0.926335, 0.208639), gr_complex(-0.994119, -0.096130),
+    gr_complex(-0.704801, -1.187012), gr_complex(-0.596485, 0.153677), gr_complex(-0.042337, 0.713263),
+    gr_complex(0.652517, -1.171849), gr_complex(1.386750, 0.000000), gr_complex(0.652517, 1.171849),
+    gr_complex(-0.042337, -0.713263), gr_complex(-0.596485, -0.153677), gr_complex(-0.704801, 1.187012),
+    gr_complex(-0.994119, 0.096130), gr_complex(-0.926335, -0.208639), gr_complex(0.876366, 0.323971),
+    gr_complex(0.114882, -0.865699), gr_complex(-0.139442, -1.321481), gr_complex(0.962484, 0.255799),
+    gr_complex(-0.414197, -0.176768), gr_complex(-0.917076, -0.584965), gr_complex(-1.193270, 0.538236),
+    gr_complex(-0.280670, -0.339226), gr_complex(0.830611, -0.139572), gr_complex(-0.832050, 0.832050),
+    gr_complex(-0.661930, 0.736988), gr_complex(0.018589, 1.452701), gr_complex(-0.480830, -0.015011),
+    gr_complex(-0.192325, -0.652262), gr_complex(0.687483, 0.823841), gr_complex(1.009401, -0.210974),
+    gr_complex(-0.332859, -0.312715), gr_complex(-0.669582, -0.310998), gr_complex(-0.044150, -0.901229),
+    gr_complex(0.848315, 0.433988), gr_complex(0.961322, -0.288129), gr_complex(-0.404599, -1.099085),
+    gr_complex(0.461168, -0.522862), gr_complex(0.629355, -0.030737), gr_complex(0.387815, 1.383373),
+    gr_complex(1.386750, 0.000000),
 };
 
 } /* namespace gr::ncjt */

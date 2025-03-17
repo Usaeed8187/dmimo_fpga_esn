@@ -22,7 +22,7 @@ class NCJT_API ul_precoding
     : virtual public gr::tagged_stream_block
 {
 public:
-    typedef std::shared_ptr<ul_precoding> sptr;
+    typedef std::shared_ptr <ul_precoding> sptr;
 
 /*!
  * \brief Return a shared_ptr to a new instance of ncjt::ul_precoding.
@@ -33,7 +33,8 @@ public:
  * creating new instances.
  */
     static sptr
-    make(int nss, int ul_ntx, int dl_ntx, int dl_nrx, int numhtsyms, int numdatasyms, int numprecodedsyms, bool eigenmode, bool debug);
+    make(int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
+         bool eigenmode, bool wideband, bool loadcsi, const char *csifile, bool debug = false);
 };
 
 } // namespace gr::ncjt

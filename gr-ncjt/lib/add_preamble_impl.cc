@@ -12,12 +12,12 @@ namespace gr::ncjt
 {
 
 add_preamble::sptr
-add_preamble::make(int nstrm, const char *filename, bool debug)
+add_preamble::make(int nstrm, const char *filename, int delay, bool debug)
 {
-    return gnuradio::make_block_sptr<add_preamble_impl>(nstrm, filename, debug);
+    return gnuradio::make_block_sptr<add_preamble_impl>(nstrm, filename, delay, debug);
 }
 
-add_preamble_impl::add_preamble_impl(int nstrm, const char *filename, bool debug)
+add_preamble_impl::add_preamble_impl(int nstrm, const char *filename, int delay, bool debug)
     : gr::tagged_stream_block(
     "add_preamble",
     gr::io_signature::make(nstrm, nstrm, sizeof(gr_complex)),
@@ -27,6 +27,10 @@ add_preamble_impl::add_preamble_impl(int nstrm, const char *filename, bool debug
     if (nstrm < 1 || nstrm > 8)
         throw std::runtime_error("only support 1 to 8 streams");
     d_nstrm = nstrm;
+
+    if (delay < 0 || delay > 64)
+        throw std::runtime_error("invalid delay specified, , maximum delay is 64");
+    d_delay = delay;
 
     d_preamble_data = nullptr;
     if ((d_preamble_len = read_preamble_data(filename)) <= 0)
@@ -78,10 +82,15 @@ add_preamble_impl::work(int noutput_items, gr_vector_int &ninput_items,
                      pmt::from_long(frame_length),
                      pmt::string_to_symbol(name()));
 
+        // add delay padding
+        if (d_delay > 0) {
+            for (int n=0; n < d_delay; n++)
+                out[n] = 0;
+        }
         // copy beacon symbols
-        memcpy((void *) &out[0], &d_preamble_data[s * d_preamble_len], sizeof(gr_complex) * d_preamble_len);
+        memcpy((void *) &out[d_delay], &d_preamble_data[s * d_preamble_len], sizeof(gr_complex) * d_preamble_len);
         // copy data symbols
-        memcpy((void *) &out[d_preamble_len], &in[0], sizeof(gr_complex) * data_length);
+        memcpy((void *) &out[d_preamble_len + d_delay], &in[0], sizeof(gr_complex) * (data_length - d_delay));
 
     }
 

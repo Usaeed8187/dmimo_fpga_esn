@@ -1,8 +1,10 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2025 Yuanzhi Zhang.
+ * Copyright 2025 Wireless @ Virginia Tech.
  *
- * SPDX-License-Identifier: GPL-3.0-or-later
+ * Change Log:
+ *   02/2025    Created by Yuanzhi Zhang.
+ *
  */
 
 #ifndef INCLUDED_NCJT_SRSRAN_LDPC_ENCODER_H

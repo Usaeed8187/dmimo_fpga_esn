@@ -58,14 +58,18 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
     if (d_nrx < d_nss)
         throw std::runtime_error("number of Rx antennas must be greater than number of streams");
 
-    d_cur_sym = -npreamblesyms;
-    d_last_sym = d_cur_sym;
-
+    d_cpt_pilot = malloc_float(d_npt * d_nss * d_data_symbols);
+    d_cpe_est = malloc_float(d_data_symbols);
+    d_est_pilots = malloc_complex(d_npt * d_nrx * d_data_symbols);
     d_chan_est = malloc_complex(d_nss * d_nrx * d_scnum);
     d_chan_csi = malloc_complex(d_ntx * d_nrx * d_scnum);
     d_cshift = malloc_complex(4 * d_scnum);
 
-    // cyclic shift compensation for CSI estimation
+    // pre-generate all CPT pilots
+    generate_cpt_pilots();
+
+    // cyclic shift compensation
+    // TODO: fft_size = 256
     float cshift[4] = {0, -8, -4, -12};
     for (int m = 0; m < 4; m++)
     {
@@ -93,7 +97,7 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
         d_Pd << 1, -1, 1, 1;
     }
 
-    const float normfactor = sqrt(d_scnum / float(d_nss * d_fftsize));
+    const float normfactor = 1.0f / float(d_nss);
     d_Pd = normfactor * d_Pd;
 
     std::stringstream str;
@@ -111,6 +115,12 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
 
 ltf_chanest_impl::~ltf_chanest_impl()
 {
+    if (d_cpt_pilot != nullptr)
+        volk_free(d_cpt_pilot);
+    if (d_cpe_est != nullptr)
+        volk_free(d_cpe_est);
+    if (d_est_pilots != nullptr)
+        volk_free(d_est_pilots);
     if (d_chan_est != nullptr)
         volk_free(d_chan_est);
     if (d_chan_csi != nullptr)
@@ -123,11 +133,6 @@ int
 ltf_chanest_impl::calculate_output_stream_length(
     const gr_vector_int &ninput_items)
 {
-    /* int min_input_items = ninput_items[0];
-    for (int n = 1; n < d_nrx; n++)
-        min_input_items = std::min(min_input_items, ninput_items[n]);
-    int nblks = min_input_items / d_scnum; */
-
     return (d_nss + d_data_symbols) * d_scnum;
 }
 
@@ -140,90 +145,68 @@ ltf_chanest_impl::work(int noutput_items, gr_vector_int &ninput_items,
     for (int ch = 1; ch < d_nrx; ch++)
         min_input_items = std::min(min_input_items, ninput_items[ch]);
     int ninput_syms = min_input_items / d_scnum;
-    if (ninput_syms <= 0)
-        return 0;
+    if (ninput_syms != d_preamble_symbols + d_data_symbols)
+        throw std::runtime_error("total number of OFDM symbols to channel estimation not correct");
 
-    int noutput_syms = 0;
-    int nsymcnt = 0;
-    for (; nsymcnt < ninput_syms; nsymcnt++)
+    int noutput_syms = d_nss + d_data_symbols;
+    int cur_sym = -d_preamble_symbols;
+    for (int nsymcnt = 0; nsymcnt < d_preamble_symbols; nsymcnt++)
     {
-        if (d_cur_sym == -1) // full HT-LTFs available
+        if (cur_sym == -1) // full HT-LTFs available
         {
-            update_pilots(d_cur_sym);
             if (d_nss == 1)
-                ltf_chan_est_1tx(input_items, output_items, noutput_syms * d_scnum);
+                ltf_chan_est_1tx(input_items, output_items, 0);
             else if (d_nss == 2 && d_nrx == 2)
-                ltf_chan_est_2rx(input_items, output_items, noutput_syms * d_scnum);
+                ltf_chan_est_2rx(input_items, output_items, 0);
             else
-                ltf_chan_est_nrx(input_items, output_items, noutput_syms * d_scnum);
-            uint64_t offset = nitems_written(0) + noutput_syms * d_scnum;
-            add_packet_tag(offset, d_nss * d_scnum);
+                ltf_chan_est_nrx(input_items, output_items, 0);
+            uint64_t offset = nitems_written(0);
             add_frame_tag(offset);
-            noutput_syms += d_nss;
-            d_sigpwr_sum = 0.0;
-            d_noise_sum = 0.0;
         }
         else if (d_csi_en && d_total_frames >= 10)
         {
-            if (d_ntx == 2 && d_cur_sym == -d_preamble_symbols + 1)  // 2Tx-2Rx, 2Tx-4Rx
+            if (d_ntx == 2 && cur_sym == -d_preamble_symbols + 1)  // 2Tx-2Rx, 2Tx-4Rx
             {
                 csi_chan_est_nrx(input_items, (nsymcnt - 1) * d_scnum);
                 send_csi_message();
             }
-            else if (d_ntx == 4 && d_cur_sym == -d_preamble_symbols + 3)  // 4Tx-2Rx, 4Tx-4Rx
+            else if (d_ntx == 4 && cur_sym == -d_preamble_symbols + 3)  // 4Tx-2Rx, 4Tx-4Rx
             {
                 csi_chan_est_nrx(input_items, (nsymcnt - 3) * d_scnum);
                 send_csi_message();
             }
         }
-
-        // add packet_len tags for tagged stream block
-        if (d_cur_sym >= 0 && d_cur_sym % 5 == 0)
-        {
-            auto offset = nitems_written(0) + noutput_syms * d_scnum;
-            int packet_len = (d_cur_sym < d_data_symbols - 8) ? 5 * d_scnum : (d_data_symbols - d_last_sym) * d_scnum;
-            add_packet_tag(offset, packet_len);
-            // dout << "Packet from symbol " << (d_cur_sym + 1) << ", length " << packet_len <<
-            //     " offset " << offset << std::endl;
-        }
-
-        if (d_cur_sym >= 0)
-        {
-            update_pilots(d_cur_sym);
-            cpe_estimate_comp(input_items, output_items, nsymcnt, noutput_syms);
-            send_cpe_message();
-            noutput_syms += 1;
-        }
-
-        d_cur_sym += 1;
-
-        if (d_cur_sym > 0 && (d_cur_sym % 5 == 0 || d_cur_sym == d_data_symbols))
-        {
-            d_sigpwr_est = (float) d_sigpwr_sum / (float) d_cur_sym;
-            d_noise_est = (float) d_noise_sum / (float) d_cur_sym;
-            // if (d_cur_sym == d_data_symbols)
-            //     d_noise_est_save = d_noise_est;
-            d_last_sym = d_cur_sym;
-
-            auto offset = nitems_written(0) + (noutput_syms - 1) * d_scnum;
-            add_power_noise_tag(offset, d_sigpwr_est, d_noise_est);
-            // send_snr_message();
-        }
-
-        if (d_cur_sym == d_data_symbols)
-        {
-            d_total_frames += 1;
-            if (d_reset_frames > 0)
-                d_reset_frames -= 1;
-            d_cur_sym = -d_preamble_symbols;
-            d_sigpwr_sum = 0.0;
-            d_noise_sum = 0.0;
-            auto snr_db = 10.0 * std::log10(d_sigpwr_est / d_noise_est);
-            if (d_total_frames % d_logfreq == 0)
-                dout << ">>>>>>>> Signal power: " << d_sigpwr_est << "  noise: " << d_noise_est
-                     << " (SNR " << snr_db << " dB)" << std::endl;
-        }
+        cur_sym += 1;
     }
+
+    // CPE estimation and compensation
+    cpe_estimate_comp(input_items, output_items, d_nss);
+
+    d_total_frames += 1;
+    if (d_reset_frames > 0)
+        d_reset_frames -= 1;
+
+    d_sigpwr_est = (float) d_sigpwr_sum / (float) d_data_symbols;
+    d_noise_est = (float) d_noise_sum / (float) d_data_symbols;
+    auto offset = nitems_written(0) + (noutput_syms - 1) * d_scnum;
+    add_power_noise_tag(offset, d_sigpwr_est, d_noise_est);
+    add_cpe_est_tag(offset, d_cpe_phi, d_cpe_offset);
+
+    auto snr_db = 10.0 * std::log10(d_sigpwr_est / d_noise_est);
+    if (d_total_frames % d_logfreq == 0)
+        dout << ">>>>>>>> Signal power: " << d_sigpwr_est << "  noise: " << d_noise_est
+             << " (SNR " << snr_db << " dB)" << std::endl;
+
+    // Copy received symbols to output
+    for (int m = 0; m < d_nrx; m++)
+    {
+        auto *in = (const gr_complex *) input_items[m] + d_preamble_symbols * d_scnum;
+        auto *out = (gr_complex *) output_items[m] + d_nss * d_scnum;
+        memcpy(&out[0], &in[0], sizeof(gr_complex) * d_data_symbols * d_scnum);
+    }
+
+    offset = nitems_written(0);
+    add_packet_tag(offset, noutput_syms * d_scnum);
 
     return noutput_syms * d_scnum;
 }
@@ -249,16 +232,33 @@ ltf_chanest_impl::add_packet_tag(uint64_t offset, int packet_len)
 void
 ltf_chanest_impl::add_power_noise_tag(uint64_t offset, float signal_pwr, float noise_est)
 {
-    for (int k = 0; k < d_nrx; k += 2)
-    {
-        add_item_tag(k, offset,
-                     pmt::string_to_symbol("signal_pwr"),
-                     pmt::from_float(signal_pwr), _id);
+    add_item_tag(0, offset,
+                 pmt::string_to_symbol("noise_var"),
+                 pmt::from_float(noise_est), _id);
 
-        add_item_tag(k + 1, offset,
-                     pmt::string_to_symbol("noise_var"),
-                     pmt::from_float(noise_est), _id);
-    }
+    add_item_tag(0, offset + 1,
+                 pmt::string_to_symbol("signal_pwr"),
+                 pmt::from_float(signal_pwr), _id);
+}
+
+void
+ltf_chanest_impl::add_cpe_est_tag(uint64_t offset, float cpe_phi, float cpe_offset)
+{
+    add_item_tag(0, offset,
+                 pmt::string_to_symbol("cpe_phi1"),
+                 pmt::from_float(cpe_phi), _id);
+
+    add_item_tag(0, offset,
+                 pmt::string_to_symbol("cpe_phi2"),
+                 pmt::from_float(cpe_phi), _id);
+
+    add_item_tag(0, offset + 1,
+                 pmt::string_to_symbol("cpe_offset1"),
+                 pmt::from_float(cpe_offset), _id);
+
+    add_item_tag(0, offset + 1,
+                 pmt::string_to_symbol("cpe_offset2"),
+                 pmt::from_float(cpe_offset), _id);
 }
 
 void
@@ -320,96 +320,141 @@ ltf_chanest_impl::send_csi_message()
 }
 
 void
-ltf_chanest_impl::update_pilots(int symidx)
+ltf_chanest_impl::generate_cpt_pilots()
 {
     // initial state for first data symbol
-    if (symidx < 0)
+    d_pilot_lsfr = (d_fftsize == 64) ? 0x78 : 0x71; // offset = 3 or 4
+
+    for (int symidx = 0; symidx < d_data_symbols; symidx++)
     {
-        d_pilot_lsfr = (d_fftsize == 64) ? 0x78 : 0x70; // offset = 3 or 4
-        return;
-    }
+        // update pilot parity for current symbol
+        unsigned parity_bit = (d_pilot_lsfr >> 6) ^ ((d_pilot_lsfr >> 3) & 0x1);
+        d_pilot_lsfr = ((d_pilot_lsfr << 1) & 0x7E) | parity_bit; // circular 7-bit shifter
+        float pilot_parity = (parity_bit == 1) ? -1 : 1;
 
-    // update pilot parity for current symbol
-    unsigned parity_bit = (d_pilot_lsfr >> 6) ^ ((d_pilot_lsfr >> 3) & 0x1);
-    d_pilot_lsfr = ((d_pilot_lsfr << 1) & 0x7E) | parity_bit; // circular 7-bit shifter
-    float pilot_parity = (parity_bit == 1) ? -1 : 1;
+        // base pilot sequence for 64-FFT & 2/4-stream case
+        const float basePilots4[6][8] = {{1, 1, -1, -1}, {1, -1, -1, 1}, // 2Rx
+                                         {1, 1, 1, -1}, {1, 1, -1, 1},  // 4rx
+                                         {1, -1, 1, 1}, {-1, 1, 1, 1}}; // 4Rx
+        // base pilot sequence for 256-FFT single-stream case
+        const float basePilots8[4][8] = {{1, 1, 1, -1, -1, 1, 1, 1},
+                                         {1, 1, 1, -1, -1, 1, 1, 1},
+                                         {1, 1, 1, -1, -1, 1, 1, 1},
+                                         {1, 1, 1, -1, -1, 1, 1, 1}};
 
-    // base pilot sequence for 64-FFT & 2/4-stream case
-    const float basePilots4[6][8] = {{1, 1, -1, -1}, {1, -1, -1, 1}, // 2Rx
-                                     {1, 1, 1, -1}, {1, 1, -1, 1},  // 4rx
-                                     {1, -1, 1, 1}, {-1, 1, 1, 1}}; // 4Rx
-    // base pilot sequence for 256-FFT single-stream case
-    const float basePilots8[4][8] = {{1, 1, 1, -1, -1, 1, 1, 1},
-                                     {1, 1, 1, -1, -1, 1, 1, 1},
-                                     {1, 1, 1, -1, -1, 1, 1, 1},
-                                     {1, 1, 1, -1, -1, 1, 1, 1}};
+        auto basePilot = (d_fftsize == 64) ? basePilots4 : basePilots8;
 
-    auto basePilot = (d_fftsize == 64) ? basePilots4 : basePilots8;
-
-    // generate current pilots
-    for (int i = 0; i < d_npt; i++) // for all pilot positions
-    {
-        unsigned int idx = (symidx + i) % d_npt;
-        for (int k = 0; k < d_nss; k++)  // for all streams
-            d_cur_pilot[k][i] = pilot_parity * basePilot[k][idx];
+        // generate current pilots
+        for (int i = 0; i < d_npt; i++) // for all pilot positions
+        {
+            unsigned int idx = (symidx + i) % d_npt;
+            for (int k = 0; k < d_nss; k++)  // for all streams
+            {
+                int offset = d_nss * d_npt * symidx + k * d_npt + i;
+                d_cpt_pilot[offset] = pilot_parity * basePilot[k][idx];
+            }
+        }
     }
 }
 
 void
 ltf_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
                                     gr_vector_void_star &output_items,
-                                    int nsymcnt,
                                     int noutsymcnt)
 {
-    unsigned input_offset = nsymcnt * d_scnum;
-    unsigned output_offset = noutsymcnt * d_scnum;
-
     const unsigned pilot_idx4[8] = {7, 21, 34, 48};
     const unsigned pilot_idx8[8] = {6, 32, 74, 100, 141, 167, 209, 235};
     auto pilot_idx = (d_fftsize == 64) ? pilot_idx4 : pilot_idx8;
-    gr_complex est_pilots[MAX_NSS][8]; // estimated pilots
-    gr_complex cpe_sum = 0;
 
-    for (int i = 0; i < d_npt; i++)  // loop for all pilots
+    float cpe_est_mean = 0.0;
+    for (int symidx = 0; symidx < d_data_symbols; symidx++)
     {
-        unsigned pidx = pilot_idx[i];
-        for (int k = 0; k < d_nrx; k++)  // loop for all receiver antennas
+        int input_offset = (d_preamble_symbols + symidx) * d_scnum;
+        gr_complex cpe_sum = 0;
+
+        for (int i = 0; i < d_npt; i++)  // loop for all pilots
         {
-            est_pilots[k][i] = 0;  // estimate received pilots
-            for (int n = 0; n < d_nss; n++)  // combining all streams
-                // est_pilots[k][i] += d_chan_est[d_nss * d_nrx * pidx + d_nss * k + n] * d_cur_pilot[n][i];
-                est_pilots[k][i] += d_chan_est[d_nss * d_nrx * pidx + d_nrx * n + k] * d_cur_pilot[n][i];
-            // sum over all pilots and receiver antennas
-            auto *in = (const gr_complex *) input_items[k];
-            cpe_sum += in[input_offset + pidx] * std::conj(est_pilots[k][i]);
+            unsigned pidx = pilot_idx[i];
+            for (int k = 0; k < d_nrx; k++)  // loop for all receiver antennas
+            {
+                int pilot_offset = d_nrx * d_npt * symidx + k * d_npt + i;
+                d_est_pilots[pilot_offset] = 0;  // estimate received pilots
+                for (int n = 0; n < d_nss; n++)  // combining all streams
+                {
+                    // est_pilots[k][i] += d_chan_est[d_nss * d_nrx * pidx + d_nss * k + n] * d_cpt_pilot[n][i];
+                    int offset = d_nss * d_npt * symidx + n * d_npt + i;
+                    d_est_pilots[pilot_offset] +=
+                        d_chan_est[d_nss * d_nrx * pidx + d_nrx * n + k] * d_cpt_pilot[offset];
+                }
+                // sum over all pilots and receiver antennas
+                auto *in = (const gr_complex *) input_items[k];
+                cpe_sum += in[input_offset + pidx] * std::conj(d_est_pilots[pilot_offset]);
+            }
         }
+        d_cpe_est[symidx] = -1 * std::arg(cpe_sum);
+        cpe_est_mean += d_cpe_est[symidx];
     }
-    d_cpe_phi = -1 * std::arg(cpe_sum);
-    // dout << "CPE estimate: " << d_cpe_phi << std::endl;
+
+    // linear regression for CPE estimation
+    cpe_est_mean /= (float) d_data_symbols;
+    float x_mean = (d_data_symbols - 1.0f) / 2.0f;
+    float x_sum = 0.0f, y_sum = 0.0f;
+    for (int n = 0; n < d_data_symbols; n++)
+    {
+        float dx = (float) n - x_mean;
+        float dy = d_cpe_est[n] - cpe_est_mean;
+        y_sum += dx * dy;
+        x_sum += dx * dx;
+    }
+    d_cpe_phi = y_sum / x_sum;
+    d_cpe_offset = cpe_est_mean - d_cpe_phi * x_mean;
+    if (d_total_frames % d_logfreq == 0)
+        dout << "CPE estimate: (" << d_cpe_phi << ", " << d_cpe_offset << ")" << std::endl;
+    // send_cpe_message();
+
+    d_sigpwr_sum = 0.0;
+    d_noise_sum = 0.0;
+    for (int symidx = 0; symidx < d_data_symbols; symidx++)
+    {
+        unsigned input_offset = (d_preamble_symbols + symidx) * d_scnum;
+
+        // CPE compensation for estimated pilots
+        float cpe_phi = d_cpe_offset + symidx * d_cpe_phi;
+        gr_complex pilot_comp = std::exp(gr_complex(0, -cpe_phi));
+
+        // estimate noise and signal power
+        double power_est = 0, noise_est = 0;
+        for (int i = 0; i < d_npt; i++)
+        {
+            for (int m = 0; m < d_nrx; m++)
+            {
+                auto *in = (const gr_complex *) input_items[m];
+                int pilot_offset = d_nrx * d_npt * symidx + m * d_npt + i;
+                d_est_pilots[pilot_offset] *= pilot_comp;
+                power_est += std::norm(d_est_pilots[pilot_offset]);
+                noise_est += std::norm(d_est_pilots[pilot_offset] - in[input_offset + pilot_idx[i]]);
+            }
+        }
+        d_sigpwr_sum += power_est / (d_npt * d_nrx);
+        d_noise_sum += noise_est / (d_npt * d_nrx);
+    }
 
     // CPE compensation for received pilots and data
-    const float normfactor = sqrt(float(d_nss * d_scnum) / float(d_fftsize));
-    gr_complex cpe_comp = normfactor * std::exp(gr_complex(0, d_cpe_phi));
-    for (int m = 0; m < d_nrx; m++)
+    /* for (int symidx = 0; symidx < d_data_symbols; symidx++)
     {
-        auto *in = (const gr_complex *) input_items[m];
-        auto *out = (gr_complex *) output_items[m];
-        volk_32fc_s32fc_multiply2_32fc(&out[output_offset], &in[input_offset], &cpe_comp, d_scnum);
-    }
+        unsigned input_offset = (d_preamble_symbols + symidx) * d_scnum;
+        unsigned output_offset = (noutsymcnt + symidx) * d_scnum;
 
-    // estimate noise and signal power
-    double power_est = 0, noise_est = 0;
-    for (int i = 0; i < d_npt; i++)
-    {
+        float cpe_phi = d_cpe_offset + symidx * d_cpe_phi;
+        const float normfactor = sqrt(float(d_nss * d_scnum) / float(d_fftsize));
+        gr_complex cpe_comp = normfactor * std::exp(gr_complex(0, cpe_phi));
         for (int m = 0; m < d_nrx; m++)
         {
+            auto *in = (const gr_complex *) input_items[m];
             auto *out = (gr_complex *) output_items[m];
-            power_est += std::norm(est_pilots[m][i]);
-            noise_est += std::norm(est_pilots[m][i] - out[output_offset + pilot_idx[i]]);
+            volk_32fc_s32fc_multiply2_32fc(&out[output_offset], &in[input_offset], &cpe_comp, d_scnum);
         }
-    }
-    d_sigpwr_sum += power_est / (d_npt * d_nrx);
-    d_noise_sum += noise_est / (d_npt * d_nrx);
+    } */
 }
 
 void
@@ -418,7 +463,7 @@ ltf_chanest_impl::ltf_chan_est_1tx(gr_vector_const_void_star &input_items,
                                    int output_offset)
 {
     const int input_offset = d_scnum * (d_preamble_symbols - d_nss);
-    const float normfactor = sqrt(d_scnum) / float(d_fftsize);
+    const float normfactor =  sqrt(1.0f / float(d_nss));
 
     for (int m = 0; m < d_nrx; m++)  // for all rx antennas
     {
@@ -444,7 +489,7 @@ ltf_chanest_impl::ltf_chan_est_2rx(gr_vector_const_void_star &input_items,
     auto *out1 = (gr_complex *) output_items[1];
 
     CMatrix2 Pd, Rx;
-    const float normfactor = sqrt(d_scnum / float(d_nss * d_fftsize));
+    const float normfactor = 1.0f / float(d_nss);
     Pd << normfactor, -normfactor, normfactor, normfactor;
     for (int k = 0; k < d_scnum; k++)
     {
@@ -541,7 +586,6 @@ ltf_chanest_impl::csi_chan_est_nrx(gr_vector_const_void_star &input_items, int i
         H = NORM_LTF_SEQ[k] * d_Pd * Rx;
     }
     // remove cyclic shift
-    if (d_remove_cyclic_shift) {
     for (int k = 0; k < d_scnum; k++)  // for all subcarriers
     {
         for (int n = 1; n < d_ntx; n++) // for all except 1st tx
@@ -554,7 +598,6 @@ ltf_chanest_impl::csi_chan_est_nrx(gr_vector_const_void_star &input_items, int i
                 d_chan_csi[cidx] *= d_cshift[sidx];
             }
         }
-    }
     }
 }
 

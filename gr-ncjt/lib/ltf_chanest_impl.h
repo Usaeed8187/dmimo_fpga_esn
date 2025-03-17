@@ -25,15 +25,17 @@ private:
     int d_npt; // number of tracking pilots per symbol
     int d_preamble_symbols; // total number of HT preamble symbols
     int d_data_symbols;        // total number of data symbols per packet
-    int d_last_sym, d_cur_sym; // previous and current OFDM symbol index
     float d_cpe_phi;           // CPE in radian
+    float d_cpe_offset;        // CPE initial offset
     float d_sigpwr_est;        // signal power estimation
     float d_noise_est;         // noise power estimation
     double d_sigpwr_sum;       // signal power sum
     double d_noise_sum;        // noise power sum
 
     unsigned d_pilot_lsfr; // LSFR state for pilot parity sequence
-    float d_cur_pilot[8][8]; // pilots for current OFDM symbol (mode 4 or 8)
+    float *d_cpt_pilot; // pilots for current OFDM symbol (mode 4 or 8)
+    float *d_cpe_est; // CPE estimation for OFDM symbols
+    gr_complex *d_est_pilots; // estimated pilots
     gr_complex *d_chan_est; // channel estimate for data reception (Nt,Nr,Nsc)
     gr_complex *d_chan_csi; // channel estimation for CSI feedback (Nt,Nr,Nsc)
     gr_complex *d_cshift; // cyclic shift compensation
@@ -64,12 +66,11 @@ private:
     csi_chan_est_nrx(gr_vector_const_void_star &input_items, int input_offset);
 
     void
-    update_pilots(int symidx);
+    generate_cpt_pilots();
 
     void
     cpe_estimate_comp(gr_vector_const_void_star &input_items,
                       gr_vector_void_star &output_items,
-                      int nsymcnt,
                       int noutsymcnt);
 
     void
@@ -92,6 +93,9 @@ private:
 
     void
     add_power_noise_tag(uint64_t offset, float signal_pwr, float noise_est);
+
+    void
+    add_cpe_est_tag(uint64_t offset, float cpe_phi, float cpe_offset);
 
 protected:
     int

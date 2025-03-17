@@ -8,6 +8,7 @@
 #define INCLUDED_NCJT_RG_DEMAPPER_IMPL_H
 
 #include <gnuradio/ncjt/rg_demapper.h>
+#include "qam_constellation.h"
 
 namespace gr::ncjt
 {
@@ -22,6 +23,9 @@ private:
     int d_modtype;   // modulation type (number of bits per symbol)
     bool d_usecsi;   // using CSI for QAM symbol demapping
 
+    bool d_outputsyms; // output detected QAM symbols for post-detection combining
+    std::vector<gr_complex> d_constellation; // current QAM constellation
+
     pmt::pmt_t _id;
     bool d_debug;
 
@@ -30,11 +34,14 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
     void
-    add_packet_tag(uint64_t offset, int packet_len);
+    add_packet_tag(int ch, uint64_t offset, int packet_len);
+
+    void
+    select_constellation(int modtype);
 
 public:
     rg_demapper_impl(int nstrm, int framelen, int ndatasyms, int npilotsyms,
-                     int modtype, bool usecsi, bool debug);
+                     int modtype, bool usecsi, bool outputsyms, bool debug);
     ~rg_demapper_impl();
 
     int
