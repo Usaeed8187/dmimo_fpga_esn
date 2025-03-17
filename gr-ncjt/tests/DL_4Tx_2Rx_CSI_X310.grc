@@ -66,7 +66,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [872, 28.0]
+    coordinate: [928, 12.0]
     rotation: 0
     state: enabled
 - name: nss
@@ -150,7 +150,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 28.0]
+    coordinate: [832, 12.0]
     rotation: 0
     state: enabled
 - name: rf_freq
@@ -183,7 +183,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [640, 16.0]
+    coordinate: [656, 12.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -202,7 +202,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr=192.168.30.2"'
+    value: '"addr=192.168.40.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -225,7 +225,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1184, 544.0]
+    coordinate: [1184, 548.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0_0
@@ -243,7 +243,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1184, 624.0]
+    coordinate: [1184, 628.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0_1
@@ -306,7 +306,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 368.0]
+    coordinate: [936, 364.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -360,6 +360,7 @@ blocks:
     nchans: '2'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
+    rxpwrthrd: 5e-4
     samplerate: samp_rate
     syncall: 'False'
     xcorrthrd: '0.5'
@@ -367,7 +368,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [312, 376.0]
+    coordinate: [304, 372.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0
@@ -409,6 +410,31 @@ blocks:
     coordinate: [1176, 368.0]
     rotation: 0
     state: enabled
+- name: ncjt_rx_sync_0
+  id: ncjt_rx_sync
+  parameters:
+    acorrthrd: '0.6'
+    affinity: ''
+    alias: ''
+    comment: ''
+    dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
+    debug: 'False'
+    maxcorrlen: '4000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nchans: '2'
+    pktspersec: pkts_per_sec
+    preamblelen: (fft_size+cp_len)*3
+    rxpwrthrd: 5e-4
+    samplerate: samp_rate
+    xcorrthrd: '0.5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 504.0]
+    rotation: 0
+    state: disabled
 - name: pdu_pdu_to_tagged_stream_0
   id: pdu_pdu_to_tagged_stream
   parameters:
@@ -423,7 +449,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 556.0]
+    coordinate: [968, 564.0]
     rotation: 0
     state: true
 - name: pdu_pdu_to_tagged_stream_0_0
@@ -440,7 +466,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 636.0]
+    coordinate: [968, 644.0]
     rotation: 0
     state: true
 - name: qtgui_const_sink_x_0
@@ -1157,7 +1183,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 328.0]
+    coordinate: [72, 316.0]
     rotation: 0
     state: enabled
 
@@ -1178,10 +1204,14 @@ connections:
 - [ncjt_pkt_err_0, '1', qtgui_time_sink_x_0, '0']
 - [ncjt_qam_demapper_0, '0', ncjt_pkt_err_0, '0']
 - [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
+- [ncjt_rx_sync_0, '0', ncjt_ofdm_demod_0, '0']
+- [ncjt_rx_sync_0, '1', ncjt_ofdm_demod_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0, '0', blocks_file_sink_0_0_1_0_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0_0, '0', blocks_file_sink_0_0_1_0_0_0_0, '0']
 - [uhd_usrp_source_0, '0', ncjt_pkt_detect_0, '0']
+- [uhd_usrp_source_0, '0', ncjt_rx_sync_0, '0']
 - [uhd_usrp_source_0, '1', ncjt_pkt_detect_0, '1']
+- [uhd_usrp_source_0, '1', ncjt_rx_sync_0, '1']
 
 metadata:
   file_format: 1

@@ -348,7 +348,6 @@ blocks:
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrm: '1'
-    outputsyms: 'False'
     usecsi: 'True'
   states:
     bus_sink: false

@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: ncjt_sc_1rx_n320
+    id: ncjt_sc_1rx_x310
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: NCJT SC 1Rx N320
+    title: NCJT SC 1Rx x310
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -203,11 +203,12 @@ blocks:
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
+    mucpt: 'False'
     ndatasyms: num_data_syms
     npreamblesyms: '2'
     nrx: '2'
     ntx: '2'
-    nue: '2'
+    nue: '1'
     removecs: 'True'
   states:
     bus_sink: false
@@ -267,9 +268,10 @@ blocks:
     nchans: '2'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
+    rxpwrthrd: 5e-4
     samplerate: samp_rate
     syncall: 'False'
-    xcorrthrd: '0.45'
+    xcorrthrd: '0.5'
   states:
     bus_sink: false
     bus_source: false
@@ -285,7 +287,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../data/1x1/" + qam_type + "/strm_data_1x1.bin"'
+    filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -311,6 +313,7 @@ blocks:
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrm: '1'
+    outputsyms: 'False'
     usecsi: 'True'
   states:
     bus_sink: false
@@ -408,7 +411,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: complex
-    update_time: '0.5'
+    update_time: '0.25'
     width1: '1'
     width10: '1'
     width2: '1'

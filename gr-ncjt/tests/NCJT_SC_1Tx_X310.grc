@@ -69,6 +69,30 @@ blocks:
     coordinate: [1024, 12.0]
     rotation: 0
     state: enabled
+- name: freq_comp_1
+  id: variable
+  parameters:
+    comment: ''
+    value: -1.70e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 76.0]
+    rotation: 0
+    state: enabled
+- name: freq_comp_2
+  id: variable
+  parameters:
+    comment: ''
+    value: -1.45e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 140.0]
+    rotation: 0
+    state: enabled
 - name: modulations
   id: variable
   parameters:
@@ -183,7 +207,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 16.0]
+    coordinate: [648, 16.0]
     rotation: 0
     state: enabled
 - name: blocks_file_source_0
@@ -193,7 +217,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../data/1x1/" + qam_type + "/strm_data_1x1.bin"'
+    file: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -205,7 +229,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 208.0]
+    coordinate: [8, 204.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -224,7 +248,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [184, 228.0]
+    coordinate: [192, 228.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0
@@ -244,7 +268,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 196.0]
+    coordinate: [736, 188.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0
@@ -271,22 +295,28 @@ blocks:
   id: ncjt_rg_mapper
   parameters:
     addcs: 'False'
+    addltf: 'False'
     affinity: '1'
     alias: ''
     comment: ''
     debug: 'False'
     framelen: frame_data_len
+    ltfdata: ''
     maxoutbuf: '0'
     minoutbuf: '0'
     modtype: qam_order
+    mucpt: 'False'
+    nctrlsyms: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrms: '1'
+    numue: '1'
+    ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 224.0]
+    coordinate: [384, 220.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
@@ -301,21 +331,24 @@ blocks:
     minoutbuf: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
+    ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 224.0]
+    coordinate: [552, 216.0]
     rotation: 0
     state: enabled
-- name: ncjt_tx_framing_0
-  id: ncjt_tx_framing
+- name: ncjt_tx_frm_ctrl_0
+  id: ncjt_tx_frm_ctrl
   parameters:
-    affinity: '2'
+    affinity: ''
     alias: ''
+    autostart: 'True'
     comment: ''
     debug: 'False'
-    filename: '"../data/ncjt_preamble.bin"'
+    delay: '0'
+    filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/ncjt_preamble.bin"'
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -323,12 +356,12 @@ blocks:
     ntx: '2'
     padding: '1000'
     pktspersec: pkts_per_sec
-    starttime: '2'
+    starttime: '2.0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 208.0]
+    coordinate: [936, 184.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -433,7 +466,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: ''
+    clock_source0: external
     clock_source1: external
     clock_source2: ''
     clock_source3: ''
@@ -442,7 +475,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.30.2"'
+    dev_addr: '"addr0=192.168.50.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
@@ -592,7 +625,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: ''
+    time_source0: external
     time_source1: external
     time_source2: ''
     time_source3: ''
@@ -605,20 +638,20 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 136.0]
+    coordinate: [1120, 144.0]
     rotation: 0
     state: true
 
 connections:
 - [blocks_file_source_0, '0', blocks_stream_to_tagged_stream_0, '0']
 - [blocks_stream_to_tagged_stream_0, '0', ncjt_rg_mapper_0, '0']
-- [ncjt_ofdm_mod_0, '0', ncjt_tx_framing_0, '0']
-- [ncjt_ofdm_mod_0_0, '0', ncjt_tx_framing_0, '1']
+- [ncjt_ofdm_mod_0, '0', ncjt_tx_frm_ctrl_0, '0']
+- [ncjt_ofdm_mod_0_0, '0', ncjt_tx_frm_ctrl_0, '1']
 - [ncjt_rg_mapper_0, '0', ncjt_stbc_encode_0, '0']
 - [ncjt_stbc_encode_0, '0', ncjt_ofdm_mod_0, '0']
 - [ncjt_stbc_encode_0, '1', ncjt_ofdm_mod_0_0, '0']
-- [ncjt_tx_framing_0, '0', uhd_usrp_sink_0, '0']
-- [ncjt_tx_framing_0, '1', uhd_usrp_sink_0, '1']
+- [ncjt_tx_frm_ctrl_0, '0', uhd_usrp_sink_0, '0']
+- [ncjt_tx_frm_ctrl_0, '1', uhd_usrp_sink_0, '1']
 
 metadata:
   file_format: 1
