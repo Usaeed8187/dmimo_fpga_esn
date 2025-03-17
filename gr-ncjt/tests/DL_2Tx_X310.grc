@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: DL_2Tx_X310
+    title: Downlink 2Tx
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -281,9 +281,13 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '65536'
     modtype: qam_order
+    mucpt: 'False'
+    nctrlsyms: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrms: '2'
+    numue: '1'
+    ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false
@@ -425,7 +429,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr=192.168.40.2"'
+    dev_addr: '"addr=192.168.30.2"'
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
