@@ -49,9 +49,6 @@ sic_detect_impl::sic_detect_impl(int fftsize, int nrx, int nss, int modtype, int
         throw std::runtime_error("invalid number of streams");
     d_nrx = nrx, d_nss = nss;
 
-    if (d_nss != 2)
-        throw std::runtime_error("currently only support NSS=2 for CPE compensation");
-
     d_modtype = modtype;
     switch (modtype)
     {
@@ -140,29 +137,7 @@ sic_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
     float nvar = pmt::to_float(d_tags[0].value);
 
     // Get CPE estimation tags
-    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
-                       pmt::string_to_symbol("cpe_phi1"));
-    if (d_tags.empty())
-        throw std::runtime_error("ERROR: cannot find cpe_phi1 tag");
-    d_cpe_phi1 = pmt::to_float(d_tags[0].value);
-
-    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
-                       pmt::string_to_symbol("cpe_phi2"));
-    if (d_tags.empty())
-        throw std::runtime_error("ERROR: cannot find cpe_phi2 tag");
-    d_cpe_phi2 = pmt::to_float(d_tags[0].value);
-
-    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
-                       pmt::string_to_symbol("cpe_offset1"));
-    if (d_tags.empty())
-        throw std::runtime_error("ERROR: cannot find cpe_offset1 tag");
-    d_cpe_offset1 = pmt::to_float(d_tags[0].value);
-
-    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
-                       pmt::string_to_symbol("cpe_offset2"));
-    if (d_tags.empty())
-        throw std::runtime_error("ERROR: cannot find cpe_offset2 tag");
-    d_cpe_offset2 = pmt::to_float(d_tags[0].value);
+    check_cpe_tags(ninput_syms);
 
     // equalization and demapping
     int cur_sym = 0, out_sym = 0;
@@ -228,6 +203,35 @@ sic_detect_impl::add_packet_tag(uint64_t offset, int packet_len)
 }
 
 void
+sic_detect_impl::check_cpe_tags(int ninput_syms)
+{
+    std::vector<gr::tag_t> d_tags;
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_phi1"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_phi1 tag");
+    d_cpe_phi1 = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_phi2"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_phi2 tag");
+    d_cpe_phi2 = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_offset1"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_offset1 tag");
+    d_cpe_offset1 = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_offset2"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_offset2 tag");
+    d_cpe_offset2 = pmt::to_float(d_tags[0].value);
+}
+
+void
 sic_detect_impl::update_mmse_sic_coef(float nvar)
 {
     // clear channel coefficients
@@ -243,10 +247,13 @@ sic_detect_impl::update_mmse_sic_coef(float nvar)
     {
         // get channel estimation for current subcarrier (nRx x nSTS)
         Eigen::Map<const CMatrixX> H0(&d_chan_est_buf[d_nrx * d_nss * k], d_nrx, d_nss);
-        // CPE compensation (for 2 streams only)
+        // CPE compensation (for 2 UEs only)
         CMatrixX H(d_nrx, d_nss);
-        H(Eigen::all, 0) = H0(Eigen::all, 0) * cpe_comp1;
-        H(Eigen::all, 1) = H0(Eigen::all, 1) * cpe_comp2;
+        for (int k = 0; k < d_nss / 2; k++)
+        {
+            H(Eigen::all, k) = H0(Eigen::all, k) * cpe_comp1;
+            H(Eigen::all, k + d_nss / 2) = H0(Eigen::all, k + d_nss / 2) * cpe_comp2;
+        }
 
         std::vector<int> stream_indices(d_nss); // original indices for remaining stream
         for (int n = 0; n < d_nss; n++)

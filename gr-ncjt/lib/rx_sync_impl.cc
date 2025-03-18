@@ -195,8 +195,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             consume_each(ht_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
             if (d_rx_ready_cnt == 9) // changing to ready state
                 send_rxstate(true);
-            if (d_rx_ready_cnt < 100)
-                d_rx_ready_cnt += 1;
+            d_rx_ready_cnt += 1;
             break;
         }
         case DEFRAME:
@@ -546,13 +545,13 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     }
     float fine_foe_comp = arg(corr_foe) / (float) FFT_LEN; // FOE compensation in radians
 
-    if (d_rx_ready_cnt < 10)
+    if (d_rx_ready_cnt < 20)
     {
         if (d_rx_ready_cnt % 2 == 0)
             d_fine_foe_comp = fine_foe_comp;
         else
         {
-            d_current_foe_comp += 0.1 * (d_fine_foe_comp + fine_foe_comp);
+            d_current_foe_comp += 0.05 * (d_fine_foe_comp + fine_foe_comp);
             dout << "Fine frequency offset compensation: " << d_current_foe_comp << "    ("
                  << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;
         }

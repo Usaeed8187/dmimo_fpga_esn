@@ -17,6 +17,7 @@ namespace gr::ncjt
 class ul_precoding_impl : public ul_precoding
 {
 private:
+    const int FFTSIZE = 64; // OFDM FFT size
     const int SC_NUM = 56; // Number of valid subcarriers
     int d_nss;  // Number of uplink spatial streams
     int d_ntx;  // Number of uplink transmitter antennas = number of downlink receive antennas

@@ -51,11 +51,17 @@ ul_precoding_impl::ul_precoding_impl(int nss, int ntx, int ntx_gnb, int numltfsy
     if (!d_map_matrix)
         throw std::runtime_error("Failed to allocate d_map_matrix");
 
-    // Default mapping matrix (row-major layout)
+    // Default mapping matrix using CSD (row-major layout)
+    int cshift[] = {0, -8, -4, -12, -7, -13}; // cyclic shift
     for (int k = 0; k < SC_NUM; k++)
         for (int m = 0; m < d_ntx; m++)
             for (int n = 0; n < d_nss; n++)
-                d_map_matrix[k * d_ntx * d_nss + d_nss * m + n] = (n == m) ? 1.0 : 0.0;
+            {
+                int ci = (k < SC_NUM/2) ? (k - SC_NUM/2) : (k - SC_NUM/2 + 1);
+                int si = m / d_nss;
+                gr_complex cs = exp(gr_complex (0 ,-2.0*M_PI*cshift[si]*ci/double(FFTSIZE)));
+                d_map_matrix[k * d_ntx * d_nss + d_nss * m + n] = (m % d_nss == n) ? cs : 0.0;
+            }
 
     // Initial loading of offline CSI data
     // Note: CSI data should use row-major layout
@@ -282,7 +288,7 @@ ul_precoding_impl::apply_mapping_ntx(gr_vector_const_void_star &input_items,
             for (int s = 0; s < d_nss; s++)
             {
                 auto in = (const gr_complex *) input_items[s];
-                X(s, 0) = in[n * SC_NUM];
+                X(s, 0) = in[n * SC_NUM + k];
             }
             Eigen::Map<CMatrixX> Q(&d_map_matrix[mtx_size * k], d_ntx, d_nss); // (Nt, Nss)
             Y = Q * X;  // (Nt,Nss) * (Nss,1)

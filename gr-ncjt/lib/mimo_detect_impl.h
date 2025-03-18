@@ -43,6 +43,9 @@ private:
     update_mmse_coef_nrx(float nvar);
 
     void
+    check_cpe_tags(int ninput_syms);
+
+    void
     add_packet_tag(uint64_t offset, int packet_len);
 
 protected:

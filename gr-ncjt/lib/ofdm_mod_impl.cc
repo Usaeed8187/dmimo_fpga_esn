@@ -104,6 +104,10 @@ ofdm_mod_impl::work(int noutput_items, gr_vector_int &ninput_items,
                  pmt::string_to_symbol("packet_len"),
                  pmt::from_long(nblk * d_symlen),
                  pmt::string_to_symbol(name()));
+    add_item_tag(0, nitems_written(0),
+                 pmt::string_to_symbol("frame_start"),
+                 pmt::from_long(nblk * d_symlen),
+                 pmt::string_to_symbol(name()));
 
     return nblk * d_symlen;
 }

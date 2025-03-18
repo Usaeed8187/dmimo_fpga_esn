@@ -51,6 +51,9 @@ protected:
     void
     add_packet_tag(uint64_t offset, int packet_len);
 
+    void
+    check_cpe_tags(int ninput_syms);
+
 public:
     sic_detect_impl(int fftsize, int nrx, int nss, int modtype, int ndatasymbols, bool debug);
     ~sic_detect_impl();

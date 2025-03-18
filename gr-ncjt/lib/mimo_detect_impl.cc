@@ -114,29 +114,7 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
     float nvar = pmt::to_float(d_tags[0].value);
 
     // Get CPE estimation tags
-    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
-                       pmt::string_to_symbol("cpe_phi1"));
-    if (d_tags.empty())
-        throw std::runtime_error("ERROR: cannot find cpe_phi1 tag");
-    d_cpe_phi1 = pmt::to_float(d_tags[0].value);
-
-    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
-                       pmt::string_to_symbol("cpe_phi2"));
-    if (d_tags.empty())
-        throw std::runtime_error("ERROR: cannot find cpe_phi2 tag");
-    d_cpe_phi2 = pmt::to_float(d_tags[0].value);
-
-    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
-                       pmt::string_to_symbol("cpe_offset1"));
-    if (d_tags.empty())
-        throw std::runtime_error("ERROR: cannot find cpe_offset1 tag");
-    d_cpe_offset1 = pmt::to_float(d_tags[0].value);
-
-    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
-                       pmt::string_to_symbol("cpe_offset2"));
-    if (d_tags.empty())
-        throw std::runtime_error("ERROR: cannot find cpe_offset2 tag");
-    d_cpe_offset2 = pmt::to_float(d_tags[0].value);
+    check_cpe_tags(ninput_syms);
 
     // equalization and demapping
     int cur_sym = 0, out_sym = 0;
@@ -198,6 +176,35 @@ mimo_detect_impl::add_packet_tag(uint64_t offset, int packet_len)
 }
 
 void
+mimo_detect_impl::check_cpe_tags(int ninput_syms)
+{
+    std::vector<gr::tag_t> d_tags;
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_phi1"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_phi1 tag");
+    d_cpe_phi1 = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_phi2"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_phi2 tag");
+    d_cpe_phi2 = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_offset1"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_offset1 tag");
+    d_cpe_offset1 = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("cpe_offset2"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find cpe_offset2 tag");
+    d_cpe_offset2 = pmt::to_float(d_tags[0].value);
+}
+
+void
 mimo_detect_impl::update_mmse_coef_2rx(float nvar)
 {
     CMatrix2 Hc, HH;
@@ -208,17 +215,15 @@ mimo_detect_impl::update_mmse_coef_2rx(float nvar)
     float cpe_phi2 = -(d_cpe_offset2 + d_cur_symbol * d_cpe_phi2);
     gr_complex cpe_comp1 = std::exp(gr_complex(0, cpe_phi1));
     gr_complex cpe_comp2 = std::exp(gr_complex(0, cpe_phi2));
-    CMatrix2 C;
-    C << cpe_comp1, 0, 0, cpe_comp2; // diagonal matrix
 
     for (int k = 0; k < d_scnum; k++)
     {
         // get channel estimation for current subcarrier (nSTS x nRx)
         Eigen::Map<CMatrix2> H0(&d_chan_est_buf[4 * k], 2, 2);
         Eigen::Map<CMatrix2> G(&d_mmse_coef[4 * k], 2, 2);
-        // CPE compensation
-        CMatrix2 H = H0;
-        H = H * C; // H *= cpe_comp;
+        CMatrixX H(d_nrx, d_nss);
+        H(Eigen::all, 0) = H0(Eigen::all, 0) * cpe_comp1;
+        H(Eigen::all, 1) = H0(Eigen::all, 1) * cpe_comp2;
         // compute HH'+N
         Hc = H.conjugate();
         HH = H * Hc + sigma;
@@ -234,17 +239,22 @@ mimo_detect_impl::update_mmse_coef_4rx(float nvar)
     CMatrix4 sigma = 0.5 * nvar * CMatrix4::Identity(4, 4);
 
     // CPE compensation
-    float cpe_phi = -(d_cpe_offset1 + d_cur_symbol * d_cpe_phi1);
-    gr_complex cpe_comp = std::exp(gr_complex(0, cpe_phi));
+    float cpe_phi1 = -(d_cpe_offset1 + d_cur_symbol * d_cpe_phi1);
+    float cpe_phi2 = -(d_cpe_offset2 + d_cur_symbol * d_cpe_phi2);
+    gr_complex cpe_comp1 = std::exp(gr_complex(0, cpe_phi1));
+    gr_complex cpe_comp2 = std::exp(gr_complex(0, cpe_phi2));
 
     for (int k = 0; k < d_scnum; k++)
     {
         // get channel estimation for current subcarrier (nSTS x nRx)
         Eigen::Map<CMatrix4> H0(&d_chan_est_buf[16 * k], 4, 4);
         Eigen::Map<CMatrix4> G(&d_mmse_coef[16 * k], 4, 4);
-        // CPE compensation
-        CMatrix4 H = H0;
-        H *= cpe_comp;
+        // CPE compensation (for 2 streams only)
+        CMatrixX H(4, 4);
+        H(Eigen::all, 0) = H0(Eigen::all, 0) * cpe_comp1;
+        H(Eigen::all, 1) = H0(Eigen::all, 1) * cpe_comp1;
+        H(Eigen::all, 2) = H0(Eigen::all, 2) * cpe_comp2;
+        H(Eigen::all, 3) = H0(Eigen::all, 3) * cpe_comp2;
         // compute HH'+N
         Hc = H.conjugate();
         HH = H * Hc + sigma;
@@ -270,10 +280,13 @@ mimo_detect_impl::update_mmse_coef_nrx(float nvar)
         // get channel estimation for current subcarrier (nRx x nSTS)
         Eigen::Map<CMatrixX> H0(&d_chan_est_buf[d_nrx * d_nss * k], d_nrx, d_nss);
         Eigen::Map<CMatrixX> G(&d_mmse_coef[d_nss * d_nrx * k], d_nss, d_nrx);
-        // CPE compensation (for 2 streams only)
+        // CPE compensation (for 2 UEs only)
         CMatrixX H(d_nrx, d_nss);
-        H(Eigen::all, 0) = H0(Eigen::all, 0) * cpe_comp1;
-        H(Eigen::all, 1) = H0(Eigen::all, 1) * cpe_comp2;
+        for (int k = 0; k < d_nss / 2; k++)
+        {
+            H(Eigen::all, k) = H0(Eigen::all, k) * cpe_comp1;
+            H(Eigen::all, k + d_nss / 2) = H0(Eigen::all, k + d_nss / 2) * cpe_comp2;
+        }
         // compute HH'+N
         Ha = H.adjoint();  // nSTS x nRx
         HH = Ha * H + sigma; // nSTS x nSTS

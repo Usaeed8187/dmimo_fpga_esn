@@ -286,7 +286,7 @@ pkt_detect_impl::general_work(int noutput_items,
 }
 
 /*
- * search for frame start using L-LTS auto-corr peaks
+ * search for frame start using L-STF auto-corr peaks
  */
 int
 pkt_detect_impl::sync_search(const gr_vector_const_void_star &input_items, int buffer_len)
@@ -515,7 +515,7 @@ pkt_detect_impl::fine_sync(const gr_vector_const_void_star &input_items, int buf
              << d_current_foe_comp * d_sampling_freq / (2.0 * M_PI) << " Hz)" << std::endl;
     }
 
-    // return start position of L-SIG
+    // return start position of HT-LTF
     return sig_start;
 }
 
