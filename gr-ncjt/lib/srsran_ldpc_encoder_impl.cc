@@ -2,9 +2,6 @@
 /*
  * Copyright 2025 Wireless @ Virginia Tech.
  *
- * Change Log:
- *   02/2025    Created by Yuanzhi Zhang.
- *
  */
 
 #include <gnuradio/io_signature.h>
