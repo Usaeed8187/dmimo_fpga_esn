@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rg_demapper(${nstrm}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${usecsi}, ${outputsyms}, ${debug})
+  make: ncjt.rg_demapper(${nstrm}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${usecsi}, ${debug})
 
 
 parameters:
@@ -38,13 +38,6 @@ parameters:
     default: 'False'
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
-  - id: outputsyms
-    label: Output Symbols
-    dtype: bool
-    default: 'False'
-    options: [ 'True', 'False' ]
-    option_labels: [ Enable, Disable ]
-    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -69,10 +62,5 @@ outputs:
   - domain: stream
     dtype: byte
     vlen: 1
-  - domain: stream
-    dtype: complex
-    vlen: 1
-    optional: true
-    hide: ${not outputsyms}
 
 file_format: 1
