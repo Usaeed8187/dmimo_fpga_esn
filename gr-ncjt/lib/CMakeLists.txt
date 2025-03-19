@@ -14,7 +14,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(srsran_ldpc)
 list(APPEND ncjt_sources
     burst_tx_impl.cc
-    pkt_detect_impl.cc
     sync_all_impl.cc
     ofdm_mod_impl.cc
     ofdm_demod_impl.cc
@@ -23,7 +22,6 @@ list(APPEND ncjt_sources
     qam_demapper_impl.cc
     soft_demapper_impl.cc
     pkt_err_impl.cc
-    tx_framing_impl.cc
     rg_mapper_impl.cc
     rg_demapper_impl.cc
     ul_precoding_impl.cc
@@ -41,7 +39,6 @@ list(APPEND ncjt_sources
     srsran_ldpc_decoder_impl.cc
     video_source_impl.cc
     video_sink_impl.cc
-    ul_precoding_offline_impl.cc
     rx_sync_impl.cc
     gnb_sync_impl.cc
     tx_frm_ctrl_impl.cc)

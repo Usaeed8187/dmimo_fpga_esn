@@ -11,7 +11,6 @@
 ########################################################################
 install(FILES api.h
     burst_tx.h
-    pkt_detect.h
     sync_all.h
     ofdm_mod.h
     ofdm_demod.h
@@ -19,7 +18,6 @@ install(FILES api.h
     qam_demapper.h
     soft_demapper.h
     pkt_err.h
-    tx_framing.h
     rg_mapper.h
     rg_demapper.h
     ul_precoding.h
@@ -35,7 +33,6 @@ install(FILES api.h
     srsran_ldpc_decoder.h
     video_source.h
     video_sink.h
-    ul_precoding_offline.h
     rx_sync.h
     gnb_sync.h
     tx_frm_ctrl.h DESTINATION include/gnuradio/ncjt)

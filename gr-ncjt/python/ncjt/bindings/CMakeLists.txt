@@ -25,7 +25,6 @@ include(GrPybind)
 ########################################################################
 list(APPEND ncjt_python_files
     burst_tx_python.cc
-    pkt_detect_python.cc
     sync_all_python.cc
     ofdm_mod_python.cc
     ofdm_demod_python.cc
@@ -33,7 +32,6 @@ list(APPEND ncjt_python_files
     qam_demapper_python.cc
     soft_demapper_python.cc
     pkt_err_python.cc
-    tx_framing_python.cc
     rg_mapper_python.cc
     rg_demapper_python.cc
     ul_precoding_python.cc
@@ -49,7 +47,6 @@ list(APPEND ncjt_python_files
     srsran_ldpc_decoder_python.cc
     video_source_python.cc
     video_sink_python.cc
-    ul_precoding_offline_python.cc
     rx_sync_python.cc
     gnb_sync_python.cc
     tx_frm_ctrl_python.cc python_bindings.cc)

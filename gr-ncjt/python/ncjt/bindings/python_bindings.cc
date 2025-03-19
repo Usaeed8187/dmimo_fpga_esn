@@ -22,7 +22,6 @@ namespace py = pybind11;
 /**************************************/
 // BINDING_FUNCTION_PROTOTYPES(
     void bind_burst_tx(py::module& m);
-    void bind_pkt_detect(py::module& m);
     void bind_sync_all(py::module& m);
     void bind_ofdm_mod(py::module& m);
     void bind_ofdm_demod(py::module& m);
@@ -30,7 +29,6 @@ namespace py = pybind11;
     void bind_qam_demapper(py::module& m);
     void bind_soft_demapper(py::module& m);
     void bind_pkt_err(py::module& m);
-    void bind_tx_framing(py::module& m);
     void bind_rg_mapper(py::module& m);
     void bind_rg_demapper(py::module& m);
     void bind_ul_precoding(py::module& m);
@@ -46,7 +44,6 @@ namespace py = pybind11;
     void bind_srsran_ldpc_decoder(py::module& m);
     void bind_video_source(py::module& m);
     void bind_video_sink(py::module& m);
-    void bind_ul_precoding_offline(py::module& m);
     void bind_rx_sync(py::module& m);
     void bind_gnb_sync(py::module& m);
     void bind_tx_frm_ctrl(py::module& m);
@@ -79,7 +76,6 @@ PYBIND11_MODULE(ncjt_python, m)
     /**************************************/
     // BINDING_FUNCTION_CALLS(
     bind_burst_tx(m);
-    bind_pkt_detect(m);
     bind_sync_all(m);
     bind_ofdm_mod(m);
     bind_ofdm_demod(m);
@@ -87,7 +83,6 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_qam_demapper(m);
     bind_soft_demapper(m);
     bind_pkt_err(m);
-    bind_tx_framing(m);
     bind_rg_mapper(m);
     bind_rg_demapper(m);
     bind_ul_precoding(m);
@@ -103,7 +98,6 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_srsran_ldpc_decoder(m);
     bind_video_source(m);
     bind_video_sink(m);
-    bind_ul_precoding_offline(m);
     bind_rx_sync(m);
     bind_gnb_sync(m);
     bind_tx_frm_ctrl(m);

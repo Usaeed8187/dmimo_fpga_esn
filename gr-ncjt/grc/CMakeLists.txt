@@ -7,7 +7,6 @@
 #
 install(FILES
     ncjt_burst_tx.block.yml
-    ncjt_pkt_detect.block.yml
     ncjt_sync_all.block.yml
     ncjt_ofdm_mod.block.yml
     ncjt_ofdm_demod.block.yml
@@ -15,7 +14,6 @@ install(FILES
     ncjt_qam_demapper.block.yml
     ncjt_soft_demapper.block.yml
     ncjt_pkt_err.block.yml
-    ncjt_tx_framing.block.yml
     ncjt_rg_mapper.block.yml
     ncjt_rg_demapper.block.yml
     ncjt_ul_precoding.block.yml
@@ -32,7 +30,6 @@ install(FILES
     ncjt_srsran_ldpc_decoder.block.yml
     ncjt_video_source.block.yml
     ncjt_video_sink.block.yml
-    ncjt_ul_precoding_offline.block.yml
     ncjt_rx_sync.block.yml
     ncjt_gnb_sync.block.yml
     ncjt_tx_frm_ctrl.block.yml DESTINATION share/gnuradio/grc/blocks)
