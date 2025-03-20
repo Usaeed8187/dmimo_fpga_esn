@@ -210,7 +210,7 @@ blocks:
     start: '1.0'
     step: '0.5'
     stop: '60'
-    value: '40'
+    value: '50'
     widget: counter_slider
   states:
     bus_sink: false
@@ -311,7 +311,7 @@ blocks:
 - name: ncjt_gnb_sync_0
   id: ncjt_gnb_sync
   parameters:
-    acorrthrd: '0.6'
+    acorrthrd: '0.65'
     affinity: ''
     alias: ''
     comment: ''
@@ -327,7 +327,7 @@ blocks:
     p3preamblelen: (fft_size+cp_len)*3
     p3start: (0.75/pkts_per_sec)
     pktspersec: pkts_per_sec
-    rxpwrthrd: 5e-4
+    rxpwrthrd: 1e-3
     samplerate: samp_rate
     usrpdelay: '500'
     xcorrthrd: '0.5'
@@ -622,17 +622,23 @@ blocks:
   id: ncjt_rg_mapper
   parameters:
     addcs: 'True'
+    addltf: 'False'
     affinity: ''
     alias: ''
     comment: ''
     debug: 'False'
     framelen: frame_data_len
+    ltfdata: ''
     maxoutbuf: '0'
     minoutbuf: '65536'
     modtype: qam_order
+    mucpt: 'False'
+    nctrlsyms: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrms: '2'
+    numue: '1'
+    ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false
@@ -648,6 +654,7 @@ blocks:
     autostart: 'True'
     comment: ''
     debug: 'False'
+    delay: '0'
     filename: '"../../data/rx_sync/2x2/" + qam_type + "/preamble_2x2.bin"'
     fs: samp_rate
     maxoutbuf: '0'
@@ -1403,7 +1410,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1120, 684.0]
+    coordinate: [1120, 688.0]
     rotation: 0
     state: true
 - name: uhd_usrp_source_0

@@ -368,9 +368,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 372.0]
+    coordinate: [312, 372.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_pkt_err_0
   id: ncjt_pkt_err
   parameters:
@@ -413,28 +413,29 @@ blocks:
 - name: ncjt_rx_sync_0
   id: ncjt_rx_sync
   parameters:
-    acorrthrd: '0.6'
+    acorrthrd: '0.75'
     affinity: ''
     alias: ''
     comment: ''
     dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
     debug: 'False'
+    lltf2: 'True'
     maxcorrlen: '4000'
     maxoutbuf: '0'
     minoutbuf: '0'
     nchans: '2'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
-    rxpwrthrd: 5e-4
+    rxpwrthrd: 1e-3
     samplerate: samp_rate
     xcorrthrd: '0.5'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 504.0]
+    coordinate: [312, 384.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: pdu_pdu_to_tagged_stream_0
   id: pdu_pdu_to_tagged_stream
   parameters:
@@ -1183,7 +1184,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [72, 316.0]
+    coordinate: [72, 364.0]
     rotation: 0
     state: enabled
 

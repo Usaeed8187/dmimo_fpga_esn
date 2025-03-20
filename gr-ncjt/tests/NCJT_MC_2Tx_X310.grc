@@ -522,7 +522,7 @@ blocks:
     ntx: '2'
     padding: '1000'
     pktspersec: pkts_per_sec
-    starttime: '2.0'
+    starttime: '5.0'
   states:
     bus_sink: false
     bus_source: false

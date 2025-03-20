@@ -205,7 +205,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [32, 268.0]
+    coordinate: [32, 264.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -224,7 +224,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [240, 292.0]
+    coordinate: [240, 284.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0
@@ -292,7 +292,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 284.0]
+    coordinate: [440, 280.0]
     rotation: 0
     state: enabled
 - name: ncjt_tx_framing_0
@@ -315,7 +315,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 268.0]
+    coordinate: [840, 272.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -592,7 +592,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1040, 188.0]
+    coordinate: [1040, 200.0]
     rotation: 0
     state: true
 

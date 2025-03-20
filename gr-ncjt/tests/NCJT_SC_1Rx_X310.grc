@@ -253,32 +253,6 @@ blocks:
     coordinate: [504, 368.0]
     rotation: 0
     state: enabled
-- name: ncjt_pkt_detect_0
-  id: ncjt_pkt_detect
-  parameters:
-    acorrthrd: '0.6'
-    affinity: '2'
-    alias: ''
-    comment: ''
-    dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
-    debug: 'False'
-    maxcorrlen: '4000'
-    maxoutbuf: '0'
-    minoutbuf: '32768'
-    nchans: '2'
-    pktspersec: pkts_per_sec
-    preamblelen: (fft_size+cp_len)*3
-    rxpwrthrd: 5e-4
-    samplerate: samp_rate
-    syncall: 'False'
-    xcorrthrd: '0.5'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [288, 324.0]
-    rotation: 0
-    state: enabled
 - name: ncjt_pkt_err_0_0
   id: ncjt_pkt_err
   parameters:
@@ -313,13 +287,38 @@ blocks:
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrm: '1'
-    outputsyms: 'False'
     usecsi: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [1040, 300.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_rx_sync_0_0
+  id: ncjt_rx_sync
+  parameters:
+    acorrthrd: '0.6'
+    affinity: ''
+    alias: ''
+    comment: ''
+    dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
+    debug: 'False'
+    lltf2: 'False'
+    maxcorrlen: '4000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nchans: '2'
+    pktspersec: pkts_per_sec
+    preamblelen: (fft_size+cp_len)*3
+    rxpwrthrd: 1e-3
+    samplerate: samp_rate
+    xcorrthrd: '0.5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [272, 336.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_decode_0
@@ -963,7 +962,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 268.0]
+    coordinate: [40, 316.0]
     rotation: 0
     state: enabled
 
@@ -972,16 +971,16 @@ connections:
 - [ncjt_mu_chanest_0, '1', ncjt_stbc_decode_0, '1']
 - [ncjt_ofdm_demod_0, '0', ncjt_mu_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_mu_chanest_0, '1']
-- [ncjt_pkt_detect_0, '0', ncjt_ofdm_demod_0, '0']
-- [ncjt_pkt_detect_0, '1', ncjt_ofdm_demod_0_0, '0']
 - [ncjt_pkt_err_0_0, '0', blocks_file_sink_0_0_1_0_0_0_1, '0']
 - [ncjt_pkt_err_0_0, '1', qtgui_time_sink_x_0, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0, '0']
+- [ncjt_rx_sync_0_0, '0', ncjt_ofdm_demod_0, '0']
+- [ncjt_rx_sync_0_0, '1', ncjt_ofdm_demod_0_0, '0']
 - [ncjt_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_stbc_decode_0, '1', ncjt_rg_demapper_0, '1']
 - [ncjt_stbc_decode_0, '2', qtgui_const_sink_x_0_1, '0']
-- [uhd_usrp_source_0, '0', ncjt_pkt_detect_0, '0']
-- [uhd_usrp_source_0, '1', ncjt_pkt_detect_0, '1']
+- [uhd_usrp_source_0, '0', ncjt_rx_sync_0_0, '0']
+- [uhd_usrp_source_0, '1', ncjt_rx_sync_0_0, '1']
 
 metadata:
   file_format: 1

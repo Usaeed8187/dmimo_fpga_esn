@@ -223,7 +223,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr=192.168.80.2"'
+    value: '"addr=192.168.40.2"'
   states:
     bus_sink: false
     bus_source: false
