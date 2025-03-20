@@ -11,6 +11,7 @@ cfg = sys_config(mimotype, psdulen, modtype, cctype);
 
 % Load 4x4 HT LTF signals (for CSI feedback)
 b = load('beacon4x4.mat');
+load('lltfx4.mat','lltfx4');
 
 % Spatial mapping for HT-LTF (for data reception)
 ltf = load('beacon2x2.mat', 'htltf').htltf;
@@ -30,7 +31,8 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 [txdata, encdata, strmdata, txdsyms] = tx_processing(cfg, txPSDU);
 
 % Time-domain preamble signals (HT-SIG, HT-STF, HT-LTF)
-preamble = sqrt(2)*[b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; b.htltf; htltfx];
+% preamble = sqrt(2)*[b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; b.htltf; htltfx];
+preamble = sqrt(2)*[b.lstf; lltfx4; b.lsig; b.htsig; b.htstf; b.htltf; htltfx];
 
 % Prepare transmitter signal for USRP
 txFrame = reshape([preamble; txdata], (cfg.Nfft+cfg.Ncp), [], cfg.Nt);
