@@ -63,7 +63,7 @@ parameters:
     options: [ 'True', 'False' ]
     hide: part
   - id: ltfdata
-    label: Beacon Data
+    label: LTF Data
     dtype: file_open
     hide: part
   - id: addltf
