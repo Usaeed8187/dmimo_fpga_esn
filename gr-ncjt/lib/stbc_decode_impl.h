@@ -17,7 +17,7 @@ class stbc_decode_impl : public stbc_decode
 {
 private:
     const int d_nrx = 2; // number of receive antennas
-    int d_scnum; // SC_NUM number of valid subcarriers
+    int d_scnum; // number of valid subcarriers
     int d_scdata; // number data subcarriers
     int d_ndatasyms;  // total number of data OFDM symbols)
     int d_npilotsyms; // number of pilot OFDM symbols
