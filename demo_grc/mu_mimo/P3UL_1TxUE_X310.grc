@@ -189,7 +189,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '15'
     widget: counter_slider
   states:
     bus_sink: false
@@ -287,12 +287,14 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
     debug: 'False'
+    fftsize: '64'
     framelen: frame_data_len
     ltfdata: '"../../data/mu_mimo/2t2s/" + qam_type + "/ltf2x2.bin"'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    modtype: qam_order
     mucpt: 'False'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -304,7 +306,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [392, 292.0]
+    coordinate: [392, 284.0]
     rotation: 0
     state: enabled
 - name: ncjt_tx_frm_ctrl_0

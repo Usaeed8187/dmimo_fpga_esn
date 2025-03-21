@@ -401,7 +401,7 @@ blocks:
     nchans: '4'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
-    rxpwrthrd: 8e-4
+    rxpwrthrd: 1e-3
     samplerate: samp_rate
     xcorrthrd: '0.5'
   states:

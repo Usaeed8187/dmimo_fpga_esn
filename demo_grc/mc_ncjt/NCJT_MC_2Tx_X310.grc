@@ -73,7 +73,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: -3.2e3
+    value: '3850'
   states:
     bus_sink: false
     bus_source: false
@@ -85,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: -2.0e3
+    value: '5850'
   states:
     bus_sink: false
     bus_source: false
@@ -220,6 +220,18 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [680, 12.0]
+    rotation: 0
+    state: enabled
+- name: usrp_addr
+  id: variable
+  parameters:
+    comment: ''
+    value: '"addr0=192.168.30.2, addr1=192.168.50.2"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 108.0]
     rotation: 0
     state: enabled
 - name: blocks_file_source_0
@@ -392,12 +404,14 @@ blocks:
     affinity: '1'
     alias: ''
     comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
     debug: 'False'
+    fftsize: '64'
     framelen: frame_data_len
     ltfdata: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
     mucpt: 'False'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -409,7 +423,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 256.0]
+    coordinate: [408, 248.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0_0
@@ -420,12 +434,14 @@ blocks:
     affinity: '1'
     alias: ''
     comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
     debug: 'False'
+    fftsize: '64'
     framelen: frame_data_len
     ltfdata: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
     mucpt: 'False'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -437,7 +453,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 416.0]
+    coordinate: [408, 408.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
@@ -522,7 +538,7 @@ blocks:
     ntx: '2'
     padding: '1000'
     pktspersec: pkts_per_sec
-    starttime: '2.0'
+    starttime: '5.0'
   states:
     bus_sink: false
     bus_source: false
@@ -641,7 +657,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.30.2, addr1=192.168.50.2"'
+    dev_addr: usrp_addr
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain

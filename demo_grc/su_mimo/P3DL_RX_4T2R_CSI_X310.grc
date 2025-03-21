@@ -177,7 +177,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '25'
+    value: '20'
     widget: counter_slider
   states:
     bus_sink: false
@@ -225,7 +225,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1184, 544.0]
+    coordinate: [1184, 548.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0_0
@@ -243,7 +243,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1184, 624.0]
+    coordinate: [1184, 636.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0_1
@@ -306,7 +306,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 368.0]
+    coordinate: [936, 364.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -343,31 +343,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [528, 416.0]
-    rotation: 0
-    state: enabled
-- name: ncjt_pkt_detect_0
-  id: ncjt_pkt_detect
-  parameters:
-    acorrthrd: '0.6'
-    affinity: '2'
-    alias: ''
-    comment: ''
-    dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
-    debug: 'False'
-    maxcorrlen: '4000'
-    maxoutbuf: '0'
-    minoutbuf: '32768'
-    nchans: '2'
-    pktspersec: pkts_per_sec
-    preamblelen: (fft_size+cp_len)*3
-    samplerate: samp_rate
-    syncall: 'False'
-    xcorrthrd: '0.5'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [312, 376.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0
@@ -409,6 +384,32 @@ blocks:
     coordinate: [1176, 368.0]
     rotation: 0
     state: enabled
+- name: ncjt_rx_sync_0
+  id: ncjt_rx_sync
+  parameters:
+    acorrthrd: '0.6'
+    affinity: ''
+    alias: ''
+    comment: ''
+    dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
+    debug: 'False'
+    lltf2: 'True'
+    maxcorrlen: '2000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nchans: '2'
+    pktspersec: pkts_per_sec
+    preamblelen: (fft_size+cp_len)*3
+    rxpwrthrd: 5e-4
+    samplerate: samp_rate
+    xcorrthrd: '0.45'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 384.0]
+    rotation: 0
+    state: enabled
 - name: pdu_pdu_to_tagged_stream_0
   id: pdu_pdu_to_tagged_stream
   parameters:
@@ -423,7 +424,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 556.0]
+    coordinate: [968, 564.0]
     rotation: 0
     state: true
 - name: pdu_pdu_to_tagged_stream_0_0
@@ -440,7 +441,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 636.0]
+    coordinate: [968, 652.0]
     rotation: 0
     state: true
 - name: qtgui_const_sink_x_0
@@ -1157,7 +1158,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 328.0]
+    coordinate: [64, 364.0]
     rotation: 0
     state: enabled
 
@@ -1172,16 +1173,16 @@ connections:
 - [ncjt_mimo_detect_0, '1', qtgui_const_sink_x_0_0, '0']
 - [ncjt_ofdm_demod_0, '0', ncjt_ltf_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_ltf_chanest_0, '1']
-- [ncjt_pkt_detect_0, '0', ncjt_ofdm_demod_0, '0']
-- [ncjt_pkt_detect_0, '1', ncjt_ofdm_demod_0_0, '0']
 - [ncjt_pkt_err_0, '0', blocks_file_sink_0_0_1_0_0_0_1, '0']
 - [ncjt_pkt_err_0, '1', qtgui_time_sink_x_0, '0']
 - [ncjt_qam_demapper_0, '0', ncjt_pkt_err_0, '0']
 - [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
+- [ncjt_rx_sync_0, '0', ncjt_ofdm_demod_0, '0']
+- [ncjt_rx_sync_0, '1', ncjt_ofdm_demod_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0, '0', blocks_file_sink_0_0_1_0_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0_0, '0', blocks_file_sink_0_0_1_0_0_0_0, '0']
-- [uhd_usrp_source_0, '0', ncjt_pkt_detect_0, '0']
-- [uhd_usrp_source_0, '1', ncjt_pkt_detect_0, '1']
+- [uhd_usrp_source_0, '0', ncjt_rx_sync_0, '0']
+- [uhd_usrp_source_0, '1', ncjt_rx_sync_0, '1']
 
 metadata:
   file_format: 1

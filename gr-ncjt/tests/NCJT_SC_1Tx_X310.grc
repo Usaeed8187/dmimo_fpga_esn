@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [328, 12.0]
+    coordinate: [352, 12.0]
     rotation: 0
     state: enabled
 - name: fft_size
@@ -54,43 +54,43 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 12.0]
+    coordinate: [272, 12.0]
     rotation: 0
     state: enabled
 - name: frame_data_len
   id: variable
   parameters:
     comment: ''
-    value: sc_num*num_data_syms*qam_order
+    value: sd_num*num_data_syms*qam_order
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1024, 12.0]
+    coordinate: [1040, 12.0]
     rotation: 0
     state: enabled
 - name: freq_comp_1
   id: variable
   parameters:
     comment: ''
-    value: -1.70e3
+    value: 2.850e3
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 76.0]
+    coordinate: [504, 76.0]
     rotation: 0
     state: enabled
 - name: freq_comp_2
   id: variable
   parameters:
     comment: ''
-    value: -1.45e3
+    value: 4.5e3
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 140.0]
+    coordinate: [504, 140.0]
     rotation: 0
     state: enabled
 - name: modulations
@@ -114,7 +114,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [264, 84.0]
+    coordinate: [288, 84.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -126,7 +126,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 84.0]
+    coordinate: [184, 84.0]
     rotation: 0
     state: true
 - name: qam_order
@@ -138,7 +138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 84.0]
+    coordinate: [400, 84.0]
     rotation: 0
     state: enabled
 - name: qam_type
@@ -162,7 +162,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 12.0]
+    coordinate: [504, 12.0]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -174,10 +174,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 12.0]
+    coordinate: [184, 12.0]
     rotation: 0
     state: enabled
-- name: sc_num
+- name: sd_num
   id: variable
   parameters:
     comment: ''
@@ -186,7 +186,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 12.0]
+    coordinate: [424, 12.0]
     rotation: 0
     state: enabled
 - name: tx_gain
@@ -210,6 +210,18 @@ blocks:
     coordinate: [648, 16.0]
     rotation: 0
     state: enabled
+- name: usrp_addr
+  id: variable
+  parameters:
+    comment: ''
+    value: '"addr0=192.168.30.2"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 108.0]
+    rotation: 0
+    state: true
 - name: blocks_file_source_0
   id: blocks_file_source
   parameters:
@@ -229,7 +241,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 204.0]
+    coordinate: [8, 232.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -248,7 +260,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 228.0]
+    coordinate: [192, 252.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0
@@ -268,7 +280,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 188.0]
+    coordinate: [736, 212.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0
@@ -288,7 +300,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 268.0]
+    coordinate: [736, 292.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0
@@ -299,12 +311,14 @@ blocks:
     affinity: '1'
     alias: ''
     comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
     debug: 'False'
+    fftsize: '64'
     framelen: frame_data_len
     ltfdata: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
     mucpt: 'False'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -316,7 +330,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 220.0]
+    coordinate: [384, 240.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
@@ -336,7 +350,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 224.0]
+    coordinate: [552, 248.0]
     rotation: 0
     state: enabled
 - name: ncjt_tx_frm_ctrl_0
@@ -361,7 +375,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 184.0]
+    coordinate: [936, 208.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -475,7 +489,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"addr0=192.168.30.2"'
+    dev_addr: usrp_addr
     dev_args: ''
     gain0: tx_gain
     gain1: tx_gain
@@ -638,7 +652,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1120, 132.0]
+    coordinate: [1120, 168.0]
     rotation: 0
     state: true
 

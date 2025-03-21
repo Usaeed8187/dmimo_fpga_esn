@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 12.0]
+    coordinate: [456, 12.0]
     rotation: 0
     state: enabled
 - name: fft_size
@@ -54,7 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 12.0]
+    coordinate: [376, 12.0]
     rotation: 0
     state: true
 - name: frame_data_len
@@ -90,7 +90,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 92.0]
+    coordinate: [184, 92.0]
     rotation: 0
     state: enabled
 - name: ntx
@@ -102,7 +102,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 92.0]
+    coordinate: [256, 92.0]
     rotation: 0
     state: enabled
 - name: num_data_syms
@@ -114,7 +114,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 92.0]
+    coordinate: [432, 92.0]
     rotation: 0
     state: true
 - name: num_ltf_syms
@@ -126,7 +126,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 92.0]
+    coordinate: [328, 92.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -138,7 +138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 12.0]
+    coordinate: [272, 12.0]
     rotation: 0
     state: true
 - name: qam_order
@@ -150,7 +150,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 92.0]
+    coordinate: [552, 92.0]
     rotation: 0
     state: enabled
 - name: qam_type
@@ -174,7 +174,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 12.0]
+    coordinate: [608, 12.0]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -186,7 +186,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 12.0]
+    coordinate: [184, 12.0]
     rotation: 0
     state: enabled
 - name: sc_num
@@ -198,7 +198,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 12.0]
+    coordinate: [528, 12.0]
     rotation: 0
     state: enabled
 - name: tx_gain
@@ -213,13 +213,13 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '15'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 16.0]
+    coordinate: [712, 12.0]
     rotation: 0
     state: enabled
 - name: ncjt_burst_tx_0

@@ -57,6 +57,18 @@ blocks:
     coordinate: [352, 12.0]
     rotation: 0
     state: enabled
+- name: frame_data_len
+  id: variable
+  parameters:
+    comment: ''
+    value: sd_num*num_data_syms*qam_order*2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1096, 20.0]
+    rotation: 0
+    state: enabled
 - name: modulations
   id: variable
   parameters:
@@ -114,7 +126,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 84.0]
+    coordinate: [472, 84.0]
     rotation: 0
     state: enabled
 - name: qam_type
@@ -172,6 +184,18 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [160, 12.0]
+    rotation: 0
+    state: enabled
+- name: sd_num
+  id: variable
+  parameters:
+    comment: ''
+    value: '52'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 84.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0
@@ -327,32 +351,6 @@ blocks:
     coordinate: [504, 368.0]
     rotation: 0
     state: enabled
-- name: ncjt_pkt_detect_0
-  id: ncjt_pkt_detect
-  parameters:
-    acorrthrd: '0.6'
-    affinity: '2'
-    alias: ''
-    comment: ''
-    dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
-    debug: 'False'
-    maxcorrlen: '4000'
-    maxoutbuf: '0'
-    minoutbuf: '32768'
-    nchans: '2'
-    pktspersec: pkts_per_sec
-    preamblelen: (fft_size+cp_len)*3
-    rxpwrthrd: 5e-4
-    samplerate: samp_rate
-    syncall: 'False'
-    xcorrthrd: '0.5'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [288, 324.0]
-    rotation: 0
-    state: enabled
 - name: ncjt_pkt_err_0_0
   id: ncjt_pkt_err
   parameters:
@@ -379,21 +377,49 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
     debug: 'False'
-    framelen: 52 * num_data_syms
+    fftsize: '64'
+    framelen: frame_data_len
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
+    nctrlsyms: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
     nstrm: '2'
-    outputsyms: 'False'
     usecsi: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 316.0]
+    coordinate: [1080, 308.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_rx_sync_0_0
+  id: ncjt_rx_sync
+  parameters:
+    acorrthrd: '0.6'
+    affinity: ''
+    alias: ''
+    comment: ''
+    dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
+    debug: 'False'
+    lltf2: 'False'
+    maxcorrlen: '4000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nchans: '2'
+    pktspersec: pkts_per_sec
+    preamblelen: (fft_size+cp_len)*3
+    rxpwrthrd: 1e-3
+    samplerate: samp_rate
+    xcorrthrd: '0.5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 336.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_1
@@ -466,7 +492,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: complex
-    update_time: '0.5'
+    update_time: '0.25'
     width1: '1'
     width10: '1'
     width2: '1'
@@ -558,7 +584,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: complex
-    update_time: '0.5'
+    update_time: '0.25'
     width1: '1'
     width10: '1'
     width2: '1'
@@ -1110,7 +1136,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 268.0]
+    coordinate: [48, 316.0]
     rotation: 0
     state: enabled
 
@@ -1125,14 +1151,14 @@ connections:
 - [ncjt_mu_chanest_0, '1', ncjt_mc_stbc_decode_0, '1']
 - [ncjt_ofdm_demod_0, '0', ncjt_mu_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_mu_chanest_0, '1']
-- [ncjt_pkt_detect_0, '0', ncjt_ofdm_demod_0, '0']
-- [ncjt_pkt_detect_0, '1', ncjt_ofdm_demod_0_0, '0']
 - [ncjt_pkt_err_0_0, '0', blocks_file_sink_0_0_1_0_0_0_1, '0']
 - [ncjt_pkt_err_0_0, '1', qtgui_time_sink_x_0, '0']
 - [ncjt_rg_demapper_0, '0', blocks_file_sink_0, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0, '0']
-- [uhd_usrp_source_0, '0', ncjt_pkt_detect_0, '0']
-- [uhd_usrp_source_0, '1', ncjt_pkt_detect_0, '1']
+- [ncjt_rx_sync_0_0, '0', ncjt_ofdm_demod_0, '0']
+- [ncjt_rx_sync_0_0, '1', ncjt_ofdm_demod_0_0, '0']
+- [uhd_usrp_source_0, '0', ncjt_rx_sync_0_0, '0']
+- [uhd_usrp_source_0, '1', ncjt_rx_sync_0_0, '1']
 
 metadata:
   file_format: 1
