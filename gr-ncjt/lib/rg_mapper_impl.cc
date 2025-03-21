@@ -13,28 +13,46 @@ namespace gr::ncjt
 {
 
 rg_mapper::sptr
-rg_mapper::make(int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms, int modtype,
-                int numue, int ueidx, bool mucpt, const char *ltfdata, bool addltf, bool addcs, bool debug)
+rg_mapper::make(int fftsize, int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms,
+                int datamodtype, int ctrlmodtype, int numue, int ueidx, bool mucpt,
+                const char *ltfdata, bool addltf, bool addcs, bool debug)
 {
-    return gnuradio::make_block_sptr<rg_mapper_impl>(nstrm, framelen, ndatasyms, npilotsyms, nctrlsyms, modtype,
-                                                     numue, ueidx, mucpt, ltfdata, addltf, addcs, debug);
+    return gnuradio::make_block_sptr<rg_mapper_impl>(
+        fftsize, nstrm, framelen, ndatasyms, npilotsyms, nctrlsyms, datamodtype, ctrlmodtype,
+        numue, ueidx, mucpt, ltfdata, addltf, addcs, debug);
 }
 
-rg_mapper_impl::rg_mapper_impl(int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms, int modtype,
-                               int numue, int ueidx, bool mucpt, const char *ltfdata, bool addltf, bool addcs, bool debug)
+rg_mapper_impl::rg_mapper_impl(int fftsize, int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms,
+                               int datamodtype, int ctrlmodtype, int numue, int ueidx, bool mucpt,
+                               const char *ltfdata, bool addltf, bool addcs, bool debug)
     : gr::tagged_stream_block(
     "rg_mapper",
     gr::io_signature::make(1, 1, sizeof(uint8_t)),
     gr::io_signature::make(nstrm, nstrm, sizeof(gr_complex)),
     "packet_len"), d_nltfsyms(0), d_add_ltf(addltf), d_add_cyclic_shift(addcs), d_debug(debug)
 {
-    d_fftsize = 64; // TODO add parameter
+    if (fftsize != 64 && fftsize != 256)
+        throw std::runtime_error("Unsupported OFDM FFT size");
+    d_fftsize = fftsize;
+
+    if (d_fftsize == 64)
+    {
+        d_scnum = 56;
+        d_sdnum = 52;
+        d_npt = 4;
+    }
+    else
+    {
+        d_scnum = 242;
+        d_sdnum = 234;
+        d_npt = 8;
+    }
 
     if (nstrm < 1 || nstrm > 4)
         throw std::runtime_error("Invalid number of streams");
     d_nstrm = nstrm;
 
-    if (ndatasyms <= 10 || ndatasyms > 200)
+    if (ndatasyms < 2 || ndatasyms > 200)
         throw std::runtime_error("Invalid number of data OFDM symbols");
     d_ndatasyms = ndatasyms;
     if (npilotsyms < 0 || npilotsyms > 4)
@@ -43,13 +61,23 @@ rg_mapper_impl::rg_mapper_impl(int nstrm, int framelen, int ndatasyms, int npilo
     if (nctrlsyms < 0 || nctrlsyms > 50)
         throw std::runtime_error("Invalid number of control channel OFDM symbols");
     d_nctrlsyms = nctrlsyms;
-
     d_numofdmsyms = d_ndatasyms + d_npilotsyms + d_nctrlsyms;
-    d_nqamsyms_per_stream = SD_NUM * d_ndatasyms;
 
-    if (modtype != 2 && modtype != 4 && modtype != 6 && modtype != 8)
-        throw std::runtime_error("Unsupported modulation mode");
-    d_modtype = modtype;
+    if (datamodtype != 2 && datamodtype != 4 && datamodtype != 6 && datamodtype != 8)
+        throw std::runtime_error("Unsupported data modulation mode");
+    d_data_modtype = datamodtype;
+
+    if (ctrlmodtype != 2 && ctrlmodtype != 4 && ctrlmodtype != 6)
+        throw std::runtime_error("Unsupported control channel modulation mode");
+    d_ctrl_modtype = ctrlmodtype;
+
+    d_frame_ctrl_len = d_nstrm * d_sdnum * d_nctrlsyms * d_ctrl_modtype;  // fixed length control channel
+    d_frame_data_len = framelen; // automatic data channel padding
+    int data_bits_available = d_nstrm * d_sdnum * d_ndatasyms * d_data_modtype;
+    if (d_frame_data_len > data_bits_available)
+        throw std::runtime_error("Data frame size too large");
+    else if (d_frame_data_len < data_bits_available - d_nstrm * d_sdnum * d_data_modtype)
+        throw std::runtime_error("Data frame require too much padding");
 
     if (numue < 1 || numue > 8)
         throw std::runtime_error("Invalid total number of UEs");
@@ -59,37 +87,31 @@ rg_mapper_impl::rg_mapper_impl(int nstrm, int framelen, int ndatasyms, int npilo
     d_ueidx = ueidx;
     d_mucpt = (d_numue > 1 && mucpt);
 
-    // Check input data frame length
-    d_frame_data_len = framelen;
-    d_total_symbols_required = d_frame_data_len / (d_nstrm * d_modtype);
-    if (d_total_symbols_required > d_nqamsyms_per_stream)
-        throw std::runtime_error("Data frame size too large");
-    else if (d_total_symbols_required < d_nqamsyms_per_stream - 2 * SD_NUM)
-        throw std::runtime_error("Data frame require too much padding");
-
     // pre-generate all CPT pilots
-    d_npt = 4;
     d_cpt_pilot = malloc_float(d_npt * d_nstrm * d_numofdmsyms);
     generate_cpt_pilots();
 
+    // pre-generate cyclic phase shifts
     float cshift[4] = {0.0, -8.0, -4.0, -12.0};
     for (int ss = 0; ss < 4; ss++)
-        for (int k = 0; k < SC_NUM / 2; k++)
+        for (int k = 0; k < d_scnum / 2; k++)
         {
-            int pn = k - SC_NUM / 2;
+            int pn = k - d_scnum / 2;
             int pp = k + 1;
             d_phaseshift[ss][k] = exp(gr_complex(0, -2.0 * M_PI * cshift[ss] / d_fftsize * pn));
-            d_phaseshift[ss][k + SC_NUM / 2] = exp(gr_complex(0, -2.0 * M_PI * cshift[ss] / d_fftsize * pp));
+            d_phaseshift[ss][k + d_scnum / 2] = exp(gr_complex(0, -2.0 * M_PI * cshift[ss] / d_fftsize * pp));
         }
 
+    // load LTF data for channel estimation
+    d_ltfdata_len = 0;
     if (d_add_ltf)
     {
-        if ((d_ltfdata_len = read_htf_data(ltfdata)) <= 0)
+        if ((d_ltfdata_len = read_ltf_data(ltfdata)) <= 0)
             throw std::runtime_error("failed to read LTF data");
         d_ltfdata_len /= d_nstrm;
-        if (d_ltfdata_len % SC_NUM != 0)
+        if (d_ltfdata_len % d_scnum != 0)
             throw std::runtime_error("LTF data length not correct");
-        d_nltfsyms = d_ltfdata_len / SC_NUM;
+        d_nltfsyms = d_ltfdata_len / d_scnum;
     }
 
     set_tag_propagation_policy(block::TPP_DONT);
@@ -107,11 +129,9 @@ int
 rg_mapper_impl::calculate_output_stream_length(
     const gr_vector_int &ninput_items)
 {
-    int num_blocks = ninput_items[0] / d_frame_data_len;
-    if (num_blocks >= 1)
-        return SC_NUM * d_ndatasyms;
-    else
-        return 0;
+    int noutput_items = d_scnum * d_numofdmsyms + d_ltfdata_len;
+
+    return noutput_items;
 }
 
 int
@@ -120,12 +140,13 @@ rg_mapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                      gr_vector_void_star &output_items)
 {
     auto in = static_cast<const uint8_t *>(input_items[0]);
-    if (ninput_items[0] != d_frame_data_len)
+
+    if (ninput_items[0] != d_frame_data_len + d_frame_ctrl_len)
     {
-        dout << "incorrect data input length: " << ninput_items[0] << std::endl;
-        throw std::runtime_error("Data frame size too small");
+        std::cout << "incorrect input length: " << ninput_items[0] << std::endl;
+        throw std::runtime_error("input data/ctrl frame size not correct");
     }
-    int num_output_items = SC_NUM * d_ndatasyms;
+    int num_output_items = d_scnum * d_numofdmsyms; // output length without LTF data
 
     int output_offset = 0;
     if (d_add_ltf)
@@ -141,17 +162,19 @@ rg_mapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
     }
 
     // QAM symbols mapping for all streams and insert pilot tones
-    // int max_didx = d_nstrm * d_modtype * d_total_symbols_required + d_nstrm;
     for (int ss = 0; ss < d_nstrm; ss++)
     {
         auto out = static_cast<gr_complex *>(output_items[ss]);
         int cursym = 0, scidx = 0, ptidx = 0;
+        int cur_modtype = (d_nctrlsyms > 0) ? d_ctrl_modtype : d_data_modtype;
         int offset, mi;
-        for (int didx = ss; didx < d_frame_data_len; didx += (d_nstrm * d_modtype))
+
+        // map control and data symbols
+        for (int didx = ss; didx < d_frame_data_len + d_frame_ctrl_len; didx += (d_nstrm * cur_modtype))
         {
             auto dbits = in + didx;
-            offset = output_offset + cursym * SC_NUM + scidx;
-            switch (d_modtype)
+            offset = output_offset + cursym * d_scnum + scidx;
+            switch (cur_modtype)
             {
                 case 2: // QPSK: 4 symbols per byte
                     mi = (dbits[d_nstrm] << 1) + dbits[0]; // LSB first
@@ -174,7 +197,7 @@ rg_mapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                     out[offset] = CONST_256QAM[mi];
                     break;
             }
-            if (++scidx == SC_NUM)
+            if (++scidx == d_scnum)
             {
                 scidx = 0;
                 cursym += 1;
@@ -187,16 +210,19 @@ rg_mapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 if (++ptidx == d_npt)
                     ptidx = 0;
             }
+            if (cursym == d_nctrlsyms)
+                cur_modtype = d_data_modtype;
         }
 
-        while (cursym < d_ndatasyms) // padding
+        // data padding
+        while (cursym < d_ndatasyms)
         {
-            auto dbits = in + cursym + scidx; // random bits
-            offset = output_offset + cursym * SC_NUM + scidx;
+            auto dbits = in + cursym + 2 * scidx; // random bits
+            offset = output_offset + cursym * d_scnum + scidx;
             // use QPSK
             mi = dbits[1] + 2 * dbits[0]; // MSB first
             out[offset] = CONST_QPSK[mi];
-            if (++scidx == SC_NUM)
+            if (++scidx == d_scnum)
             {
                 scidx = 0;
                 cursym += 1;
@@ -212,15 +238,15 @@ rg_mapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
         }
     }
 
-    // Apply cyclic shifts
+    // Apply cyclic shifts for all OFDM symbols
     if (d_add_cyclic_shift)
         for (int ss = 1; ss < d_nstrm; ss++)
         {
             auto out = static_cast<gr_complex *>(output_items[ss]);
-            for (int cursym = 0; cursym < d_nltfsyms + d_ndatasyms; cursym++)
-                for (int k = 0; k < SC_NUM; k++)
+            for (int cursym = 0; cursym < d_nltfsyms + d_numofdmsyms; cursym++)
+                for (int k = 0; k < d_scnum; k++)
                 {
-                    int offset = cursym * SC_NUM + k;
+                    int offset = cursym * d_scnum + k;
                     out[offset] *= d_phaseshift[ss][k];
                 }
         }
@@ -259,7 +285,7 @@ rg_mapper_impl::generate_cpt_pilots()
             unsigned int idx = (symidx + i) % d_npt;
             for (int k = 0; k < d_nstrm; k++)  // for all streams
             {
-                int sidx = (d_mucpt && d_ueidx >= 0) ? d_ueidx * d_nstrm + k: k; // TODO
+                int sidx = (d_mucpt && d_ueidx >= 0) ? d_ueidx * d_nstrm + k : k; // TODO
                 int offset = d_nstrm * d_npt * symidx + k * d_npt + i;
                 // Use orthogonal pilots for MU case
                 if (d_mucpt && d_ueidx >= 0 && (symidx % d_numue) != d_ueidx)
@@ -272,7 +298,7 @@ rg_mapper_impl::generate_cpt_pilots()
 }
 
 uint64_t
-rg_mapper_impl::read_htf_data(const char *filename)
+rg_mapper_impl::read_ltf_data(const char *filename)
 {
     FILE *d_fp;
     struct GR_STAT st;

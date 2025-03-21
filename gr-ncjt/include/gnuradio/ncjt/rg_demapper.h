@@ -32,8 +32,8 @@ public:
      * creating new instances.
      */
     static sptr
-    make(int nstrm, int framelen, int ndatasyms, int npilotsyms,
-         int modtype, bool usecsi, bool debug);
+    make(int fftsize, int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms,
+         int datamodtype, int ctrlmodtype, bool usecsi, bool debug);
 };
 
 } // namespace gr::ncjt

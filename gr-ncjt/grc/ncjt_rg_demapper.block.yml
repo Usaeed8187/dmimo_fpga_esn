@@ -4,10 +4,15 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rg_demapper(${nstrm}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${usecsi}, ${debug})
+  make: ncjt.rg_demapper(${fftsize}, ${nstrm}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${nctrlsyms}, ${datamodtype}, ${ctrlmodtype}, ${usecsi}, ${debug})
 
 
 parameters:
+  - id: fftsize
+    label: FFT Size
+    dtype: int
+    default: '64'
+    hide: part
   - id: nstrm
     label: Number of Streams
     dtype: int
@@ -26,12 +31,23 @@ parameters:
     dtype: int
     default: '0'
     hide: part
-  - id: modtype
-    label: Modulation
+  - id: nctrlsyms
+    label: Ctrl Symbols
+    dtype: int
+    default: '0'
+    hide: part
+  - id: datamodtype
+    label: Data Modulation
     dtype: int
     default: 2
     options: [ 2, 4, 6, 8 ]
     option_labels: [ 'QPSK', '16QAM', '64QAM', '256QAM' ]
+  - id: ctrlmodtype
+    label: Ctrl Modulation
+    dtype: int
+    default: 2
+    options: [ 2, 4, 6]
+    option_labels: [ 'QPSK', '16QAM', '64QAM']
   - id: usecsi
     label: CSI
     dtype: bool

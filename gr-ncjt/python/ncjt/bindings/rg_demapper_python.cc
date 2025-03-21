@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(rg_demapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(4946af8a29d0c034cc838cc65c02b3e2) */
+/* BINDTOOL_HEADER_FILE_HASH(0997be2aa05c95179a963b2ef75418ee) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,8 +36,9 @@ void bind_rg_demapper(py::module &m) {
   py::class_<rg_demapper, gr::tagged_stream_block, gr::block, gr::basic_block,
              std::shared_ptr<rg_demapper>>(m, "rg_demapper", D(rg_demapper))
 
-      .def(py::init(&rg_demapper::make), py::arg("nstrm"), py::arg("framelen"),
-           py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("modtype"),
+      .def(py::init(&rg_demapper::make), py::arg("fftsize"), py::arg("nstrm"),
+           py::arg("framelen"), py::arg("ndatasyms"), py::arg("npilotsyms"),
+           py::arg("nctrlsyms"), py::arg("datamodtype"), py::arg("ctrlmodtype"),
            py::arg("usecsi"), py::arg("debug"), D(rg_demapper, make))
 
       ;

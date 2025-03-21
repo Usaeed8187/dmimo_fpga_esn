@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(rg_mapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(77006f16cf958556680523d564c7dd4c) */
+/* BINDTOOL_HEADER_FILE_HASH(5e0a582fd1c8154f3153e868d7577df4) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,10 +36,11 @@ void bind_rg_mapper(py::module &m) {
   py::class_<rg_mapper, gr::tagged_stream_block, gr::block, gr::basic_block,
              std::shared_ptr<rg_mapper>>(m, "rg_mapper", D(rg_mapper))
 
-      .def(py::init(&rg_mapper::make), py::arg("nstrm"), py::arg("framelen"),
-           py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("nctrlsyms"),
-           py::arg("modtype"), py::arg("numue"), py::arg("ueidx"),
-           py::arg("mucpt"), py::arg("ltfdata"), py::arg("addltf") = false,
+      .def(py::init(&rg_mapper::make), py::arg("fftsize"), py::arg("nstrm"),
+           py::arg("framelen"), py::arg("ndatasyms"), py::arg("npilotsyms"),
+           py::arg("nctrlsyms"), py::arg("datamodtype"), py::arg("ctrlmodtype"),
+           py::arg("numue"), py::arg("ueidx"), py::arg("mucpt"),
+           py::arg("ltfdata"), py::arg("addltf") = false,
            py::arg("addcs") = true, py::arg("debug") = false,
            D(rg_mapper, make))
 
