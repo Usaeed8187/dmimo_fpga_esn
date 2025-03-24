@@ -32,14 +32,16 @@ private:
     int d_num_chans;  // Total number of IQ data channels
     int d_frame_len;  // frame length in samples (HT preamble + data symbols)
     double d_sampling_freq;  // Baseband sampling frequency
-    double d_pkt_interval;   // packet repeat interval (in seconds)
+    int d_frame_interval;   // packet repeat interval (in samples)
     int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
+    int64_t d_rxtime_offset; // Rx time difference from tag[offset] samples
 
     float d_rxpwr_thrd;  // Receiver power threshold for signal detection
     float d_acorr_thrd;  // Auto-correlation detection threshold
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
     int d_rx_ready_cnt;  // receiver synchronization counter
+    int d_sync_err_cnt;  // fine synchronization errors
 
     float *d_pwrest_buf;
     gr_complex *d_corr_buf;
@@ -47,9 +49,15 @@ private:
     float d_current_foe_comp;
     float d_fine_foe_comp;
     int d_fine_foe_cnt;
+
+    const int CLK_EST_SAMPLES = 200; // number of samples for clock offset estimation
     uint64_t d_frame_start;
-    // uint64_t d_prev_frame_count;
-    // double d_prev_frame_time;
+    uint64_t d_prev_frame_start;
+    int64_t d_clk_offset_sum;
+    int d_clk_offset_cnt;
+    double d_clk_offset_est;
+    bool d_clk_offset_ok;
+
     int d_data_samples;
     int d_wait_count;
 
@@ -78,10 +86,10 @@ private:
     send_rxstate(bool ready);
 
     void
-    send_rxstate_message(bool ready);
-
-    double
     check_rxtime(int rx_windows_size);
+
+    void
+    send_rxtime();
 
 public:
     rx_sync_impl(int nchans, int npreamblesyms, int ndatasyms, double sampling_freq, int pktspersec,

@@ -38,6 +38,9 @@ tx_frm_ctrl_impl::tx_frm_ctrl_impl(int ntx, int ndatasyms, const char *filename,
     d_pkts_per_sec = pktspersec;
     d_repeat_interval = 1.0 / (double) pktspersec;
 
+    d_samplerate = samplerate;
+    d_frame_interval = (uint64_t) round( samplerate / pktspersec);
+
     if (delay < 0 || delay > 64)
         throw std::runtime_error("invalid delay specified, maximum delay is 64");
     d_delay = delay;
@@ -71,6 +74,7 @@ tx_frm_ctrl_impl::tx_frm_ctrl_impl(int ntx, int ndatasyms, const char *filename,
     d_txtime_adjustment = 0;
 
     // initial frame
+    d_frame_cnt = 0;
     d_time_secs = d_txtime_start;
     d_time_fracs = d_txtime_offset;
     d_first_burst = true;
@@ -105,24 +109,16 @@ tx_frm_ctrl_impl::process_rxtime_message(const pmt::pmt_t &msg)
 {
     gr::thread::scoped_lock lock(fp_mutex);
 
-    uint64_t rxtime_secs = pmt::to_uint64(pmt::tuple_ref(msg, 0));
+    uint64_t  new_frame_start = pmt::to_uint64(pmt::tuple_ref(msg, 0));
     double rxtime_fracs = pmt::to_double(pmt::tuple_ref(msg, 1));
-    dout << "Packet start at " << rxtime_secs << " "
-          << std::fixed << std::setprecision(8)
-          << rxtime_fracs << std::endl;
 
-    while (rxtime_fracs >= d_repeat_interval)  // make it in rage [0, T]
-        rxtime_fracs -= d_repeat_interval;
+    // make new frame start position in rage [0, d_frame_interval]
+    new_frame_start = new_frame_start % d_frame_interval;
 
-    // avoid unnecessary timing adjustment
-    //double time_shift = abs(rxtime_fracs - d_txtime_adjustment);
-    //if (time_shift < 1e-4 * d_repeat_interval  || time_shift > 1e-2 * d_repeat_interval)
-    //    return;
+    d_txtime_adjustment = double(new_frame_start) / double(d_samplerate);
 
-    // timing adjustment using latest rxtime
-    d_txtime_adjustment = rxtime_fracs;
-
-    // dout << "Tx time adjustment: " << std::fixed << std::setprecision(8) << rxtime_fracs << std::endl;
+    dout << "Adjust TX timing: " << new_frame_start << "  Rx timing: "
+         << std::fixed << std::setprecision(8) << rxtime_fracs << std::endl;
 }
 
 void
@@ -142,11 +138,20 @@ tx_frm_ctrl_impl::work(int noutput_items, gr_vector_int &ninput_items,
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
 {
+    gr::thread::scoped_lock lock(fp_mutex);
+
     if (noutput_items < d_frame_length)
     {
         std::cout << "Output buffer size: " << noutput_items << std::endl;
         throw std::runtime_error("output buffer size too small");
     }
+
+    double intpart;
+    double tx_time_fracs = d_time_fracs + d_txtime_adjustment + d_txtime_offset;
+    tx_time_fracs = std::modf(tx_time_fracs, &intpart);
+    uint64_t tx_time_secs = d_time_secs + uint64_t(intpart);
+    const pmt::pmt_t tx_time =
+        pmt::make_tuple(pmt::from_uint64(tx_time_secs), pmt::from_double(tx_time_fracs));
 
     // send a null packet on starting or when tx is disabled
     int total_output_items = d_frame_length;
@@ -156,21 +161,6 @@ tx_frm_ctrl_impl::work(int noutput_items, gr_vector_int &ninput_items,
         {
             auto out = (gr_complex *) output_items[s];
             memset((void *) &out[0], 0, sizeof(gr_complex) * d_frame_length);
-
-            // Add tags for burst transmission
-            add_item_tag(s,
-                         nitems_written(s),
-                         pmt::string_to_symbol("tx_pkt_len"),
-                         pmt::from_long(d_frame_length),
-                         _id);
-
-            const pmt::pmt_t tx_time =
-                pmt::make_tuple(pmt::from_uint64(d_time_secs), pmt::from_double(d_time_fracs));
-            add_item_tag(s,
-                         nitems_written(s),
-                         pmt::string_to_symbol("tx_time"),
-                         tx_time,
-                         _id);
         }
         d_first_burst = false;
     }
@@ -190,26 +180,6 @@ tx_frm_ctrl_impl::work(int noutput_items, gr_vector_int &ninput_items,
             auto in = (const gr_complex *) input_items[s];
             auto out = (gr_complex *) output_items[s];
 
-            // Add tags for burst transmission
-            add_item_tag(s,
-                         nitems_written(s),
-                         pmt::string_to_symbol("tx_pkt_len"),
-                         pmt::from_long(d_frame_length),
-                         _id);
-
-            double intpart;
-            double tx_time_fracs = d_time_fracs + d_txtime_adjustment + d_txtime_offset;
-            tx_time_fracs = std::modf(tx_time_fracs, &intpart);
-            uint64_t tx_time_secs = d_time_secs + uint64_t(intpart);
-
-            const pmt::pmt_t tx_time =
-                pmt::make_tuple(pmt::from_uint64(tx_time_secs), pmt::from_double(tx_time_fracs));
-            add_item_tag(s,
-                         nitems_written(s),
-                         pmt::string_to_symbol("tx_time"),
-                         tx_time,
-                         _id);
-
             // zero-padding and copy beacon symbols
             memset((void *) &out[0], 0, sizeof(gr_complex) * (d_padding_length + d_delay));
             memcpy(&out[d_padding_length + d_delay], &d_beacon_data[s * d_beacon_len], sizeof(gr_complex) * d_beacon_len);
@@ -218,6 +188,21 @@ tx_frm_ctrl_impl::work(int noutput_items, gr_vector_int &ninput_items,
             // zero-padding after frame
             memset((void *) &out[d_frame_length - d_padding_length + d_delay], 0, sizeof(gr_complex) * (d_padding_length - d_delay));
         }
+    }
+
+    // Add tags for burst transmission
+    for (int ch = 0; ch < d_ntx; ch++) {
+        add_item_tag(ch,
+                     nitems_written(ch),
+                     pmt::string_to_symbol("tx_pkt_len"),
+                     pmt::from_long(d_frame_length),
+                     _id);
+
+        add_item_tag(ch,
+                     nitems_written(ch),
+                     pmt::string_to_symbol("tx_time"),
+                     tx_time,
+                     _id);
     }
 
     // Update next time stamps

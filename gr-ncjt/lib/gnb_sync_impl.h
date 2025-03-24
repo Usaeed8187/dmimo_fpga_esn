@@ -32,15 +32,18 @@ private:
     int d_num_chans;         // Total number of IQ data channels
     double d_samplerate;     // Baseband sampling frequency
     double d_pkt_interval;   // packet repeat interval (in seconds)
-    int d_usrpdelay;         // Estimated USRP TX/RX processing delay
+    int d_hw_delay_p2;       // Estimated USRP TX/RX processing delay in samples (Phase 2)
+    int d_hw_delay_p3;       // Estimated USRP TX/RX processing delay in samples (Phase 3)
+    int64_t d_rxtime_offset; // Rx time difference from tag[offset] samples
 
     float d_rxpwr_thrd;  // Receiver power threshold for signal detection
     float d_acorr_thrd;  // Auto-correlation detection threshold
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
 
-    double d_p2_start;     // phase 2 transmission start time
-    double d_p3_start;     // phase 3 transmission start time
+    uint64_t d_frame_interval;  // frame interval in samples
+    uint64_t d_p2_offset;  // phase 2 transmission start position
+    uint64_t d_p3_offset;  // phase 3 transmission start position
     int d_p2_htlen;        // P2 HT preamble length (excluding HT-LTFs)
     int d_p3_htlen;        // P3 HT preamble length (excluding HT-LTFs)
     int d_frame_len_1;     // P2 frame length in samples (HT preamble + data symbols)
@@ -49,8 +52,12 @@ private:
     int d_wait_interval1;  // wait interval between P2 and P3 reception
     int d_wait_interval2;  // wait interval between P3 and new cycle
 
+    uint64_t d_frame_start1; // frame start position for P2
+    uint64_t d_frame_start2; // frame start position for P3
     int d_rx_ready_cnt1;  // receiver synchronization counter
     int d_rx_ready_cnt2;  // receiver synchronization counter
+    int d_sync_err_cnt1;  // receiver synchronization counter
+    int d_sync_err_cnt2;  // receiver synchronization counter
     bool d_skip_p2_frame; // skip current P2 frame reception
     bool d_skip_p3_frame;  // skip current P3 frame reception
 
@@ -58,7 +65,6 @@ private:
     float d_current_foe_comp1, d_current_foe_comp2;
     float d_fine_foe_comp1, d_fine_foe_comp2;
     int d_fine_foe_cnt1, d_fine_foe_cnt2;
-    // uint64_t d_frame_start;
     int d_data_samples;
     int d_wait_count;
 
@@ -76,7 +82,7 @@ private:
 
     enum
     {
-        RXTIME, P2SYNC, P3SYNC, P2DEFRAME, P3DEFRAME, WAIT0, WAIT1, WAIT2
+        RXTIME, P2SEARCH, P2SYNC, P3SEARCH, P3SYNC, P2DEFRAME, P3DEFRAME, WAIT0, WAIT1, WAIT2
     } d_state;
 
     int
@@ -93,11 +99,11 @@ private:
     void
     send_rxstate(bool ready);
 
-    double
+    void
     check_rxtime(int rx_windows_size);
 
 public:
-    gnb_sync_impl(int nchans, double samplerate, int pktspersec, int usrpdelay,
+    gnb_sync_impl(int nchans, double samplerate, int pktspersec, int hwdelayp2, int hwdelayp3,
                   int p2_htlen, int p2_datalen, int p3_htlen, int p3_datalen, double p2_start, double p3_start,
                   double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug);
     ~gnb_sync_impl();

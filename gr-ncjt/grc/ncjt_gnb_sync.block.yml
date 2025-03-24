@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.gnb_sync(${nchans}, ${samplerate}, ${pktspersec}, ${usrpdelay}, ${p2preamblelen}, ${p2datalen}, ${p3preamblelen}, ${p3datalen}, ${p2start}, ${p3start}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
+  make: ncjt.gnb_sync(${nchans}, ${samplerate}, ${pktspersec}, ${hwdelayp2}, ${hwdelayp3},${p2preamblelen}, ${p2datalen}, ${p3preamblelen}, ${p3datalen}, ${p2start}, ${p3start}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
 
 parameters:
   - id: nchans
@@ -22,8 +22,12 @@ parameters:
     label: Cycles/sec
     dtype: int
     default: '8'
-  - id: usrpdelay
-    label: Tx/Rx Delay
+  - id: hwdelayp2
+    label: HW Delay (P2)
+    dtype: int
+    default: '0'
+  - id: hwdelayp3
+    label: HW Delay (P3)
     dtype: int
     default: '0'
   - id: p2preamblelen

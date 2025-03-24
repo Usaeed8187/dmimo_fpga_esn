@@ -35,7 +35,7 @@ public:
      * creating new instances.
      */
     static sptr
-    make(int nchans, double samplerate, int pktspersec, int usrpdelay,
+    make(int nchans, double samplerate, int pktspersec, int hwdelayp2, int hwdelayp3,
          int p2_htlen, int p2_datalen, int p3_htlen, int p3_datalen, double p2_start, double p3_start,
          double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug);
 };
