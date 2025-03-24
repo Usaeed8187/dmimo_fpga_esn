@@ -25,7 +25,6 @@ include(GrPybind)
 ########################################################################
 list(APPEND ncjt_python_files
     burst_tx_python.cc
-    sync_all_python.cc
     ofdm_mod_python.cc
     ofdm_demod_python.cc
     ltf_chanest_python.cc
@@ -41,7 +40,6 @@ list(APPEND ncjt_python_files
     sic_detect_python.cc
     stbc_encode_python.cc
     stbc_decode_python.cc
-    add_preamble_python.cc
     mc_stbc_decode_python.cc
     srsran_ldpc_encoder_python.cc
     srsran_ldpc_decoder_python.cc

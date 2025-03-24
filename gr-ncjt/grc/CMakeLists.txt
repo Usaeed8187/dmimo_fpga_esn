@@ -7,7 +7,6 @@
 #
 install(FILES
     ncjt_burst_tx.block.yml
-    ncjt_sync_all.block.yml
     ncjt_ofdm_mod.block.yml
     ncjt_ofdm_demod.block.yml
     ncjt_ltf_chanest.block.yml
@@ -24,7 +23,6 @@ install(FILES
     ncjt_sic_detect.block.yml
     ncjt_stbc_encode.block.yml
     ncjt_stbc_decode.block.yml
-    ncjt_add_preamble.block.yml
     ncjt_mc_stbc_decode.block.yml
     ncjt_srsran_ldpc_encoder.block.yml
     ncjt_srsran_ldpc_decoder.block.yml

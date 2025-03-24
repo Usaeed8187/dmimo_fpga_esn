@@ -11,7 +11,6 @@
 ########################################################################
 install(FILES api.h
     burst_tx.h
-    sync_all.h
     ofdm_mod.h
     ofdm_demod.h
     ltf_chanest.h
@@ -27,7 +26,6 @@ install(FILES api.h
     sic_detect.h
     stbc_encode.h
     stbc_decode.h
-    add_preamble.h
     mc_stbc_decode.h
     srsran_ldpc_encoder.h
     srsran_ldpc_decoder.h

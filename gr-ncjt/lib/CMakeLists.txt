@@ -14,7 +14,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(srsran_ldpc)
 list(APPEND ncjt_sources
     burst_tx_impl.cc
-    sync_all_impl.cc
     ofdm_mod_impl.cc
     ofdm_demod_impl.cc
     ltf_chanest_impl.cc
@@ -32,7 +31,6 @@ list(APPEND ncjt_sources
     sic_detect_impl.cc
     stbc_encode_impl.cc
     stbc_decode_impl.cc
-    add_preamble_impl.cc
     stbc_sic_decode.cc
     mc_stbc_decode_impl.cc
     srsran_ldpc_encoder_impl.cc

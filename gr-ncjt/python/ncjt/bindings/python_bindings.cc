@@ -22,7 +22,6 @@ namespace py = pybind11;
 /**************************************/
 // BINDING_FUNCTION_PROTOTYPES(
     void bind_burst_tx(py::module& m);
-    void bind_sync_all(py::module& m);
     void bind_ofdm_mod(py::module& m);
     void bind_ofdm_demod(py::module& m);
     void bind_ltf_chanest(py::module& m);
@@ -38,7 +37,6 @@ namespace py = pybind11;
     void bind_sic_detect(py::module& m);
     void bind_stbc_encode(py::module& m);
     void bind_stbc_decode(py::module& m);
-    void bind_add_preamble(py::module& m);
     void bind_mc_stbc_decode(py::module& m);
     void bind_srsran_ldpc_encoder(py::module& m);
     void bind_srsran_ldpc_decoder(py::module& m);
@@ -76,7 +74,6 @@ PYBIND11_MODULE(ncjt_python, m)
     /**************************************/
     // BINDING_FUNCTION_CALLS(
     bind_burst_tx(m);
-    bind_sync_all(m);
     bind_ofdm_mod(m);
     bind_ofdm_demod(m);
     bind_ltf_chanest(m);
@@ -92,7 +89,6 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_sic_detect(m);
     bind_stbc_encode(m);
     bind_stbc_decode(m);
-    bind_add_preamble(m);
     bind_mc_stbc_decode(m);
     bind_srsran_ldpc_encoder(m);
     bind_srsran_ldpc_decoder(m);
