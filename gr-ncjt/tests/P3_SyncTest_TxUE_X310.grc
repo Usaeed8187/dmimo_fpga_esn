@@ -177,7 +177,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '15'
     widget: counter_slider
   states:
     bus_sink: false
@@ -458,12 +458,14 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
     debug: 'False'
+    fftsize: '64'
     framelen: frame_data_len
     ltfdata: ''
     maxoutbuf: '0'
     minoutbuf: '65536'
-    modtype: qam_order
     mucpt: 'False'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -475,13 +477,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 588.0]
+    coordinate: [480, 580.0]
     rotation: 0
     state: enabled
 - name: ncjt_rx_sync_0
   id: ncjt_rx_sync
   parameters:
-    acorrthrd: '0.6'
+    acorrthrd: '0.65'
     affinity: ''
     alias: ''
     comment: ''
@@ -494,7 +496,7 @@ blocks:
     nchans: '2'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
-    rxpwrthrd: 5e-4
+    rxpwrthrd: 1e-3
     samplerate: samp_rate
     xcorrthrd: '0.45'
   states:
@@ -521,7 +523,7 @@ blocks:
     ntx: '2'
     padding: '1000'
     pktspersec: pkts_per_sec
-    starttime: (0.25/pkts_per_sec) + 2.0
+    starttime: (0.25/pkts_per_sec) + 5.0
   states:
     bus_sink: false
     bus_source: false
@@ -599,7 +601,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: complex
-    update_time: '0.5'
+    update_time: '0.25'
     width1: '1'
     width10: '1'
     width2: '1'
@@ -691,7 +693,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: complex
-    update_time: '0.5'
+    update_time: '0.25'
     width1: '1'
     width10: '1'
     width2: '1'
@@ -912,7 +914,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: ''
+    clock_source0: external
     clock_source1: mimo
     clock_source2: ''
     clock_source3: ''
@@ -1071,7 +1073,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: ''
+    time_source0: external
     time_source1: mimo
     time_source2: ''
     time_source3: ''
@@ -1086,7 +1088,7 @@ blocks:
     bus_structure: null
     coordinate: [1096, 492.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: uhd_usrp_source_0
   id: uhd_usrp_source
   parameters:
@@ -1189,7 +1191,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: ''
+    clock_source0: external
     clock_source1: ''
     clock_source2: ''
     clock_source3: ''
@@ -1507,7 +1509,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: ''
+    time_source0: external
     time_source1: ''
     time_source2: ''
     time_source3: ''

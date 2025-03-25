@@ -446,6 +446,10 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nchans: '2'
+    p2framelen: '0'
+    p2preamblelen: '0'
+    p2rxue: 'False'
+    p2start: '0.25'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
     rxpwrthrd: 8e-4

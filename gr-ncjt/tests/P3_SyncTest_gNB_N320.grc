@@ -174,8 +174,8 @@ blocks:
     min_len: '200'
     orient: QtCore.Qt.Horizontal
     rangeType: float
-    start: '1.0'
-    step: '0.5'
+    start: '0'
+    step: '1'
     stop: '60'
     value: '50'
     widget: counter_slider
@@ -207,8 +207,8 @@ blocks:
     min_len: '200'
     orient: QtCore.Qt.Horizontal
     rangeType: float
-    start: '1.0'
-    step: '0.5'
+    start: '0'
+    step: '1'
     stop: '60'
     value: '50'
     widget: counter_slider
@@ -248,7 +248,7 @@ blocks:
     bus_structure: null
     coordinate: [1392, 236.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_sink_0_0_1_0_0_0_1_0
   id: blocks_file_sink
   parameters:
@@ -266,7 +266,7 @@ blocks:
     bus_structure: null
     coordinate: [1392, 468.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_source_0
   id: blocks_file_source
   parameters:
@@ -287,6 +287,40 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [56, 764.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: int
+    vlen: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1408, 260.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_0_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: int
+    vlen: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1416, 492.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -316,7 +350,7 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    maxcorrlen: '4000'
+    maxcorrlen: '2000'
     maxoutbuf: '0'
     minoutbuf: '0'
     nchans: '2'
@@ -329,7 +363,7 @@ blocks:
     pktspersec: pkts_per_sec
     rxpwrthrd: 1e-3
     samplerate: samp_rate
-    usrpdelay: '500'
+    usrpdelay: '730'
     xcorrthrd: '0.5'
   states:
     bus_sink: false
@@ -626,12 +660,14 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
     debug: 'False'
+    fftsize: '64'
     framelen: frame_data_len
     ltfdata: ''
     maxoutbuf: '0'
     minoutbuf: '65536'
-    modtype: qam_order
     mucpt: 'False'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -643,7 +679,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [464, 780.0]
+    coordinate: [456, 772.0]
     rotation: 0
     state: enabled
 - name: ncjt_tx_frm_ctrl_0
@@ -1877,8 +1913,10 @@ connections:
 - [ncjt_ofdm_mod_0, '0', ncjt_tx_frm_ctrl_0, '0']
 - [ncjt_ofdm_mod_0_0, '0', ncjt_tx_frm_ctrl_0, '1']
 - [ncjt_pkt_err_0, '0', blocks_file_sink_0_0_1_0_0_0_1, '0']
+- [ncjt_pkt_err_0, '0', blocks_null_sink_0, '0']
 - [ncjt_pkt_err_0, '1', qtgui_time_sink_x_0, '0']
 - [ncjt_pkt_err_0_0, '0', blocks_file_sink_0_0_1_0_0_0_1_0, '0']
+- [ncjt_pkt_err_0_0, '0', blocks_null_sink_0_0, '0']
 - [ncjt_pkt_err_0_0, '1', qtgui_time_sink_x_0, '1']
 - [ncjt_qam_demapper_0, '0', ncjt_pkt_err_0, '0']
 - [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
