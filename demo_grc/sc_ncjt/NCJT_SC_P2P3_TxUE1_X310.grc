@@ -526,7 +526,7 @@ blocks:
     p2framelen: '0'
     p2preamblelen: '0'
     p2rxue: 'False'
-    p2start: '0.25'
+    p2start: (0.25/pkts_per_sec)
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
     rxpwrthrd: 1e-3
