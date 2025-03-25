@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${lltf2}, ${debug})
+  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${p2rxue}, ${p2preamblelen}, ${p2framelen}, ${p2start}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${lltf2}, ${debug})
 
 parameters:
   - id: nchans
@@ -29,6 +29,28 @@ parameters:
     label: Packets/Sec
     dtype: int
     default: '8'
+  - id: p2rxue
+    label: P2 RxUE
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+  - id: p2preamblelen
+    label: P2 HTPreamble Length
+    dtype: int
+    default: '0'
+    hide: part
+  - id: p2framelen
+    label: P2 DataFrame Length
+    dtype: int
+    default: '0'
+    hide: part
+  - id: p2start
+    label: P2 Start Time
+    dtype: float
+    default: '0'
+    hide: part
   - id: rxpwrthrd
     label: Signal Power Threshold
     dtype: float
@@ -68,11 +90,16 @@ inputs:
     multiplicity: ${nchans}
 
 outputs:
-  - label: out
+  - label: out1
     domain: stream
     dtype: complex
     multiplicity: ${nchans}
-    hide: ${not gnbrx}
+  - label: out2
+    domain: stream
+    dtype: complex
+    multiplicity: ${nchans}
+    optional: true
+    hide: ${not p2rxue}
   - label: uhdcmd
     domain: message
     optional: true

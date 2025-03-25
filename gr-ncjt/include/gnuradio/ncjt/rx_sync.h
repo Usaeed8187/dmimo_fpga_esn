@@ -33,8 +33,8 @@ public:
      */
     static sptr
     make(int nchans, int npreamblesyms, int ndatasyms, double sampling_freq, int pktspersec,
-         double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len,
-         bool lltf2 = false, bool debug = false);
+         bool p2rxue, int p2preamblelen, int p2framelen, double p2_start, double rxpwr_thrd,
+         double acorr_thrd, double xcorr_thrd, int max_corr_len, bool lltf2 = false, bool debug = false);
 };
 
 } // namespace gr::ncjt

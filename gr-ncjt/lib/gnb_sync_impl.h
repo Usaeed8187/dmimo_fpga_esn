@@ -86,8 +86,7 @@ private:
     } d_state;
 
     int
-    sync_search(const gr_vector_const_void_star &input_items, int buffer_len,
-                float &current_foe_comp);
+    sync_search(const gr_vector_const_void_star &input_items, int buffer_len, float &current_foe_comp);
 
     int
     fine_sync(const gr_vector_const_void_star &input_items, int buffer_len,

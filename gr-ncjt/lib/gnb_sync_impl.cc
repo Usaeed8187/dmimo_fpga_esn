@@ -360,7 +360,6 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 produce(ch, noutput_samples);
                 produce(d_num_chans + ch, 0);
             }
-
             break;
         }
         case WAIT1:
