@@ -50,6 +50,9 @@ elseif strcmpi(mode, '2t2s')
     cfg.Nt  = 2; % Number of transmit antennas
     cfg.Nss = 2; % Number of spatial streams
     cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)
+elseif strcmpi(mode, '2t2s_csi')
+    cfg.Nt  = 2; % Number of transmit antennas
+    cfg.Nss = 2; % Number of spatial streams
 elseif strcmpi(mode, '2t1s_svd')
     cfg.Nt = 2;  % Number of transmit antennas
     cfg.Nss = 1; % Number of spatial streams per user
