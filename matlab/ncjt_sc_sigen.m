@@ -77,6 +77,10 @@ fid = fopen(sprintf('%s/%s/%s/strm_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, strmdata(:), "char");
 fclose(fid);
 
+fid = fopen(sprintf('%s/%s/%s/strm_data_2x.bin',datadir,mimotype,modtype),'wb');
+fwrite(fid, [strmdata(:);strmdata(:)], "char");
+fclose(fid);
+
 txdsyms = txdsyms(cfg.scInd, :, :);
 txdsyms_tmp = reshape(permute(txdsyms, [3, 1, 2]), [], 1);
 write_complex_binary(txdsyms_tmp, ...
