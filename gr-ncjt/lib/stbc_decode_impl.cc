@@ -120,14 +120,14 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     CTensor4D ry0 = Eigen::TensorMap<const CTensor4D>(in0 + 2 * d_scnum, dims);
     CTensor4D ry1 = Eigen::TensorMap<const CTensor4D>(in1 + 2 * d_scnum, dims);
     CTensor4D ry = ry0.concatenate(ry1, 2); // (Nsc, 2, Nrx, Nsyms/2)
-    dout << "ry size: " << ry.dimensions() << std::endl;
+    // dout << "ry size: " << ry.dimensions() << std::endl;
 
     // channel estimation
     Eigen::DSizes<Eigen::Index, 4> chest_dims(d_scnum, 2, 2, 1);
     auto chant_est = Eigen::TensorMap<const CTensor4D>(d_chan_est, chest_dims);
     Eigen::array<int, 4> bcast({1, 1, 1, d_numsyms / 2});
     CTensor4D ch = chant_est.broadcast(bcast); // (Nsc, Nrx, 2, Nsym/2)
-    dout << "chanest size: " << ch.dimensions() << std::endl;
+    // dout << "chanest size: " << ch.dimensions() << std::endl;
 
     // CPE compensation
     CTensor4D cpe_comp_all(d_scnum, d_nrx, 1, d_numsyms);
@@ -174,7 +174,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     // Step 3: Reshape concatenated tensor to [num_subcarriers, num_rx, 2 * num_syms_half, ]
     Eigen::array<int, 3> z_combined_dims = {d_scnum, d_nrx, d_numsyms};
     CTensor3D z_combined_reshaped = Eigen::TensorMap<CTensor3D>(z_combined.data(), z_combined_dims);
-    dout << "z_combined_reshaped: " << z_combined_reshaped.dimensions() << std::endl;
+    // dout << "z_combined_reshaped: " << z_combined_reshaped.dimensions() << std::endl;
 
     // Step 4: Sum over receive antennas (axis 0) to get [num_subcarriers, 2 * num_syms_half]
     CTensor2D z_summed = z_combined_reshaped.sum(Eigen::array<int, 1>{1});
@@ -193,7 +193,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     // Step 3: Reshape to final dimensions [num_subcarriers, num_syms]
     Eigen::array<int, 2> h_eq_final_dims = {d_scnum, d_numsyms};
     Tensor2D h_eq_reshaped = Eigen::TensorMap<Tensor2D>(h_eq_duplicated.data(), h_eq_final_dims);
-    dout << "h_eq: " << h_eq_reshaped.dimensions() << std::endl;
+    // dout << "h_eq: " << h_eq_reshaped.dimensions() << std::endl;
 
     // Retrieve noise_var tag
     float noise_var = 1e-3f;
@@ -284,7 +284,7 @@ stbc_decode_impl::alamouti_decode(const CTensor4D &r, const CTensor4D &h)
     // Step 3: Reshape concatenated tensor to [num_rx, 2 * num_syms_half, num_subcarriers]
     Eigen::array<int, 3> z_combined_dims = {d_nrx, d_numsyms, d_scnum};
     CTensor3D z_combined_reshaped = Eigen::TensorMap<CTensor3D>(z_combined.data(), z_combined_dims);
-    dout << "z_combined_reshaped: " << z_combined_reshaped.dimensions() << std::endl;
+    // dout << "z_combined_reshaped: " << z_combined_reshaped.dimensions() << std::endl;
 
     // Step 4: Sum over receive antennas (axis 0) to get [2 * num_syms_half, num_subcarriers]
     CTensor2D z_summed = z_combined_reshaped.sum(Eigen::array<int, 1>{0});
