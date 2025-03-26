@@ -250,7 +250,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../../data/mu_mimo/2t2s/" + qam_type + "/strm_data_s2.bin"'
+    file: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -264,7 +264,7 @@ blocks:
     bus_structure: null
     coordinate: [24, 692.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_null_sink_0
   id: blocks_null_sink
   parameters:
@@ -317,7 +317,7 @@ blocks:
     bus_structure: null
     coordinate: [224, 716.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_ltf_chanest_0_0
   id: ncjt_ltf_chanest
   parameters:
@@ -1825,6 +1825,7 @@ connections:
 - [ncjt_qam_demapper_0_0, '0', ncjt_pkt_err_0_0, '0']
 - [ncjt_qam_demapper_0_0, '1', ncjt_pkt_err_0_0, '1']
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0_0, '0']
+- [ncjt_rg_demapper_0, '0', ncjt_rg_mapper_0_0, '0']
 - [ncjt_rg_mapper_0_0, '0', ncjt_ul_precoding_0_0, '0']
 - [ncjt_rx_sync_0_0, '0', ncjt_ofdm_demod_0_1, '0']
 - [ncjt_rx_sync_0_0, '1', ncjt_ofdm_demod_0_0_0, '0']

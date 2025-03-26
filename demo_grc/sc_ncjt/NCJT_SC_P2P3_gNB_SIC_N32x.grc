@@ -701,7 +701,7 @@ blocks:
     berout: 'True'
     comment: ''
     debug: 'True'
-    filename: '"../../data/mu_mimo/2t2s/" + qam_type + "/strm_data.bin"'
+    filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data_2x.bin"'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
