@@ -400,6 +400,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                     send_rxstate(false);
                     d_sync_err_cnt2 = 0;
                     d_rx_ready_cnt2 = 0;
+                    d_prev_p2frame_start = 0;
                     d_skip_p2_frame = true;
                     d_state = P2DEFRAME;
                 }
