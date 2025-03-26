@@ -87,7 +87,8 @@ parameters:
     hide: part
 
 inputs:
-  - domain: stream
+  - label: in
+    domain: stream
     dtype: byte
     vlen: 1
 

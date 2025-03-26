@@ -88,6 +88,9 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
 {
     char *strmdout = (char *) output_items[0];
 
+    // interleaved data for multiple streams
+    bool intlv_output = (output_items.size() == 1);
+
     int num_input_ports = d_usecsi ? 2 * d_nstrm : d_nstrm;
     int min_input_items = ninput_items[0];
     for (int ch = 1; ch < num_input_ports; ch++)
@@ -111,7 +114,6 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
         for (int di = 0; di < total_input_items; di++)
         {
             auto sdata = strmdout + output_offset + ch;
-            output_offset += d_nstrm * cur_modtype;
             float x = in[di].real();
             float y = in[di].imag();
             if (cur_modtype == 2) // QPSK
@@ -161,13 +163,15 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 sdata[6 * d_nstrm] = (xm <= h8) ? 1 : 0;
                 sdata[7 * d_nstrm] = (x >= 0) ? 1 : 0;
             }
+            output_offset += d_nstrm * cur_modtype;
             if (d_frame_ctrl_len > 0 && output_offset == d_frame_ctrl_len)
                 cur_modtype = d_data_modtype;
         }
-    }
 
-    add_ctrl_tag(0, 0, d_frame_ctrl_len);  // add control packet tag
-    add_packet_tag(0, 0, d_frame_ctrl_len + d_frame_data_len);  // add data packet tag
+        auto offset = nitems_written(0);
+        add_ctrl_tag(ch, offset, d_frame_ctrl_len);  // add control packet tag
+        add_packet_tag(ch, offset, d_frame_ctrl_len + d_frame_data_len);  // add data packet tag
+    }
 
     return d_frame_ctrl_len + d_frame_data_len;
 }
@@ -176,7 +180,7 @@ void
 rg_demapper_impl::add_ctrl_tag(int ch, uint64_t offset, int data_len)
 {
     add_item_tag(ch, offset,
-                 pmt::string_to_symbol("ctrl_data_len"),
+                 pmt::string_to_symbol("ctrl_data"),
                  pmt::from_long(data_len),
                  _id);
 }

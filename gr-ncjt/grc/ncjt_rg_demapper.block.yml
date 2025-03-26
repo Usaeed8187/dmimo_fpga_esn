@@ -75,7 +75,8 @@ inputs:
     hide: ${not usecsi}
 
 outputs:
-  - domain: stream
+  - label: out
+    domain: stream
     dtype: byte
     vlen: 1
 

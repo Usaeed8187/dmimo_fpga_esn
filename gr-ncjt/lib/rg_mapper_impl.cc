@@ -172,8 +172,10 @@ rg_mapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
         // map control and data symbols
         for (int didx = ss; didx < d_frame_data_len + d_frame_ctrl_len; didx += (d_nstrm * cur_modtype))
         {
-            auto dbits = in + didx;
+            if (cursym == d_nctrlsyms)
+                cur_modtype = d_data_modtype;
             offset = output_offset + cursym * d_scnum + scidx;
+            auto dbits = in + didx;
             switch (cur_modtype)
             {
                 case 2: // QPSK: 4 symbols per byte
@@ -210,8 +212,6 @@ rg_mapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 if (++ptidx == d_npt)
                     ptidx = 0;
             }
-            if (cursym == d_nctrlsyms)
-                cur_modtype = d_data_modtype;
         }
 
         // data padding
