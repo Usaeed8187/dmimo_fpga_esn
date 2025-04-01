@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(rg_demapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(d08548b6aa0c18887a67d8f445fe7f99) */
+/* BINDTOOL_HEADER_FILE(skip_data.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(3ef389f41fe11eab8910afc1f5ebaf4a) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,19 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/rg_demapper.h>
+#include <gnuradio/ncjt/skip_data.h>
 // pydoc.h is automatically generated in the build directory
-#include <rg_demapper_pydoc.h>
+#include <skip_data_pydoc.h>
 
-void bind_rg_demapper(py::module &m) {
+void bind_skip_data(py::module &m) {
 
-  using rg_demapper = ::gr::ncjt::rg_demapper;
+  using skip_data = ::gr::ncjt::skip_data;
 
-  py::class_<rg_demapper, gr::tagged_stream_block, gr::block, gr::basic_block,
-             std::shared_ptr<rg_demapper>>(m, "rg_demapper", D(rg_demapper))
+  py::class_<skip_data, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<skip_data>>(m, "skip_data", D(skip_data))
 
-      .def(py::init(&rg_demapper::make), py::arg("fftsize"), py::arg("nstrm"),
-           py::arg("framelen"), py::arg("ndatasyms"), py::arg("npilotsyms"),
-           py::arg("nctrlsyms"), py::arg("datamodtype"), py::arg("ctrlmodtype"),
-           py::arg("usecsi"), py::arg("mergestrm") = false,
-           py::arg("debug") = false, D(rg_demapper, make))
+      .def(py::init(&skip_data::make), py::arg("nstrm"), py::arg("skiplen"),
+           py::arg("debug") = false, D(skip_data, make))
 
       ;
 }

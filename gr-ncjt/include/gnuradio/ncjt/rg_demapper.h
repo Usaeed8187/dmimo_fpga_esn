@@ -33,7 +33,7 @@ public:
      */
     static sptr
     make(int fftsize, int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms,
-         int datamodtype, int ctrlmodtype, bool usecsi, bool debug);
+         int datamodtype, int ctrlmodtype, bool usecsi, bool mergestrm = false, bool debug = false);
 };
 
 } // namespace gr::ncjt

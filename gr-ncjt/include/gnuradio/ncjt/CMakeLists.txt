@@ -33,4 +33,8 @@ install(FILES api.h
     video_sink.h
     rx_sync.h
     gnb_sync.h
-    tx_frm_ctrl.h DESTINATION include/gnuradio/ncjt)
+    tx_frm_ctrl.h
+    add_ctrldata.h
+    check_ctrldata.h
+    llr_combine.h
+    skip_data.h DESTINATION include/gnuradio/ncjt)

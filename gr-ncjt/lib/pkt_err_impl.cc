@@ -49,6 +49,9 @@ pkt_err_impl::pkt_err_impl(int nstrms, const char *filename, int logfreq, bool b
         d_total_bit_errs[k] = 0;
         d_total_pkt_errs[k] = 0;
     }
+
+    message_port_register_in(pmt::mp("reset"));
+    set_msg_handler(pmt::mp("reset"), [this](const pmt::pmt_t &msg) { process_reset_message(msg); });
 }
 
 pkt_err_impl::~pkt_err_impl()
@@ -65,6 +68,20 @@ pkt_err_impl::calculate_output_stream_length(
     for (int ch = 1; ch < d_num_strms; ch++)
         min_input_items = std::min(min_input_items, ninput_items[ch]);
     return d_num_strms * (min_input_items / d_pkt_len);
+}
+
+void
+pkt_err_impl::process_reset_message(const pmt::pmt_t &msg)
+{
+    d_total_pkts = 0;
+    d_cur_pos = 0;
+    d_cur_bit_errs_sum = 0;
+    for (int k = 0; k < 8; k++)
+    {
+        d_cur_bit_errs[k] = 0;
+        d_total_bit_errs[k] = 0;
+        d_total_pkt_errs[k] = 0;
+    }
 }
 
 int

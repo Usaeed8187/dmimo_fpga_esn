@@ -37,6 +37,9 @@ protected:
     int
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
+    void
+    process_reset_message(const pmt::pmt_t &msg);
+
 public:
     pkt_err_impl(int nstrms, const char *filename, int logfreq, bool berout, bool debug);
     ~pkt_err_impl();

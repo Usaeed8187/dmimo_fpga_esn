@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rg_demapper(${fftsize}, ${nstrm}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${nctrlsyms}, ${datamodtype}, ${ctrlmodtype}, ${usecsi}, ${debug})
+  make: ncjt.rg_demapper(${fftsize}, ${nstrm}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${nctrlsyms}, ${datamodtype}, ${ctrlmodtype}, ${usecsi}, ${mergestrm}, ${debug})
 
 
 parameters:
@@ -54,6 +54,13 @@ parameters:
     default: 'False'
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
+  - id: mergestrm
+    label: Merge streams
+    dtype: bool
+    default: 'True'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -78,6 +85,6 @@ outputs:
   - label: out
     domain: stream
     dtype: byte
-    vlen: 1
+    multiplicity: ${ (1 if mergestrm else nstrm) }
 
 file_format: 1

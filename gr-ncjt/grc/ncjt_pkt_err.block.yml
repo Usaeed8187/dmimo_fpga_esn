@@ -38,6 +38,9 @@ parameters:
     hide: part
 
 inputs:
+  - label: reset
+    domain: message
+    optional: true
   - domain: stream
     dtype: byte
     multiplicity: ${nstrms}

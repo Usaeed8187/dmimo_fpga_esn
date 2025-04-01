@@ -45,6 +45,10 @@ namespace py = pybind11;
     void bind_rx_sync(py::module& m);
     void bind_gnb_sync(py::module& m);
     void bind_tx_frm_ctrl(py::module& m);
+    void bind_add_ctrldata(py::module& m);
+    void bind_check_ctrldata(py::module& m);
+    void bind_llr_combine(py::module& m);
+    void bind_skip_data(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -97,5 +101,9 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_rx_sync(m);
     bind_gnb_sync(m);
     bind_tx_frm_ctrl(m);
+    bind_add_ctrldata(m);
+    bind_check_ctrldata(m);
+    bind_llr_combine(m);
+    bind_skip_data(m);
     // ) END BINDING_FUNCTION_CALLS
 }

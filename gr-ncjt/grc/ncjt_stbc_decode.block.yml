@@ -49,5 +49,8 @@ outputs:
     dtype: complex
     multiplicity: 1
     optional: true
+  - label: llr
+    domain: message
+    optional: true
 
 file_format: 1

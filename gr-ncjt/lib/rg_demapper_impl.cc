@@ -13,20 +13,20 @@ namespace gr::ncjt
 
 rg_demapper::sptr
 rg_demapper::make(int fftsize, int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms,
-                  int datamodtype, int ctrlmodtype, bool usecsi, bool debug)
+                  int datamodtype, int ctrlmodtype, bool usecsi, bool mergestrm, bool debug)
 {
     return gnuradio::make_block_sptr<rg_demapper_impl>(
-        fftsize, nstrm, framelen, ndatasyms, npilotsyms, nctrlsyms, datamodtype, ctrlmodtype, usecsi, debug);
+        fftsize, nstrm, framelen, ndatasyms, npilotsyms, nctrlsyms, datamodtype, ctrlmodtype, usecsi, mergestrm, debug);
 }
 
 rg_demapper_impl::rg_demapper_impl(int fftsize, int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms,
-                                   int datamodtype, int ctrlmodtype, bool usecsi, bool debug)
+                                   int datamodtype, int ctrlmodtype, bool usecsi, bool mergestrm, bool debug)
     : gr::tagged_stream_block(
     "rg_demapper",
     gr::io_signature::make(nstrm, 2 * nstrm, sizeof(gr_complex)),
-    gr::io_signature::make(1, 1, sizeof(uint8_t)),
+    gr::io_signature::make(1, nstrm, sizeof(uint8_t)),
     "packet_len"),
-      d_usecsi(usecsi), d_debug(debug)
+      d_usecsi(usecsi), d_mergestrm(mergestrm), d_debug(debug)
 {
     if (fftsize != 64 && fftsize != 256)
         throw std::runtime_error("Unsupported OFDM FFT size");
@@ -86,10 +86,8 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
 {
-    char *strmdout = (char *) output_items[0];
-
-    // interleaved data for multiple streams
-    bool intlv_output = (output_items.size() == 1);
+    // merge output ports of multiple data streams
+    bool merge_output = (d_mergestrm || output_items.size() < d_nstrm);
 
     int num_input_ports = d_usecsi ? 2 * d_nstrm : d_nstrm;
     int min_input_items = ninput_items[0];
@@ -104,32 +102,55 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
     int total_input_items = d_frame_ctrl_len / (d_ctrl_modtype * d_nstrm)
         + d_frame_data_len / (d_data_modtype * d_nstrm);
 
+    int output_frame_len = merge_output ?
+        (d_frame_ctrl_len + d_frame_data_len) : (d_frame_ctrl_len + d_frame_data_len)/d_nstrm;
+    int output_ctrl_len = merge_output ? d_frame_ctrl_len : d_frame_ctrl_len/d_nstrm;
+
     for (int ch = 0; ch < d_nstrm; ch++)
     {
         const gr_complex *in = (const gr_complex *) input_items[ch];
         const gr_complex *csi = d_usecsi ? (const gr_complex *) input_items[d_nstrm + ch] : nullptr;
+        char *strmdout = merge_output ? (char *) output_items[0] : (char *) output_items[ch];
 
         int cur_modtype = (d_nctrlsyms > 0) ? d_ctrl_modtype : d_data_modtype;
         int output_offset = 0;
         for (int di = 0; di < total_input_items; di++)
         {
-            auto sdata = strmdout + output_offset + ch;
+            auto sdata = merge_output ? (strmdout + output_offset + ch) : (strmdout + output_offset);
             float x = in[di].real();
             float y = in[di].imag();
             if (cur_modtype == 2) // QPSK
             {
-                sdata[0] = (y < 0) ? 1 : 0;
-                sdata[d_nstrm] = (x >= 0) ? 1 : 0;
+                if (merge_output)
+                {
+                    sdata[0] = (y < 0) ? 1 : 0;
+                    sdata[d_nstrm] = (x >= 0) ? 1 : 0;
+                }
+                else
+                {
+                    sdata[0] = (y < 0) ? 1 : 0;
+                    sdata[1] = (x >= 0) ? 1 : 0;
+                }
             }
             else if (cur_modtype == 4) // 16QAM
             {
                 float xm = abs(x);
                 float ym = abs(y);
                 float h2 = d_usecsi ? 2.0 / sqrt(10.0) * csi[di].real() : 2.0 / sqrt(10.0);
-                sdata[0]           = (ym <= h2) ? 1 : 0;
-                sdata[d_nstrm]     = (y < 0) ? 1 : 0;
-                sdata[2 * d_nstrm] = (xm <= h2) ? 1 : 0;
-                sdata[3 * d_nstrm] = (x >= 0) ? 1 : 0;
+                if (merge_output)
+                {
+                    sdata[0] = (ym <= h2) ? 1 : 0;
+                    sdata[d_nstrm] = (y < 0) ? 1 : 0;
+                    sdata[2 * d_nstrm] = (xm <= h2) ? 1 : 0;
+                    sdata[3 * d_nstrm] = (x >= 0) ? 1 : 0;
+                }
+                else
+                {
+                    sdata[0] = (ym <= h2) ? 1 : 0;
+                    sdata[1] = (y < 0) ? 1 : 0;
+                    sdata[2] = (xm <= h2) ? 1 : 0;
+                    sdata[3] = (x >= 0) ? 1 : 0;
+                }
             }
             else if (cur_modtype == 6) // 64QAM
             {
@@ -139,12 +160,24 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float h2 = d_usecsi ? a2 * csi[di].real() : a2;
                 float h4 = d_usecsi ? 2.0 * a2 * csi[di].real() : 2.0 * a2;
                 float h6 = d_usecsi ? 3.0 * a2 * csi[di].real() : 3.0 * a2;
-                sdata[0]           = (ym >= h2 && ym <= h6) ? 1 : 0;
-                sdata[d_nstrm]     = (ym <= h4) ? 1 : 0;
-                sdata[2 * d_nstrm] = (y <= 0) ? 1 : 0;
-                sdata[3 * d_nstrm] = (xm >= h2 && xm <= h6) ? 1 : 0;
-                sdata[4 * d_nstrm] = (xm <= h4) ? 1 : 0;
-                sdata[5 * d_nstrm] = (x >= 0) ? 1 : 0;
+                if (merge_output)
+                {
+                    sdata[0] = (ym >= h2 && ym <= h6) ? 1 : 0;
+                    sdata[d_nstrm] = (ym <= h4) ? 1 : 0;
+                    sdata[2 * d_nstrm] = (y <= 0) ? 1 : 0;
+                    sdata[3 * d_nstrm] = (xm >= h2 && xm <= h6) ? 1 : 0;
+                    sdata[4 * d_nstrm] = (xm <= h4) ? 1 : 0;
+                    sdata[5 * d_nstrm] = (x >= 0) ? 1 : 0;
+                }
+                else
+                {
+                    sdata[0] = (ym >= h2 && ym <= h6) ? 1 : 0;
+                    sdata[1] = (ym <= h4) ? 1 : 0;
+                    sdata[2] = (y <= 0) ? 1 : 0;
+                    sdata[3] = (xm >= h2 && xm <= h6) ? 1 : 0;
+                    sdata[4] = (xm <= h4) ? 1 : 0;
+                    sdata[5] = (x >= 0) ? 1 : 0;
+                }
             }
             else if (cur_modtype == 8) // 256QAM
             {
@@ -154,26 +187,40 @@ rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
                 float h2 = d_usecsi ? a2 * csi[di].real() : a2;
                 float h4 = d_usecsi ? 2.0 * a2 * csi[di].real() : 2.0 * a2;
                 float h8 = d_usecsi ? 4.0 * a2 * csi[di].real() : 4.0 * a2;
-                sdata[0]           = (abs(abs(ym - h8) - h4) <= h2) ? 1 : 0;
-                sdata[d_nstrm]     = (abs(ym - h8) <= h4) ? 1 : 0;
-                sdata[2 * d_nstrm] = (ym <= h8) ? 1 : 0;
-                sdata[3 * d_nstrm] = (y <= 0) ? 1 : 0;
-                sdata[4 * d_nstrm] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
-                sdata[5 * d_nstrm] = (abs(xm - h8) <= h4) ? 1 : 0;
-                sdata[6 * d_nstrm] = (xm <= h8) ? 1 : 0;
-                sdata[7 * d_nstrm] = (x >= 0) ? 1 : 0;
+                if (merge_output)
+                {
+                    sdata[0] = (abs(abs(ym - h8) - h4) <= h2) ? 1 : 0;
+                    sdata[d_nstrm] = (abs(ym - h8) <= h4) ? 1 : 0;
+                    sdata[2 * d_nstrm] = (ym <= h8) ? 1 : 0;
+                    sdata[3 * d_nstrm] = (y <= 0) ? 1 : 0;
+                    sdata[4 * d_nstrm] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
+                    sdata[5 * d_nstrm] = (abs(xm - h8) <= h4) ? 1 : 0;
+                    sdata[6 * d_nstrm] = (xm <= h8) ? 1 : 0;
+                    sdata[7 * d_nstrm] = (x >= 0) ? 1 : 0;
+                }
+                else
+                {
+                    sdata[0] = (abs(abs(ym - h8) - h4) <= h2) ? 1 : 0;
+                    sdata[1] = (abs(ym - h8) <= h4) ? 1 : 0;
+                    sdata[2] = (ym <= h8) ? 1 : 0;
+                    sdata[3] = (y <= 0) ? 1 : 0;
+                    sdata[4] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
+                    sdata[5] = (abs(xm - h8) <= h4) ? 1 : 0;
+                    sdata[6] = (xm <= h8) ? 1 : 0;
+                    sdata[7] = (x >= 0) ? 1 : 0;
+                }
             }
-            output_offset += d_nstrm * cur_modtype;
-            if (d_frame_ctrl_len > 0 && output_offset == d_frame_ctrl_len)
-                cur_modtype = d_data_modtype;
+            output_offset += (merge_output) ? d_nstrm * cur_modtype : cur_modtype;
+            if (d_frame_ctrl_len > 0 && output_offset == output_ctrl_len)
+                    cur_modtype = d_data_modtype;
         }
 
         auto offset = nitems_written(0);
-        add_ctrl_tag(ch, offset, d_frame_ctrl_len);  // add control packet tag
-        add_packet_tag(ch, offset, d_frame_ctrl_len + d_frame_data_len);  // add data packet tag
+        add_ctrl_tag(ch, offset, output_ctrl_len);  // add control packet tag
+        add_packet_tag(ch, offset, output_frame_len);  // add data packet tag
     }
 
-    return d_frame_ctrl_len + d_frame_data_len;
+    return output_frame_len;
 }
 
 void

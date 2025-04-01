@@ -45,6 +45,9 @@ stbc_decode_impl::stbc_decode_impl(int fftsize, int ndatasyms, int npilotsyms, b
     d_numsyms = ndatasyms + npilotsyms;
 
     d_chan_est = malloc_complex(4 * d_scnum);
+    d_llr_data = (uint8_t *) malloc(sizeof(uint8_t) * (d_scdata));
+
+    message_port_register_out(pmt::mp("llr"));
 
     set_tag_propagation_policy(block::TPP_DONT);
 }
@@ -53,6 +56,8 @@ stbc_decode_impl::~stbc_decode_impl()
 {
     if (d_chan_est != nullptr)
         volk_free(d_chan_est);
+    if (d_llr_data != nullptr)
+        free(d_llr_data);
 }
 
 int
@@ -114,6 +119,19 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     if (d_tags.empty())
         throw std::runtime_error("ERROR: cannot find cpe_offset tag");
     d_cpe_offset = pmt::to_float(d_tags[0].value);
+
+    // Retrieve signal_pwr & noise_var tag
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("signal_pwr"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find signal_pwr tag");
+    float signal_pwr = pmt::to_float(d_tags[0].value);
+
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("noise_var"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find noise_var tag");
+    float noise_var = pmt::to_float(d_tags[0].value);
 
     // reshape inputs as a tensor of shape (Nsc, 2, 1, Nsyms/2)
     Eigen::DSizes<Eigen::Index, 4> dims(d_scnum, 2, 1, d_numsyms / 2);
@@ -182,6 +200,8 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     // Effective channel gain
     Tensor3D h_eq = h1.abs().pow(2) + h2.abs().pow(2); // [num_subcarriers, num_rx, num_syms/2]
     Tensor2D h_eq_summed = h_eq.sum(Eigen::array<int, 1>{1}); // [num_subcarriers, num_syms/2]
+    Tensor1D h_eq_avg = h_eq_summed.mean(Eigen::array<int, 1>{1}); // [num_subcarriers]
+    dout << "Pwr_est: " << signal_pwr << " H_avg: " << h_eq_avg.mean() << std::endl;
 
     // Step 1: Reshape h_eq_summed to [num_subcarriers, num_syms/2, 1]
     Eigen::array<int, 3> h_eq_intermediate_dims = {d_scnum, d_numsyms / 2, 1};
@@ -194,30 +214,6 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     Eigen::array<int, 2> h_eq_final_dims = {d_scnum, d_numsyms};
     Tensor2D h_eq_reshaped = Eigen::TensorMap<Tensor2D>(h_eq_duplicated.data(), h_eq_final_dims);
     // dout << "h_eq: " << h_eq_reshaped.dimensions() << std::endl;
-
-    // Retrieve noise_var tag
-    float noise_var = 1e-3f;
-    std::vector<gr::tag_t> noise_tags;
-    // You may adjust the window range as needed
-    get_tags_in_window(noise_tags, 0, 0, 1, pmt::string_to_symbol("noise_var"));
-    if (!noise_tags.empty())
-    {
-        noise_var = pmt::to_float(noise_tags[0].value);
-        if (d_debug)
-        {
-            dout << "Retrieved noise_var=" << noise_var << " from tag" << std::endl;
-        }
-    }
-
-    // Attach noise_var as tag for downstream blocks
-    add_item_tag(0, nitems_written(0), pmt::string_to_symbol("noise_var"),
-                 pmt::from_float(noise_var), pmt::string_to_symbol(name()));
-
-    // Also attach avg_snr tag for the PDC block
-    float snr_linear = 1.0f / noise_var;
-    float snr_db = 10.0f * log10(snr_linear);
-    add_item_tag(0, nitems_written(0), pmt::string_to_symbol("avg_snr"),
-                 pmt::from_float(snr_db), pmt::string_to_symbol(name()));
 
     // symbols & csi output
     for (int m = 0; m < d_numsyms; m++)
@@ -233,9 +229,13 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
             out1[offset] = gr_complex(h_eq_reshaped(i, m), noise_var);
             if (output_constl)
                 out2[offset] = z_summed(i, m) / h_eq_reshaped(i, m);
+            float llrval = 8.0f * log(h_eq_avg[i] / (2.0f * noise_var));
+            d_llr_data[sc_cnt] = (llrval >= 63.0) ? 63 : floor(llrval);
             sc_cnt += 1;
         }
     }
+    // send LLR magnitude per subcarrier
+    send_llr_message();
 
     noutput_items = (d_scdata * d_numsyms);
     add_item_tag(0,
@@ -246,6 +246,17 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
 
     return noutput_items;
 }
+
+void
+stbc_decode_impl::send_llr_message()
+{
+    // make and send PDU message
+    pmt::pmt_t dict = pmt::make_dict();
+    dict = pmt::dict_add(dict, pmt::mp("llr"), pmt::PMT_T);
+    pmt::pmt_t pdu = pmt::make_blob(&d_llr_data[0], d_scdata * sizeof(uint8_t));
+    message_port_pub(pmt::mp("llr"), pmt::cons(dict, pdu));
+}
+
 
 /* Decodes symbols received from M_r receive antennas using Alamouti decoding.
  *

@@ -27,6 +27,7 @@ private:
     int d_frame_data_len; // data channel length per frame (in bits)
     int d_frame_ctrl_len; // control channel length per frame (in bits)
     bool d_usecsi;   // using CSI for QAM symbol demapping
+    bool d_mergestrm; // merge all stream in the output (interleaved stream data)
 
     pmt::pmt_t _id;
     bool d_debug;
@@ -43,7 +44,7 @@ protected:
 
 public:
     rg_demapper_impl(int fftsize, int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms,
-                     int datamodtype, int ctrlmodtype, bool usecsi, bool debug);
+                     int datamodtype, int ctrlmodtype, bool usecsi, bool mergestrm, bool debug);
     ~rg_demapper_impl();
 
     int

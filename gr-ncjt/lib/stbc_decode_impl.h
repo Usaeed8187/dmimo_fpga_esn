@@ -27,6 +27,7 @@ private:
     float d_cpe_offset; // CPE estimation offset
 
     gr_complex *d_chan_est; // channel estimation using H-LTFs
+    uint8_t *d_llr_data;    // LLR magnitude per data subcarrier
 
     bool d_debug;
 
@@ -36,6 +37,8 @@ protected:
 
     std::tuple<CTensor2D, Tensor2D>
     alamouti_decode(const CTensor4D& r, const CTensor4D& h);
+
+    void send_llr_message(void);
 
 public:
     stbc_decode_impl(int fftsize, int ndatasyms, int npilotsyms, bool debug);

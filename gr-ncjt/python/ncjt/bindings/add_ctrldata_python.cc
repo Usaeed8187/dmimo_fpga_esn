@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(rg_demapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(d08548b6aa0c18887a67d8f445fe7f99) */
+/* BINDTOOL_HEADER_FILE(add_ctrldata.h) */
+/* BINDTOOL_HEADER_FILE_HASH(ca3258b8530130daccf8c48eed989c29) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,20 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/rg_demapper.h>
+#include <gnuradio/ncjt/add_ctrldata.h>
 // pydoc.h is automatically generated in the build directory
-#include <rg_demapper_pydoc.h>
+#include <add_ctrldata_pydoc.h>
 
-void bind_rg_demapper(py::module &m) {
+void bind_add_ctrldata(py::module &m) {
 
-  using rg_demapper = ::gr::ncjt::rg_demapper;
+  using add_ctrldata = ::gr::ncjt::add_ctrldata;
 
-  py::class_<rg_demapper, gr::tagged_stream_block, gr::block, gr::basic_block,
-             std::shared_ptr<rg_demapper>>(m, "rg_demapper", D(rg_demapper))
+  py::class_<add_ctrldata, gr::tagged_stream_block, gr::block, gr::basic_block,
+             std::shared_ptr<add_ctrldata>>(m, "add_ctrldata", D(add_ctrldata))
 
-      .def(py::init(&rg_demapper::make), py::arg("fftsize"), py::arg("nstrm"),
-           py::arg("framelen"), py::arg("ndatasyms"), py::arg("npilotsyms"),
-           py::arg("nctrlsyms"), py::arg("datamodtype"), py::arg("ctrlmodtype"),
-           py::arg("usecsi"), py::arg("mergestrm") = false,
-           py::arg("debug") = false, D(rg_demapper, make))
+      .def(py::init(&add_ctrldata::make), py::arg("nstrm"),
+           py::arg("ctrl_datalen"), py::arg("add_txseq"), py::arg("add_rxseq"),
+           py::arg("add_llr"), py::arg("debug") = false, D(add_ctrldata, make))
 
       ;
 }

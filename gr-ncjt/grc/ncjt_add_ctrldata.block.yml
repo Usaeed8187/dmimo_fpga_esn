@@ -1,0 +1,63 @@
+id: ncjt_add_ctrldata
+label: Add CtrlData
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.add_ctrldata(${nstrm}, ${ctrl_datalen}, ${add_txseq}, ${add_rxseq}, ${add_llr}, ${debug})
+
+parameters:
+  - id: nstrm
+    label: Number of Streams
+    dtype: int
+    default: 1
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: ctrl_datalen
+    label: Ctrl Data Length
+    dtype: int
+    default: '0'
+  - id: add_txseq
+    label: Add Tx SeqNo
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+  - id: add_rxseq
+    label: Add Rx SeqNo
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+  - id: add_llr
+    label: Add LLRs
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: llr
+    domain: message
+    optional: true
+  - label: in
+    domain: stream
+    dtype: byte
+    vlen: 1
+    multiplicity: ${nstrm}
+
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: byte
+    multiplicity: ${nstrm}
+
+file_format: 1

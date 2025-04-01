@@ -39,7 +39,12 @@ list(APPEND ncjt_sources
     video_sink_impl.cc
     rx_sync_impl.cc
     gnb_sync_impl.cc
-    tx_frm_ctrl_impl.cc)
+    bchclass.cc
+    tx_frm_ctrl_impl.cc
+    add_ctrldata_impl.cc
+    check_ctrldata_impl.cc
+    llr_combine_impl.cc
+    skip_data_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"
