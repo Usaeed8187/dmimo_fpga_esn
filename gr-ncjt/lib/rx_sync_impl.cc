@@ -687,15 +687,18 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
                         float &current_foe_comp, float &fine_foe_comp, int &rx_ready_cnt, int &fine_foe_cnt)
 {
     // compensate for current FOE
+    float sig_power = 0.0;
     for (int i = 0; i < buffer_len; i++)
     {
         gr_complex comp_val = exp(gr_complex(0, current_foe_comp * (double) i));
         for (int ch = 0; ch < d_num_chans; ch++)
         {
             auto *in = (const gr_complex *) input_items[ch];
+            sig_power += norm(in[i]);
             d_input_buf[i + ch * XCORR_DATA_LEN] = in[i] * comp_val;
         }
     }
+    sig_power /= buffer_len;
 
     // compute cross-correlation of received signal and L-LTF
     int xcorr_len = buffer_len - FFT_LEN;
@@ -723,7 +726,8 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
         }
     }
     avg_xcorr /= (double) xcorr_len;
-    if (max_xcorr < 8.0 * avg_xcorr) // TODO fine-tune max_xcorr threshold
+    // if (max_xcorr < 8.0 * avg_xcorr) // TODO fine-tune max_xcorr threshold
+    if (max_xcorr < 6.0 * sig_power) // TODO fine-tune max_xcorr threshold
     {
         dout << "Xcorr mean: " << avg_xcorr << "  Xcorr peak: " << max_xcorr << std::endl;
         dout << "No valid xcorr peaks found (" << peak_pos << ")" << std::endl;

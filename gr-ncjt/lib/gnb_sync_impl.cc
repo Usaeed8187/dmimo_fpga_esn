@@ -232,7 +232,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_sync_err_cnt1 = 0;
                 d_sync_err_cnt2 = 0;
                 d_state = P2SEARCH;
-                dout << "Phase 2: entering SYNC state" << std::endl;
+                dout << "Phase 2: Entering SYNC state" << std::endl;
             }
             consume_each(min_input_items);
             break;
@@ -276,11 +276,11 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_sync_err_cnt1 += 1;
                 if (d_sync_err_cnt1 > 5)
                 {
+                    d_skip_p2_frame = true;
                     d_current_foe_comp1 = 0.0;
                     d_rx_ready_cnt1 = 0;
                     d_sync_err_cnt1 = 0;
                 }
-                d_skip_p2_frame = true;
                 // skip the whole beacon
                 consume_each(5 * SYM_LEN + d_p2_htlen);
                 d_data_samples = 0;
@@ -297,7 +297,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
 
             if (d_rx_ready_cnt1 > 10 && (d_rx_ready_cnt1 % 100) == 0)
             {
-                std::cout << "Fine frequency offset compensation: " << d_current_foe_comp1 << "    ("
+                std::cout << "Phase 2: Fine frequency offset compensation: " << d_current_foe_comp1 << "    ("
                           << d_current_foe_comp1 * d_samplerate / (2.0 * M_PI) << " Hz)" << std::endl;
             }
 
@@ -372,7 +372,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 min_input_items -= new_data_count;
                 d_data_samples = 0;
                 d_state =  (d_rx_ready_cnt2 == 0) ? P3SEARCH : P3SYNC;
-                dout << "Phase 3: entering SYNC state" << std::endl;
+                dout << "Phase 3: Entering SYNC state" << std::endl;
             }
             consume_each(min_input_items);
             break;
@@ -417,12 +417,12 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_sync_err_cnt2 += 1;
                 if (d_sync_err_cnt2 > 5)
                 {
+                    d_skip_p3_frame = true;
                     d_current_foe_comp2 = 0.0;
                     d_rx_ready_cnt2 = 0;
                     d_sync_err_cnt2 = 0;
                 }
                 d_current_foe_comp2 = 0.0;
-                d_skip_p3_frame = true;
                 // skip the whole beacon
                 consume_each(5 * SYM_LEN + d_p3_htlen);
                 d_data_samples = 0;
@@ -439,7 +439,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
 
             if (d_rx_ready_cnt2 > 10 && (d_rx_ready_cnt2 % 100) == 0)
             {
-                std::cout << "Fine frequency offset compensation: " << d_current_foe_comp2 << "    ("
+                std::cout << "Phase 3: Fine frequency offset compensation: " << d_current_foe_comp2 << "    ("
                           << d_current_foe_comp2 * d_samplerate / (2.0 * M_PI) << " Hz)" << std::endl;
             }
 
@@ -515,7 +515,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 min_input_items -= new_data_count;
                 d_data_samples = 0;
                 d_state = (d_rx_ready_cnt1 == 0) ? P2SEARCH : P2SYNC;
-                dout << "Phase 2: entering SYNC state" << std::endl;
+                dout << "Phase 2: Entering SYNC state" << std::endl;
             }
             consume_each(min_input_items);
             break;
@@ -679,15 +679,18 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
                          float &current_foe_comp, float &fine_foe_comp, int &rx_ready_cnt, int &fine_foe_cnt)
 {
     // compensate for current FOE
+    float sig_power = 0.0;
     for (int i = 0; i < buffer_len; i++)
     {
         gr_complex comp_val = exp(gr_complex(0, current_foe_comp * (double) i));
         for (int ch = 0; ch < d_num_chans; ch++)
         {
             auto *in = (const gr_complex *) input_items[ch];
+            sig_power += norm(in[i]);
             d_input_buf[i + ch * XCORR_DATA_LEN] = in[i] * comp_val;
         }
     }
+    sig_power /= buffer_len;
 
     // compute cross-correlation of received signal and L-LTF
     int xcorr_len = buffer_len - FFT_LEN;
@@ -711,7 +714,8 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
         }
     }
     avg_xcorr /= (double) xcorr_len;
-    if (max_xcorr < 8.0 * avg_xcorr) // TODO fine-tune max_xcorr threshold
+    // if (max_xcorr < 8.0 * avg_xcorr) // TODO fine-tune max_xcorr threshold
+    if (max_xcorr < 6.0 * sig_power) // TODO fine-tune max_xcorr threshold
     {
         dout << "Xcorr mean: " << avg_xcorr << "  Xcorr peak: " << max_xcorr << std::endl;
         dout << "No valid xcorr peaks found (" << peak_pos << ")" << std::endl;
