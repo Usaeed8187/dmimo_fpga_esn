@@ -66,7 +66,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1072, 12.0]
+    coordinate: [1088, 12.0]
     rotation: 0
     state: enabled
 - name: nss
@@ -150,7 +150,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [984, 12.0]
+    coordinate: [992, 12.0]
     rotation: 0
     state: enabled
 - name: rf_freq
@@ -207,7 +207,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1232, 12.0]
+    coordinate: [1264, 12.0]
     rotation: 0
     state: true
 - name: tx_gain
@@ -235,7 +235,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr=192.168.40.2"'
+    value: '"addr=192.168.80.2"'
   states:
     bus_sink: false
     bus_source: false

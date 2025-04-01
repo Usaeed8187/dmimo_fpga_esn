@@ -339,7 +339,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1296, 740.0]
+    coordinate: [1280, 756.0]
     rotation: 0
     state: enabled
 - name: ncjt_burst_tx_0
@@ -450,7 +450,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [216, 360.0]
+    coordinate: [216, 376.0]
     rotation: 0
     state: enabled
 - name: ncjt_mimo_detect_0
@@ -496,7 +496,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [624, 712.0]
+    coordinate: [608, 728.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0_0
@@ -521,7 +521,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 344.0]
+    coordinate: [592, 360.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0_1
@@ -546,7 +546,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 480.0]
+    coordinate: [592, 496.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -564,7 +564,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 728.0]
+    coordinate: [472, 744.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0
@@ -582,7 +582,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 760.0]
+    coordinate: [472, 776.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0_0
@@ -600,7 +600,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 392.0]
+    coordinate: [440, 408.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0_1
@@ -618,7 +618,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [456, 528.0]
+    coordinate: [456, 544.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_1
@@ -636,7 +636,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 824.0]
+    coordinate: [472, 840.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_2
@@ -654,7 +654,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 792.0]
+    coordinate: [472, 808.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_3
@@ -672,7 +672,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 360.0]
+    coordinate: [440, 376.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_4
@@ -690,7 +690,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [456, 496.0]
+    coordinate: [456, 512.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0
@@ -710,7 +710,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 744.0]
+    coordinate: [1168, 760.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_0
@@ -771,7 +771,7 @@ blocks:
     bus_structure: null
     coordinate: [1032, 744.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_rg_demapper_0
   id: ncjt_rg_demapper
   parameters:
@@ -784,6 +784,7 @@ blocks:
     fftsize: '64'
     framelen: frame_data_len
     maxoutbuf: '0'
+    mergestrm: 'True'
     minoutbuf: '0'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -809,6 +810,7 @@ blocks:
     fftsize: '64'
     framelen: frame_data_len
     maxoutbuf: '0'
+    mergestrm: 'True'
     minoutbuf: '0'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -820,6 +822,32 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [992, 468.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_rg_demapper_0_0_0
+  id: ncjt_rg_demapper
+  parameters:
+    affinity: '5'
+    alias: ''
+    comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
+    debug: 'False'
+    fftsize: '64'
+    framelen: frame_data_len * 2
+    maxoutbuf: '0'
+    mergestrm: 'False'
+    minoutbuf: '0'
+    nctrlsyms: '0'
+    ndatasyms: num_data_syms
+    npilotsyms: '0'
+    nstrm: '2'
+    usecsi: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1016, 748.0]
     rotation: 0
     state: enabled
 - name: ncjt_sic_detect_0
@@ -840,7 +868,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [832, 712.0]
+    coordinate: [816, 728.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_decode_0
@@ -970,7 +998,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 660.0]
+    coordinate: [1016, 660.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_0
@@ -1062,7 +1090,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 820.0]
+    coordinate: [1016, 852.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_1_0
@@ -1964,7 +1992,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 292.0]
+    coordinate: [16, 308.0]
     rotation: 0
     state: enabled
 
@@ -2016,9 +2044,13 @@ connections:
 - [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0, '0']
 - [ncjt_rg_demapper_0_0, '0', ncjt_pkt_err_0_0_0, '0']
+- [ncjt_rg_demapper_0_0_0, '0', ncjt_pkt_err_0, '0']
+- [ncjt_rg_demapper_0_0_0, '1', ncjt_pkt_err_0, '1']
 - [ncjt_sic_detect_0, '0', ncjt_qam_demapper_0, '0']
+- [ncjt_sic_detect_0, '0', ncjt_rg_demapper_0_0_0, '0']
 - [ncjt_sic_detect_0, '0', qtgui_const_sink_x_0, '0']
 - [ncjt_sic_detect_0, '1', ncjt_qam_demapper_0, '1']
+- [ncjt_sic_detect_0, '1', ncjt_rg_demapper_0_0_0, '1']
 - [ncjt_sic_detect_0, '1', qtgui_const_sink_x_0_0, '0']
 - [ncjt_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_stbc_decode_0, '1', ncjt_rg_demapper_0, '1']
