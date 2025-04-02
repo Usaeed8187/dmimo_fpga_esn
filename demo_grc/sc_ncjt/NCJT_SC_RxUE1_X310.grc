@@ -680,7 +680,7 @@ blocks:
     framelen: frame_data_len
     ltfdata: '"../../data/mu_mimo/2t2s/" + qam_type + "/ltf2x2_t1.bin"'
     maxoutbuf: '0'
-    minoutbuf: '65536'
+    minoutbuf: '32768'
     mucpt: 'True'
     nctrlsyms: num_ctrl_syms_p3
     ndatasyms: num_data_syms
@@ -698,7 +698,7 @@ blocks:
 - name: ncjt_rx_sync_0
   id: ncjt_rx_sync
   parameters:
-    acorrthrd: '0.65'
+    acorrthrd: '0.6'
     affinity: '0'
     alias: ''
     comment: ''
@@ -780,7 +780,7 @@ blocks:
     eigenmode: 'True'
     loadcsi: 'False'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ndatasyms: num_data_syms + num_ctrl_syms_p3
     nss: '1'
     ntx: '2'
@@ -1288,7 +1288,7 @@ blocks:
     center_freq9: '0'
     clock_rate: 200e6
     clock_source0: ''
-    clock_source1: external
+    clock_source1: ''
     clock_source2: ''
     clock_source3: ''
     clock_source4: ''
@@ -1447,7 +1447,7 @@ blocks:
     stream_chans: '[]'
     sync: sync
     time_source0: ''
-    time_source1: external
+    time_source1: ''
     time_source2: ''
     time_source3: ''
     time_source4: ''
@@ -1565,7 +1565,7 @@ blocks:
     center_freq9: '0'
     clock_rate: 200e6
     clock_source0: ''
-    clock_source1: external
+    clock_source1: ''
     clock_source2: ''
     clock_source3: ''
     clock_source4: ''
@@ -1883,7 +1883,7 @@ blocks:
     stream_chans: '[]'
     sync: sync
     time_source0: ''
-    time_source1: external
+    time_source1: ''
     time_source2: ''
     time_source3: ''
     time_source4: ''
