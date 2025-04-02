@@ -31,6 +31,7 @@ private:
 
     int d_num_chans;  // Total number of IQ data channels
     int d_frame_len1;  // frame length in samples (HT preamble + data symbols)
+    int d_ht_len1;  // HT beacon length
     double d_samplerate;  // Baseband sampling frequency
     int d_frame_interval;   // packet repeat interval (in samples)
     int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
@@ -39,6 +40,7 @@ private:
 
     bool d_p2rxue;  // Phase 2 RxUE mode
     int d_frame_len2;  // Phase 2 frame length in samples (HT preamble + data symbols)
+    int d_ht_len2; // Phase 2 HT beacon length
     uint64_t d_p2start_offset; // Phase 2 frame start offset
     bool d_skip_p2_frame; // skip phase-2 deframing
 

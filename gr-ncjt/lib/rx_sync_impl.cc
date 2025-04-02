@@ -57,6 +57,7 @@ rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen, double
 
     // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF (3*SYM_LEN)
     d_frame_len1 = dataframelen + preamblelen - 3 * SYM_LEN;
+    d_ht_len1 = preamblelen;
     // packet frame burst transmission period in seconds
     d_frame_interval = (int) floor(samplerate / pktspersec);
     // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT-SIG and HT-LTF
@@ -65,6 +66,7 @@ rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen, double
     // Phase RxUE mode
     d_p2rxue = p2rxue;
     d_frame_len2 = p2framelen + p2preamblelen - 3 * SYM_LEN;
+    d_ht_len2 = p2preamblelen;
     d_p2start_offset = (uint64_t) floor(p2_start * samplerate);
 
     d_corr_buf_pos = 0;
@@ -245,7 +247,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             }
 
             // predict the next frame start positions
-            if (d_rx_ready_cnt2 == 0)
+            if (d_rx_ready_cnt2 == 0 || d_prev_p2frame_start == 0)
                 d_next_p2frame_start = cur_frame_start + d_p2start_offset - 8 * SYM_LEN;
             d_next_frame_start = cur_frame_start + d_frame_interval;
             d_prev_frame_start = cur_frame_start;
@@ -263,7 +265,8 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_rx_ready_cnt1 % 10 == 0 && d_clk_offset_ok && d_rxtime_offset > 0)
             {
                 send_rxtime();
-                send_rxstate(true);
+                if (d_rx_ready_cnt1 > 0 && d_rx_ready_cnt2 > 0)
+                    send_rxstate(true);
             }
             d_rx_ready_cnt1 += 1;
 
@@ -279,9 +282,12 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_data_samples + noutput_samples >= d_frame_len1)
             {
                 noutput_samples = d_frame_len1 - d_data_samples;
-                if (!d_p2rxue) {
+                if (!d_p2rxue)
+                {
                     d_wait_interval = d_next_frame_start - uint64_t(noutput_samples + 8 * SYM_LEN) - nitems_read(0);
-                } else {
+                }
+                else
+                {
                     d_wait_interval = d_next_p2frame_start - uint64_t(noutput_samples + 8 * SYM_LEN) - nitems_read(0);
                     if (d_rx_ready_cnt2 == 0) // additional samples for sync search buffer
                         d_wait_interval -= d_max_corr_len / 4;
@@ -391,20 +397,22 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (ht_start < 0)
             {
                 dout << "P2 fine synchronize failed!" << std::endl;
-                consume_each(min_input_items);
+                // consume_each(min_input_items);
                 d_sync_err_cnt2 += 1;
                 if (d_sync_err_cnt2 >= 5)
                 {
                     // changing from ready state
-                    // std::cout << "======== Receiver synchronization lost ========" << std::endl;
-                    send_rxstate(false);
+                    // std::cout << "======== P2 Receiver synchronization lost ========" << std::endl;
+                    // send_rxstate(false);
                     d_sync_err_cnt2 = 0;
                     d_rx_ready_cnt2 = 0;
                     d_prev_p2frame_start = 0;
-                    d_skip_p2_frame = true;
+                    // d_skip_p2_frame = true;
+                    // skip the whole beacon
+                    consume_each(5 * SYM_LEN + d_ht_len2);
                     d_state = P2DEFRAME;
+                    break;
                 }
-                break;
             }
             else
             {
@@ -448,16 +456,6 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             }
 
             if (d_skip_p2_frame)
-            {
-                d_data_samples += noutput_samples;
-                consume_each(noutput_samples);
-                noutput_samples = 0;
-                break;
-            }
-
-            // skip initial frames with unstable FOE
-            // wait for all other receiver all synced
-            if (d_rx_ready_cnt2 <= 20)
             {
                 d_data_samples += noutput_samples;
                 consume_each(noutput_samples);
@@ -704,7 +702,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     int xcorr_len = buffer_len - FFT_LEN;
     if (lltf2)
         for (int ch = 0; ch < d_num_chans; ch++)
-           d_xcorr_fir_2.filterN(&d_xcorr_buf[ch * MAX_XCORR_LEN], &d_input_buf[ch * XCORR_DATA_LEN], xcorr_len);
+            d_xcorr_fir_2.filterN(&d_xcorr_buf[ch * MAX_XCORR_LEN], &d_input_buf[ch * XCORR_DATA_LEN], xcorr_len);
     else
         for (int ch = 0; ch < d_num_chans; ch++)
             d_xcorr_fir_1.filterN(&d_xcorr_buf[ch * MAX_XCORR_LEN], &d_input_buf[ch * XCORR_DATA_LEN], xcorr_len);
@@ -727,7 +725,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     }
     avg_xcorr /= (double) xcorr_len;
     // if (max_xcorr < 8.0 * avg_xcorr) // TODO fine-tune max_xcorr threshold
-    if (max_xcorr < 6.0 * sig_power) // TODO fine-tune max_xcorr threshold
+    if (max_xcorr < 4.0 * sig_power) // TODO fine-tune max_xcorr threshold
     {
         dout << "Xcorr mean: " << avg_xcorr << "  Xcorr peak: " << max_xcorr << std::endl;
         dout << "No valid xcorr peaks found (" << peak_pos << ")" << std::endl;
