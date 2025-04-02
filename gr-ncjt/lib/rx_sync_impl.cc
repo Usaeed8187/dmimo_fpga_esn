@@ -265,8 +265,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_rx_ready_cnt1 % 10 == 0 && d_clk_offset_ok && d_rxtime_offset > 0)
             {
                 send_rxtime();
-                if (d_rx_ready_cnt1 > 0 && d_rx_ready_cnt2 > 0)
-                    send_rxstate(true);
+                send_rxstate(true);
             }
             d_rx_ready_cnt1 += 1;
 
