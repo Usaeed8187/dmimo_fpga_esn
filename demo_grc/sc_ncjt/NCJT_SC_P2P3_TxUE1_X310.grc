@@ -57,6 +57,30 @@ blocks:
     coordinate: [392, 12.0]
     rotation: 0
     state: true
+- name: frame_data_len
+  id: variable
+  parameters:
+    comment: ''
+    value: 52*num_data_syms*qam_order*nss
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1256, 12.0]
+    rotation: 0
+    state: true
+- name: frame_data_len_p2
+  id: variable
+  parameters:
+    comment: ''
+    value: 52*num_data_syms*qam_order
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1376, 12.0]
+    rotation: 0
+    state: true
 - name: modulations
   id: variable
   parameters:
@@ -198,18 +222,6 @@ blocks:
     coordinate: [192, 12.0]
     rotation: 0
     state: enabled
-- name: tx_frame_data_len
-  id: variable
-  parameters:
-    comment: ''
-    value: 52*num_data_syms*qam_order
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1264, 12.0]
-    rotation: 0
-    state: true
 - name: tx_gain
   id: variable_qtgui_range
   parameters:
@@ -297,7 +309,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1496, 228.0]
+    coordinate: [1512, 212.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -309,7 +321,7 @@ blocks:
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
-    packet_len: tx_frame_data_len
+    packet_len: frame_data_len_p2
     type: byte
     vlen: '1'
   states:
@@ -457,26 +469,33 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1336, 232.0]
+    coordinate: [1376, 200.0]
     rotation: 0
     state: enabled
-- name: ncjt_qam_demapper_0
-  id: ncjt_qam_demapper
+- name: ncjt_rg_demapper_1
+  id: ncjt_rg_demapper
   parameters:
-    affinity: '5'
+    affinity: ''
     alias: ''
     comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
     debug: 'False'
+    fftsize: '64'
+    framelen: frame_data_len
     maxoutbuf: '0'
-    minoutbuf: '32768'
-    modtype: qam_order
-    nstrms: nss
+    mergestrm: 'False'
+    minoutbuf: '0'
+    nctrlsyms: '0'
+    ndatasyms: num_data_syms
+    npilotsyms: '0'
+    nstrm: '2'
     usecsi: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 232.0]
+    coordinate: [1160, 220.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0
@@ -491,7 +510,7 @@ blocks:
     datamodtype: qam_order
     debug: 'False'
     fftsize: '64'
-    framelen: tx_frame_data_len
+    framelen: frame_data_len_p2
     ltfdata: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -690,7 +709,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1168, 156.0]
+    coordinate: [1160, 148.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_0
@@ -879,7 +898,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1496, 308.0]
+    coordinate: [1512, 276.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -1602,9 +1621,9 @@ connections:
 - [ncjt_ltf_chanest_0, '0', ncjt_mimo_detect_0, '0']
 - [ncjt_ltf_chanest_0, '1', ncjt_mimo_detect_0, '1']
 - [ncjt_ltf_chanest_0, csi, pdu_pdu_to_tagged_stream_0_0, pdus]
-- [ncjt_mimo_detect_0, '0', ncjt_qam_demapper_0, '0']
+- [ncjt_mimo_detect_0, '0', ncjt_rg_demapper_1, '0']
 - [ncjt_mimo_detect_0, '0', qtgui_const_sink_x_0, '0']
-- [ncjt_mimo_detect_0, '1', ncjt_qam_demapper_0, '1']
+- [ncjt_mimo_detect_0, '1', ncjt_rg_demapper_1, '1']
 - [ncjt_mimo_detect_0, '1', qtgui_const_sink_x_0_0, '0']
 - [ncjt_ofdm_demod_0, '0', ncjt_ltf_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_ltf_chanest_0, '1']
@@ -1612,8 +1631,8 @@ connections:
 - [ncjt_ofdm_mod_0_0, '0', ncjt_tx_frm_ctrl_0, '1']
 - [ncjt_pkt_err_0, '0', blocks_null_sink_0, '0']
 - [ncjt_pkt_err_0, '1', qtgui_time_sink_x_0, '0']
-- [ncjt_qam_demapper_0, '0', ncjt_pkt_err_0, '0']
-- [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
+- [ncjt_rg_demapper_1, '0', ncjt_pkt_err_0, '0']
+- [ncjt_rg_demapper_1, '1', ncjt_pkt_err_0, '1']
 - [ncjt_rg_mapper_0, '0', ncjt_stbc_encode_0, '0']
 - [ncjt_rx_sync_0, '0', ncjt_ofdm_demod_0, '0']
 - [ncjt_rx_sync_0, '1', ncjt_ofdm_demod_0_0, '0']

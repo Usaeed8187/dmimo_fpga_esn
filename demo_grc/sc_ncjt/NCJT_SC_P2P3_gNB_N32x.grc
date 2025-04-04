@@ -219,78 +219,6 @@ blocks:
     coordinate: [8, 116.0]
     rotation: 0
     state: enabled
-- name: blocks_file_sink_0
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: '"/tmp/rxsig_s1.bin"'
-    type: complex
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [472, 252.0]
-    rotation: 0
-    state: disabled
-- name: blocks_file_sink_0_0
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: '"/tmp/rxsig_s2.bin"'
-    type: complex
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [512, 332.0]
-    rotation: 0
-    state: disabled
-- name: blocks_file_sink_0_1
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: '"/tmp/rxsig_s3.bin"'
-    type: complex
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [504, 580.0]
-    rotation: 0
-    state: disabled
-- name: blocks_file_sink_0_1_0
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: '"/tmp/rxsig_s4.bin"'
-    type: complex
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [512, 660.0]
-    rotation: 0
-    state: disabled
 - name: blocks_null_sink_0
   id: blocks_null_sink
   parameters:
@@ -339,7 +267,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1296, 796.0]
+    coordinate: [1312, 780.0]
     rotation: 0
     state: enabled
 - name: ncjt_burst_tx_0
@@ -710,7 +638,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1168, 800.0]
+    coordinate: [1184, 768.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_0
@@ -753,25 +681,6 @@ blocks:
     coordinate: [1152, 520.0]
     rotation: 0
     state: enabled
-- name: ncjt_qam_demapper_0
-  id: ncjt_qam_demapper
-  parameters:
-    affinity: '7'
-    alias: ''
-    comment: ''
-    debug: 'False'
-    maxoutbuf: '0'
-    minoutbuf: '32768'
-    modtype: qam_order
-    nstrms: '2'
-    usecsi: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1024, 768.0]
-    rotation: 0
-    state: disabled
 - name: ncjt_rg_demapper_0
   id: ncjt_rg_demapper
   parameters:
@@ -1989,10 +1898,8 @@ connections:
 - [ncjt_gnb_sync_0, '6', ncjt_ofdm_demod_0_2, '0']
 - [ncjt_gnb_sync_0, '7', ncjt_ofdm_demod_0_1, '0']
 - [ncjt_gnb_sync_0, uhdcmd, uhd_usrp_source_0, command]
-- [ncjt_mimo_detect_0, '0', ncjt_qam_demapper_0, '0']
 - [ncjt_mimo_detect_0, '0', ncjt_rg_demapper_0_0_0, '0']
 - [ncjt_mimo_detect_0, '0', qtgui_const_sink_x_0, '0']
-- [ncjt_mimo_detect_0, '1', ncjt_qam_demapper_0, '1']
 - [ncjt_mimo_detect_0, '1', ncjt_rg_demapper_0_0_0, '1']
 - [ncjt_mimo_detect_0, '1', qtgui_const_sink_x_0_0, '0']
 - [ncjt_mu_chanest_0, '0', ncjt_mimo_detect_0, '0']
@@ -2017,8 +1924,6 @@ connections:
 - [ncjt_pkt_err_0_0, '1', qtgui_time_sink_x_0, '0']
 - [ncjt_pkt_err_0_0_0, '0', blocks_null_sink_0_0, '0']
 - [ncjt_pkt_err_0_0_0, '1', qtgui_time_sink_x_0, '1']
-- [ncjt_qam_demapper_0, '0', ncjt_pkt_err_0, '0']
-- [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0, '0']
 - [ncjt_rg_demapper_0_0, '0', ncjt_pkt_err_0_0_0, '0']
 - [ncjt_rg_demapper_0_0_0, '0', ncjt_pkt_err_0, '0']

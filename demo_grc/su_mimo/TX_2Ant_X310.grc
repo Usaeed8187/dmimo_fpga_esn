@@ -66,7 +66,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1064, 20.0]
+    coordinate: [1080, 20.0]
     rotation: 0
     state: enabled
 - name: modulations
@@ -189,7 +189,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '15'
     widget: counter_slider
   states:
     bus_sink: false
@@ -217,7 +217,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [40, 272.0]
+    coordinate: [40, 268.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -256,7 +256,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [624, 236.0]
+    coordinate: [624, 244.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0
@@ -276,7 +276,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [624, 332.0]
+    coordinate: [624, 340.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0
@@ -306,7 +306,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 280.0]
+    coordinate: [424, 276.0]
     rotation: 0
     state: enabled
 - name: ncjt_tx_frm_ctrl_0
@@ -608,7 +608,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 200.0]
+    coordinate: [1008, 188.0]
     rotation: 0
     state: true
 

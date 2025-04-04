@@ -241,7 +241,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 232.0]
+    coordinate: [0, 228.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -330,7 +330,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 240.0]
+    coordinate: [384, 236.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
@@ -652,7 +652,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1120, 168.0]
+    coordinate: [1128, 156.0]
     rotation: 0
     state: true
 

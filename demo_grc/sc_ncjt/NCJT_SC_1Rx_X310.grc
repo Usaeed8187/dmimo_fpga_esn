@@ -306,7 +306,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 304.0]
+    coordinate: [1208, 288.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_demapper_0
@@ -321,6 +321,7 @@ blocks:
     fftsize: '64'
     framelen: frame_data_len
     maxoutbuf: '0'
+    mergestrm: 'True'
     minoutbuf: '0'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -348,6 +349,10 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nchans: '2'
+    p2framelen: '0'
+    p2preamblelen: '0'
+    p2rxue: 'False'
+    p2start: '0'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
     rxpwrthrd: 1e-3

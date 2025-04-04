@@ -57,6 +57,18 @@ blocks:
     coordinate: [296, 12.0]
     rotation: 0
     state: enabled
+- name: frame_data_len
+  id: variable
+  parameters:
+    comment: ''
+    value: nss*sc_num*num_data_syms*qam_order
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1152, 28.0]
+    rotation: 0
+    state: enabled
 - name: modulations
   id: variable
   parameters:
@@ -69,6 +81,18 @@ blocks:
     coordinate: [984, 28.0]
     rotation: 0
     state: enabled
+- name: nss
+  id: variable
+  parameters:
+    comment: ''
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 84.0]
+    rotation: 0
+    state: true
 - name: num_data_syms
   id: variable
   parameters:
@@ -78,7 +102,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 84.0]
+    coordinate: [480, 84.0]
     rotation: 0
     state: true
 - name: num_ltf_syms
@@ -90,7 +114,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [320, 84.0]
+    coordinate: [368, 84.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -114,7 +138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [560, 84.0]
+    coordinate: [592, 84.0]
     rotation: 0
     state: true
 - name: qam_type
@@ -153,13 +177,13 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '15'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 12.0]
+    coordinate: [720, 12.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -172,6 +196,18 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [200, 12]
+    rotation: 0
+    state: enabled
+- name: sc_num
+  id: variable
+  parameters:
+    comment: ''
+    value: '52'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [456, 12.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1_0_0_0
@@ -225,7 +261,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1456, 252.0]
+    coordinate: [1456, 260.0]
     rotation: 0
     state: enabled
 - name: ncjt_ltf_chanest_0
@@ -270,7 +306,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [912, 300.0]
+    coordinate: [896, 300.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -326,32 +362,39 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1312, 304.0]
+    coordinate: [1336, 272.0]
     rotation: 0
     state: enabled
-- name: ncjt_qam_demapper_0
-  id: ncjt_qam_demapper
+- name: ncjt_rg_demapper_1
+  id: ncjt_rg_demapper
   parameters:
-    affinity: '5'
+    affinity: ''
     alias: ''
     comment: ''
+    ctrlmodtype: '2'
+    datamodtype: qam_order
     debug: 'False'
+    fftsize: fft_size
+    framelen: frame_data_len
     maxoutbuf: '0'
-    minoutbuf: '32768'
-    modtype: qam_order
-    nstrms: '2'
+    mergestrm: 'False'
+    minoutbuf: '0'
+    nctrlsyms: '0'
+    ndatasyms: num_data_syms
+    npilotsyms: '0'
+    nstrm: '2'
     usecsi: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1144, 304.0]
+    coordinate: [1112, 292.0]
     rotation: 0
     state: enabled
 - name: ncjt_rx_sync_0_0
   id: ncjt_rx_sync
   parameters:
-    acorrthrd: '0.75'
+    acorrthrd: '0.6'
     affinity: ''
     alias: ''
     comment: ''
@@ -362,11 +405,15 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nchans: '2'
+    p2framelen: '0'
+    p2preamblelen: '0'
+    p2rxue: 'False'
+    p2start: '0'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
-    rxpwrthrd: 8e-4
+    rxpwrthrd: 1e-3
     samplerate: samp_rate
-    xcorrthrd: '0.6'
+    xcorrthrd: '0.5'
   states:
     bus_sink: false
     bus_source: false
@@ -686,7 +733,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1456, 348.0]
+    coordinate: [1456, 364.0]
     rotation: 0
     state: true
 - name: uhd_usrp_source_0
@@ -1131,16 +1178,16 @@ connections:
 - [ncjt_ltf_chanest_0, '1', ncjt_mimo_detect_0, '1']
 - [ncjt_ltf_chanest_0, cpe, pdu_pdu_to_tagged_stream_0, pdus]
 - [ncjt_ltf_chanest_0, csi, pdu_pdu_to_tagged_stream_0_0, pdus]
-- [ncjt_mimo_detect_0, '0', ncjt_qam_demapper_0, '0']
+- [ncjt_mimo_detect_0, '0', ncjt_rg_demapper_1, '0']
 - [ncjt_mimo_detect_0, '0', qtgui_const_sink_x_0, '0']
-- [ncjt_mimo_detect_0, '1', ncjt_qam_demapper_0, '1']
+- [ncjt_mimo_detect_0, '1', ncjt_rg_demapper_1, '1']
 - [ncjt_mimo_detect_0, '1', qtgui_const_sink_x_0_0, '0']
 - [ncjt_ofdm_demod_0, '0', ncjt_ltf_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_ltf_chanest_0, '1']
 - [ncjt_pkt_err_0, '0', blocks_file_sink_0_0_1_0_0_0_1, '0']
 - [ncjt_pkt_err_0, '1', qtgui_time_sink_x_0, '0']
-- [ncjt_qam_demapper_0, '0', ncjt_pkt_err_0, '0']
-- [ncjt_qam_demapper_0, '1', ncjt_pkt_err_0, '1']
+- [ncjt_rg_demapper_1, '0', ncjt_pkt_err_0, '0']
+- [ncjt_rg_demapper_1, '1', ncjt_pkt_err_0, '1']
 - [ncjt_rx_sync_0_0, '0', ncjt_ofdm_demod_0, '0']
 - [ncjt_rx_sync_0_0, '1', ncjt_ofdm_demod_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0, '0', blocks_file_sink_0_0_1_0_0_0, '0']
