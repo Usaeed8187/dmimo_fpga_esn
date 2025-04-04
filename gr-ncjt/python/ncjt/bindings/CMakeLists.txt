@@ -28,14 +28,11 @@ list(APPEND ncjt_python_files
     ofdm_mod_python.cc
     ofdm_demod_python.cc
     ltf_chanest_python.cc
-    qam_demapper_python.cc
-    soft_demapper_python.cc
     pkt_err_python.cc
     rg_mapper_python.cc
     rg_demapper_python.cc
     ul_precoding_python.cc
     mimo_detect_python.cc
-    rx_mrc_python.cc
     mu_chanest_python.cc
     sic_detect_python.cc
     stbc_encode_python.cc

@@ -14,14 +14,11 @@ install(FILES api.h
     ofdm_mod.h
     ofdm_demod.h
     ltf_chanest.h
-    qam_demapper.h
-    soft_demapper.h
     pkt_err.h
     rg_mapper.h
     rg_demapper.h
     ul_precoding.h
     mimo_detect.h
-    rx_mrc.h
     mu_chanest.h
     sic_detect.h
     stbc_encode.h

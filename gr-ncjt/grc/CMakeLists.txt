@@ -10,15 +10,12 @@ install(FILES
     ncjt_ofdm_mod.block.yml
     ncjt_ofdm_demod.block.yml
     ncjt_ltf_chanest.block.yml
-    ncjt_qam_demapper.block.yml
-    ncjt_soft_demapper.block.yml
     ncjt_pkt_err.block.yml
     ncjt_rg_mapper.block.yml
     ncjt_rg_demapper.block.yml
     ncjt_ul_precoding.block.yml
     ncjt_mimo_detect.block.yml
     ncjt_mimo_detect.block.yml
-    ncjt_rx_mrc.block.yml
     ncjt_mu_chanest.block.yml
     ncjt_sic_detect.block.yml
     ncjt_stbc_encode.block.yml
