@@ -292,7 +292,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 556.0]
+    coordinate: [64, 560.0]
     rotation: 0
     state: enabled
 - name: blocks_null_sink_0
@@ -373,7 +373,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [928, 228.0]
+    coordinate: [928, 232.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -495,7 +495,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 220.0]
+    coordinate: [1160, 224.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0
@@ -525,7 +525,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 564.0]
+    coordinate: [440, 568.0]
     rotation: 0
     state: enabled
 - name: ncjt_rx_sync_0
@@ -1175,7 +1175,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1192, 484.0]
+    coordinate: [1192, 496.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_source_0
@@ -1611,7 +1611,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 236.0]
+    coordinate: [64, 248.0]
     rotation: 0
     state: enabled
 

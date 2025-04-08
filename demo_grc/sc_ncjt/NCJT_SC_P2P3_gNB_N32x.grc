@@ -233,7 +233,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1280, 384.0]
+    coordinate: [1288, 368.0]
     rotation: 0
     state: enabled
 - name: blocks_null_sink_0_0
@@ -250,7 +250,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1264, 520.0]
+    coordinate: [1264, 504.0]
     rotation: 0
     state: enabled
 - name: blocks_null_sink_0_1
@@ -267,13 +267,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1312, 780.0]
+    coordinate: [1336, 780.0]
     rotation: 0
     state: enabled
 - name: ncjt_burst_tx_0
   id: ncjt_burst_tx
   parameters:
-    affinity: ''
+    affinity: '15'
     alias: ''
     comment: ''
     debug: 'False'
@@ -293,7 +293,7 @@ blocks:
 - name: ncjt_burst_tx_0_0
   id: ncjt_burst_tx
   parameters:
-    affinity: ''
+    affinity: '15'
     alias: ''
     comment: ''
     debug: 'False'
@@ -313,7 +313,7 @@ blocks:
 - name: ncjt_burst_tx_0_0_0
   id: ncjt_burst_tx
   parameters:
-    affinity: ''
+    affinity: '15'
     alias: ''
     comment: ''
     debug: 'False'
@@ -333,7 +333,7 @@ blocks:
 - name: ncjt_burst_tx_0_0_1
   id: ncjt_burst_tx
   parameters:
-    affinity: ''
+    affinity: '15'
     alias: ''
     comment: ''
     debug: 'False'
@@ -384,7 +384,7 @@ blocks:
 - name: ncjt_mimo_detect_0
   id: ncjt_mimo_detect
   parameters:
-    affinity: '7'
+    affinity: '8'
     alias: ''
     comment: ''
     debug: 'False'
@@ -405,10 +405,10 @@ blocks:
 - name: ncjt_mu_chanest_0
   id: ncjt_mu_chanest
   parameters:
-    affinity: '7'
+    affinity: '8'
     alias: ''
     comment: ''
-    debug: 'True'
+    debug: 'False'
     fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
@@ -433,7 +433,7 @@ blocks:
     affinity: '2'
     alias: ''
     comment: ''
-    debug: 'True'
+    debug: 'False'
     fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
@@ -458,7 +458,7 @@ blocks:
     affinity: '4'
     alias: ''
     comment: ''
-    debug: 'True'
+    debug: 'False'
     fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
@@ -552,7 +552,7 @@ blocks:
 - name: ncjt_ofdm_demod_0_1
   id: ncjt_ofdm_demod
   parameters:
-    affinity: '6'
+    affinity: '7'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -570,7 +570,7 @@ blocks:
 - name: ncjt_ofdm_demod_0_2
   id: ncjt_ofdm_demod
   parameters:
-    affinity: '6'
+    affinity: '7'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -624,7 +624,7 @@ blocks:
 - name: ncjt_pkt_err_0
   id: ncjt_pkt_err
   parameters:
-    affinity: '7'
+    affinity: ''
     alias: ''
     berout: 'True'
     comment: ''
@@ -638,13 +638,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1184, 768.0]
+    coordinate: [1192, 768.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_0
   id: ncjt_pkt_err
   parameters:
-    affinity: '3'
+    affinity: ''
     alias: ''
     berout: 'True'
     comment: ''
@@ -658,13 +658,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1152, 384.0]
+    coordinate: [1160, 368.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_0_0
   id: ncjt_pkt_err
   parameters:
-    affinity: '5'
+    affinity: ''
     alias: ''
     berout: 'True'
     comment: ''
@@ -678,7 +678,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1152, 520.0]
+    coordinate: [1160, 504.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_demapper_0
@@ -736,7 +736,7 @@ blocks:
 - name: ncjt_rg_demapper_0_0_0
   id: ncjt_rg_demapper
   parameters:
-    affinity: '5'
+    affinity: '8'
     alias: ''
     comment: ''
     ctrlmodtype: '2'
@@ -1148,7 +1148,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: float
-    update_time: '10'
+    update_time: '2'
     width1: '2'
     width10: '1'
     width2: '2'
@@ -1167,13 +1167,31 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1400, 520.0]
+    coordinate: [1400, 504.0]
     rotation: 0
+    state: enabled
+- name: reseterrs_1
+  id: variable_qtgui_msg_push_button
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: Reset Error Stats
+    msgName: '"reseterrs"'
+    relBackgroundColor: default
+    relFontColor: default
+    type: int
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1400, 628.0]
+    rotation: 180
     state: enabled
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:
-    affinity: '1'
+    affinity: '15'
     alias: ''
     ant0: TX/RX
     ant1: TX/RX
@@ -1933,6 +1951,9 @@ connections:
 - [ncjt_stbc_decode_0_0, '0', ncjt_rg_demapper_0_0, '0']
 - [ncjt_stbc_decode_0_0, '1', ncjt_rg_demapper_0_0, '1']
 - [ncjt_stbc_decode_0_0, '2', qtgui_const_sink_x_0_1_0, '0']
+- [reseterrs_1, pressed, ncjt_pkt_err_0, reset]
+- [reseterrs_1, pressed, ncjt_pkt_err_0_0, reset]
+- [reseterrs_1, pressed, ncjt_pkt_err_0_0_0, reset]
 - [uhd_usrp_source_0, '0', ncjt_gnb_sync_0, '0']
 - [uhd_usrp_source_0, '1', ncjt_gnb_sync_0, '1']
 - [uhd_usrp_source_0, '2', ncjt_gnb_sync_0, '2']

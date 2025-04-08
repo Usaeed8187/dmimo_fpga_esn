@@ -715,7 +715,7 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
     }
     avg_xcorr /= (double) xcorr_len;
     // if (max_xcorr < 8.0 * avg_xcorr) // TODO fine-tune max_xcorr threshold
-    if (max_xcorr < 4.0 * sig_power) // TODO fine-tune max_xcorr threshold
+    if (max_xcorr < 6.0 * sig_power) // TODO fine-tune max_xcorr threshold
     {
         dout << "Xcorr mean: " << avg_xcorr << "  Xcorr peak: " << max_xcorr << std::endl;
         dout << "No valid xcorr peaks found (" << peak_pos << ")" << std::endl;

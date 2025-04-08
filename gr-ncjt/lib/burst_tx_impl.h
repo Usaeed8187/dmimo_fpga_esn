@@ -36,7 +36,7 @@ protected:
 
 public:
     burst_tx_impl(const char *filename, double samplerate, int pktspersec,
-                  int pktsize, bool debug);
+                  int pktsize, double starttime, bool debug);
     ~burst_tx_impl();
 
     int

@@ -33,7 +33,7 @@ public:
      */
     static sptr
     make(const char *filename, double samplerate, int pktspersec,
-         int pktsize, bool debug);
+         int pktsize, double starttime, bool debug);
 };
 
 } // namespace gr::ncjt

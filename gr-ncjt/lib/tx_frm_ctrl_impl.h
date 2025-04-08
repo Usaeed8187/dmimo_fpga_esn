@@ -27,21 +27,25 @@ private:
     bool d_txen;  // indicate whether transmission is enabled
     bool d_first_burst; // indicate first transmission bust
     double d_repeat_interval;  // repeat transmission interval
-    int d_pkts_per_sec; // frame per second
-    double d_samplerate; // sampling rate
     uint64_t d_frame_interval; // frame interval in samples
+    int d_pkts_per_sec; // packets per second
+    double d_samplerate; // sampling rate
+    int d_delay; // extra sample delay (for debugging)
 
     uint64_t d_txtime_start;  // start time in seconds
     double d_txtime_offset;  // transmission time offset relative to frame start position
     double d_txtime_adjustment; // current txtime adjustment
+    double d_clk_offset_est; // clock offset estimate
+    uint64_t d_cur_frame_cnt;  // total frame counter
+    bool d_frame_cnt_adjusted; // frame counter adjusted
+    uint64_t d_prev_frame_start; // previous frame start offset
+    uint64_t d_prev_frame_cnt; // previous frame count
     uint64_t d_time_secs;  // integer seconds of next transmission time
     double d_time_fracs;  // fractional seconds of next transmission time
-    uint64_t d_frame_cnt;  // total frame counter
 
     gr_complex *d_beacon_data;  // preamble data
 
     boost::mutex fp_mutex;
-    int d_delay; // extra sample delay (for debugging)
     const bool d_debug;
     pmt::pmt_t _id;
 

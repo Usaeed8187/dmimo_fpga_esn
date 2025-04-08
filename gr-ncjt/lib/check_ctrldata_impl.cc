@@ -220,7 +220,7 @@ check_ctrldata_impl::decode_ctrl_data(int chan, const uint8_t *data, int datalen
     }
 
     // save sequence numbers
-    if (d_has_txseq)
+    if (decode_valid && d_has_txseq)
     {
         uint16_t txseq = 0;
         for (int k = 0; k < 16; k++)
@@ -231,7 +231,7 @@ check_ctrldata_impl::decode_ctrl_data(int chan, const uint8_t *data, int datalen
             dout << "Decode TX SeqNo: " << txseq << std::endl;
         }
     }
-    if (d_has_rxseq)
+    if (decode_valid && d_has_rxseq)
     {
         uint16_t rxseq = 0;
         for (int k = 0; k < 16; k++)

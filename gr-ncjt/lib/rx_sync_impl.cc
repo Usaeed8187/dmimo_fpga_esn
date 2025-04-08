@@ -35,8 +35,8 @@ rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen, double
     : gr::block("rx_sync",
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex)),
                 gr::io_signature::make(nchans, 2 * nchans, sizeof(gr_complex))),
-      d_samplerate(samplerate), d_rxpwr_thrd(rxpwr_thrd), d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd),
-      d_max_corr_len(max_corr_len), d_use_lltf2(lltf2), d_rx_ready_cnt1(0), d_rx_ready_cnt2(0),
+      d_samplerate(samplerate), d_use_lltf2(lltf2), d_rxpwr_thrd(rxpwr_thrd), d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd),
+      d_max_corr_len(max_corr_len), d_rx_ready_cnt1(0), d_rx_ready_cnt2(0),
       d_sync_err_cnt1(0), d_sync_err_cnt2(0), d_prev_frame_start(0),
       d_xcorr_fir_1(gr::filter::kernel::fir_filter_ccc(LTF_SEQ_1)),
       d_xcorr_fir_2(gr::filter::kernel::fir_filter_ccc(LTF_SEQ_2)), d_debug(debug)
@@ -262,11 +262,14 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
 
             // if (d_rx_ready_cnt1 == 20) // changing to ready state
             // std::cout << "======== Receiver synchronization acquired ========" << std::endl;
-            if (d_rx_ready_cnt1 % 10 == 0 && d_clk_offset_ok && d_rxtime_offset > 0)
-            {
+            if (d_rx_ready_cnt1 % 10 == 0 && d_rxtime_offset > 0) // && d_clk_offset_ok
                 send_rxtime();
+
+            if (d_rx_ready_cnt1 > 20 && d_clk_offset_ok && d_rxtime_offset > 0 && (!d_p2rxue || d_rx_ready_cnt2 > 20))
                 send_rxstate(true);
-            }
+            else if (d_rx_ready_cnt1 == 0 || (d_p2rxue && d_rx_ready_cnt2 == 0))
+                send_rxstate(false);
+
             d_rx_ready_cnt1 += 1;
 
             break;
@@ -406,7 +409,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                     d_sync_err_cnt2 = 0;
                     d_rx_ready_cnt2 = 0;
                     d_prev_p2frame_start = 0;
-                    // d_skip_p2_frame = true;
+                    d_skip_p2_frame = true;
                     // skip the whole beacon
                     consume_each(5 * SYM_LEN + d_ht_len2);
                     d_state = P2DEFRAME;
@@ -568,10 +571,11 @@ rx_sync_impl::send_rxtime()
 {
     // adjusted frame start position
     uint64_t frame_start_offset = d_prev_frame_start + d_rxtime_offset;
-    double time_frac = (frame_start_offset / d_samplerate);
+    // double frame_start_time = (frame_start_offset / d_samplerate);
 
     // send current frame start position and clock offset estimate
-    auto rxtime_msg = pmt::make_tuple(pmt::from_uint64(frame_start_offset), pmt::from_double(time_frac));
+    auto rxtime_msg = pmt::make_tuple(pmt::from_uint64(frame_start_offset),
+                                      pmt::from_double(d_clk_offset_est));
     message_port_pub(pmt::mp("rxtime"), rxtime_msg);
 }
 
@@ -681,7 +685,7 @@ rx_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buff
 
 int
 rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer_len, bool lltf2,
-                        float &current_foe_comp, float &fine_foe_comp, int &rx_ready_cnt, int &fine_foe_cnt)
+                        float &current_foe_comp, float &fine_foe_comp, uint64_t &rx_ready_cnt, int &fine_foe_cnt)
 {
     // compensate for current FOE
     float sig_power = 0.0;
@@ -724,7 +728,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     }
     avg_xcorr /= (double) xcorr_len;
     // if (max_xcorr < 8.0 * avg_xcorr) // TODO fine-tune max_xcorr threshold
-    if (max_xcorr < 4.0 * sig_power) // TODO fine-tune max_xcorr threshold
+    if (max_xcorr < 6.0 * sig_power) // TODO fine-tune max_xcorr threshold
     {
         dout << "Xcorr mean: " << avg_xcorr << "  Xcorr peak: " << max_xcorr << std::endl;
         dout << "No valid xcorr peaks found (" << peak_pos << ")" << std::endl;
@@ -735,7 +739,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     int deltaCSD = 4;
     float first_peak = 0, second_peak = 0;
     int first_peak_pos = -1, second_peak_pos = -1;
-    for (int i = 0; i < xcorr_len; i++)
+    for (int i = LTF_LEN; i < xcorr_len - FFT_LEN; i++)
     {
         float xcorr_val = d_xcorr_val[i];
         if (xcorr_val < d_xcorr_thrd * max_xcorr)
@@ -747,7 +751,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
             first_peak = xcorr_val;
             first_peak_pos = i;
         }
-        else if (i <= first_peak_pos + LTF_LEN / 4 + 5)
+        else if (i <= first_peak_pos + FFT_LEN / 4)
         {
             // within scope of first peak
             if (xcorr_val > first_peak)
@@ -767,8 +771,8 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
 
     // sanity checks
     int ht_start = -1;
-    if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - deltaCSD &&
-        second_peak_pos <= first_peak_pos + FFT_LEN + deltaCSD)
+    if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - 2 * deltaCSD &&
+        second_peak_pos <= first_peak_pos + FFT_LEN + 2 * deltaCSD)
     {
         // start of the HT-LTF signals
         // ht_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;

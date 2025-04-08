@@ -13,13 +13,13 @@ namespace gr::ncjt
 
 burst_tx::sptr
 burst_tx::make(const char *filename, double samplerate,
-               int pktspersec, int pktsize, bool debug)
+               int pktspersec, int pktsize, double starttime, bool debug)
 {
     return gnuradio::make_block_sptr<burst_tx_impl>(filename, samplerate,
-                                                    pktspersec, pktsize, debug);
+                                                    pktspersec, pktsize, starttime, debug);
 }
 
-burst_tx_impl::burst_tx_impl(const char *filename, double samplerate, int pktspersec, int pktsize, bool debug)
+burst_tx_impl::burst_tx_impl(const char *filename, double samplerate, int pktspersec, int pktsize, double starttime, bool debug)
     : gr::tagged_stream_block("burst_tx",
                               gr::io_signature::make(0, 0, 0),
                               gr::io_signature::make(1, 1, sizeof(gr_complex)),
@@ -47,8 +47,11 @@ burst_tx_impl::burst_tx_impl(const char *filename, double samplerate, int pktspe
         throw std::runtime_error("packet size too large");
     }
 
+    if (starttime < 0 || starttime > 10.0)
+        throw std::runtime_error("invalid transmission start time");
+
     d_buf_pos = 0;
-    d_time_secs = 2;
+    d_time_secs = starttime;
     d_time_fracs = 0.0;
 
     std::stringstream str;

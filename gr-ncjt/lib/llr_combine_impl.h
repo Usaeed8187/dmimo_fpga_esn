@@ -19,6 +19,8 @@ private:
     int d_nstrm; // number of streams
     int d_modtype1; // modulation order
     int d_modtype2; // modulation order
+    bool d_accurate_llr; // use accurate LLR calculation
+    bool d_majority; // majority vote combining for debugging purpose
 
     float *d_llr_data; // binary data for 6-bit LLR values
 
@@ -29,7 +31,7 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    llr_combine_impl(int nstrm, int modtype1, int modtype2, int blocksize, bool debug);
+    llr_combine_impl(int nstrm, int modtype1, int modtype2, int blocksize, bool llrsum, bool majority, bool debug);
     ~llr_combine_impl();
 
     int

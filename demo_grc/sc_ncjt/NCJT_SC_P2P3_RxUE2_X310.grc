@@ -201,7 +201,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '15'
+    value: '16'
     widget: counter_slider
   states:
     bus_sink: false
@@ -234,7 +234,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '12'
+    value: '18'
     widget: counter_slider
   states:
     bus_sink: false
@@ -247,7 +247,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr=192.168.30.2"'
+    value: '"addr=192.168.40.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -385,7 +385,7 @@ blocks:
     fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     mucpt: 'False'
     ndatasyms: num_data_syms
     npreamblesyms: '2'
@@ -475,7 +475,7 @@ blocks:
 - name: ncjt_ofdm_mod_0_0_0
   id: ncjt_ofdm_mod
   parameters:
-    affinity: '12'
+    affinity: '14'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -495,7 +495,7 @@ blocks:
 - name: ncjt_ofdm_mod_0_1
   id: ncjt_ofdm_mod
   parameters:
-    affinity: '12'
+    affinity: '14'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -539,7 +539,7 @@ blocks:
     alias: ''
     berout: 'True'
     comment: ''
-    debug: 'True'
+    debug: 'False'
     filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
     maxoutbuf: '0'
@@ -565,7 +565,7 @@ blocks:
     framelen: frame_data_len_p2
     maxoutbuf: '0'
     mergestrm: 'True'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
@@ -609,7 +609,7 @@ blocks:
   parameters:
     addcs: 'False'
     addltf: 'True'
-    affinity: '11'
+    affinity: '13'
     alias: ''
     comment: ''
     ctrlmodtype: '2'
@@ -619,7 +619,7 @@ blocks:
     framelen: frame_data_len_p2
     ltfdata: '"../../data/mu_mimo/2t2s/" + qam_type + "/ltf2x2_t2.bin"'
     maxoutbuf: '0'
-    minoutbuf: '65536'
+    minoutbuf: '32768'
     mucpt: 'True'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -673,7 +673,7 @@ blocks:
     debug: 'False'
     fftsize: fft_size
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ndatasyms: num_data_syms
     npilotsyms: '0'
   states:
@@ -686,7 +686,7 @@ blocks:
 - name: ncjt_tx_frm_ctrl_0_0
   id: ncjt_tx_frm_ctrl
   parameters:
-    affinity: '13'
+    affinity: '15'
     alias: ''
     autostart: 'False'
     comment: ''
@@ -711,7 +711,7 @@ blocks:
 - name: ncjt_ul_precoding_0_0
   id: ncjt_ul_precoding
   parameters:
-    affinity: '11'
+    affinity: '13'
     alias: ''
     comment: ''
     csifile: ''
@@ -719,7 +719,7 @@ blocks:
     eigenmode: 'True'
     loadcsi: 'False'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ndatasyms: num_data_syms
     nss: '1'
     ntx: '2'
@@ -1109,7 +1109,7 @@ blocks:
 - name: uhd_usrp_sink_0_1_0_0
   id: uhd_usrp_sink
   parameters:
-    affinity: '13'
+    affinity: '15'
     alias: ''
     ant0: TX/RX
     ant1: TX/RX

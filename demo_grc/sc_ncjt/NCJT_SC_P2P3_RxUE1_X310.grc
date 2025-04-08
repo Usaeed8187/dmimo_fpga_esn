@@ -201,7 +201,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '15'
+    value: '16'
     widget: counter_slider
   states:
     bus_sink: false
@@ -234,7 +234,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '12'
+    value: '16'
     widget: counter_slider
   states:
     bus_sink: false
@@ -247,7 +247,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr=192.168.40.2"'
+    value: '"addr=192.168.30.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -385,7 +385,7 @@ blocks:
     fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     mucpt: 'False'
     ndatasyms: num_data_syms
     npreamblesyms: '2'
@@ -539,7 +539,7 @@ blocks:
     alias: ''
     berout: 'True'
     comment: ''
-    debug: 'True'
+    debug: 'False'
     filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
     maxoutbuf: '0'
@@ -565,7 +565,7 @@ blocks:
     framelen: frame_data_len_p2
     maxoutbuf: '0'
     mergestrm: 'True'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
@@ -619,7 +619,7 @@ blocks:
     framelen: frame_data_len_p2
     ltfdata: '"../../data/mu_mimo/2t2s/" + qam_type + "/ltf2x2_t1.bin"'
     maxoutbuf: '0'
-    minoutbuf: '65536'
+    minoutbuf: '32768'
     mucpt: 'True'
     nctrlsyms: '0'
     ndatasyms: num_data_syms
@@ -673,7 +673,7 @@ blocks:
     debug: 'False'
     fftsize: fft_size
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ndatasyms: num_data_syms
     npilotsyms: '0'
   states:
@@ -719,7 +719,7 @@ blocks:
     eigenmode: 'True'
     loadcsi: 'False'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ndatasyms: num_data_syms
     nss: '1'
     ntx: '2'

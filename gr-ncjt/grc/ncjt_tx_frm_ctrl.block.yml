@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.tx_frm_ctrl(${ntx}, ${ndatasyms}, ${filename}, ${fs}, ${pktspersec}, ${starttime}, ${padding}, ${autostart}, ${delay}, ${debug})
+  make: ncjt.tx_frm_ctrl(${ntx},${ndatasyms},${filename},${fs},${pktspersec},${starttime},${padding},${autostart},${delay},${debug})
 
 parameters:
   - id: ntx

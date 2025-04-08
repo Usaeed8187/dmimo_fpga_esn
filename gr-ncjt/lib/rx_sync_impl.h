@@ -24,7 +24,7 @@ private:
     const int CORR_WINDOW = 48;  // Auto-corr window size
     const int CORR_BUF_LEN = 64; // Ring buffer length
     const int XCORR_DATA_LEN = LTF_LEN * 4; // Cross-correlation data buffer length
-    const int MAX_XCORR_LEN = 1024;   // Maximum cross-correlation output buffer length
+    const int MAX_XCORR_LEN = 512;  // Maximum cross-correlation output buffer length
     const int MAX_PREAMBLE_SYMS = 12; // Maximal number of HT preamble symbols (HT-SIG, etc.)
     const int MAX_CHANS = 20;  // Maximum number of IQ channels
     const int PEAK_THRD = 5;   // Minimum peak duration of auto-correlation windows
@@ -49,7 +49,7 @@ private:
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
 
-    int d_rx_ready_cnt1, d_rx_ready_cnt2;  // receiver synchronization counter
+    uint64_t d_rx_ready_cnt1, d_rx_ready_cnt2;  // receiver synchronization counter
     int d_sync_err_cnt1, d_sync_err_cnt2;  // fine synchronization errors
 
     int d_corr_buf_pos;
@@ -87,7 +87,7 @@ private:
 
     int
     fine_sync(const gr_vector_const_void_star &input_items, int buffer_len, bool lltfv2,
-              float &current_foe_comp, float &fine_foe_comp, int &rx_ready_cnt, int &fine_foe_cnt);
+              float &current_foe_comp, float &fine_foe_comp, uint64_t &rx_ready_cnt, int &fine_foe_cnt);
 
     void
     send_tagcmd();

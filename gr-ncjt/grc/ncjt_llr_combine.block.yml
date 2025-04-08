@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.llr_combine(${nstrm}, ${modtype1}, ${modtype2}, ${blocksize}, ${debug})
+  make: ncjt.llr_combine(${nstrm}, ${modtype1}, ${modtype2}, ${blocksize}, ${llrsum}, ${majority}, ${debug})
 
 parameters:
   - id: nstrm
@@ -29,6 +29,20 @@ parameters:
     label: Block Size
     dtype: int
     default: '0'
+  - id: llrsum
+    label: Accurate LLR
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+  - id: majority
+    label: Majority Vote
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -55,5 +69,11 @@ outputs:
     dtype: byte
     multiplicity: 1
     optional: true
+  - label: maj
+    domain: stream
+    dtype: byte
+    multiplicity: 1
+    optional: true
+    hide: ${not majority}
 
 file_format: 1

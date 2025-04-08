@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: ncjt_sc_rxue1_x310
+    id: ncjt_sc_rxue1_x310_qtr1
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -780,7 +780,7 @@ blocks:
     ntx: '2'
     padding: '1000'
     pktspersec: pkts_per_sec
-    starttime: (0.75/pkts_per_sec) + 5.0
+    starttime: (0.75/pkts_per_sec) + 2.0
   states:
     bus_sink: false
     bus_source: false
@@ -799,7 +799,7 @@ blocks:
     eigenmode: 'True'
     loadcsi: 'False'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ndatasyms: num_data_syms + num_ctrl_syms_p3
     nss: '1'
     ntx: '2'

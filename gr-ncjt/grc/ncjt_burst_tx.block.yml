@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.burst_tx(${filename}, ${samplerate}, ${pktspersec}, ${pktsize}, ${debug})
+  make: ncjt.burst_tx(${filename}, ${samplerate}, ${pktspersec}, ${pktsize}, ${starttime}, ${debug})
 
 parameters:
   - id: filename
@@ -23,6 +23,10 @@ parameters:
     label: Packet Size
     dtype: int
     default: '0'
+  - id: starttime
+    label: Start Time
+    dtype: real
+    default: '2.0'
   - id: debug
     label: Debug
     dtype: bool

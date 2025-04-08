@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(llr_combine.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(3cd423645feacb8e3457415091893904) */
+/* BINDTOOL_HEADER_FILE_HASH(aec159e3cb1a198921b23cbd843dde9d) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,7 +37,8 @@ void bind_llr_combine(py::module &m) {
              std::shared_ptr<llr_combine>>(m, "llr_combine", D(llr_combine))
 
       .def(py::init(&llr_combine::make), py::arg("nstrm"), py::arg("modtype1"),
-           py::arg("modtype2"), py::arg("blocksize"), py::arg("debug") = false,
+           py::arg("modtype2"), py::arg("blocksize"), py::arg("llrsum") = false,
+           py::arg("majority") = false, py::arg("debug") = false,
            D(llr_combine, make))
 
       ;
