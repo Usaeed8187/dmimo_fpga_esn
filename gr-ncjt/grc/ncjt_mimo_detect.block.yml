@@ -28,6 +28,13 @@ parameters:
     dtype: int
     default: 10
     hide: part
+  - id: showmaxllr
+    label: Max LLR
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -47,5 +54,9 @@ outputs:
     domain: stream
     dtype: complex
     multiplicity: ${nss}
+  - label: maxllr
+    domain: message
+    optional: true
+    hide: ${not showmaxllr}
 
 file_format: 1

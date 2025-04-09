@@ -116,24 +116,22 @@ llr_combine_impl::work(int noutput_items, gr_vector_int &ninput_items,
             int cur_modtype = (ch % 2) == 0 ? d_modtype1 : d_modtype2; // support two modulations only
             int llr_idx = idx / cur_modtype;
             int llr_offset = ch * SD_NUM + (llr_idx % SD_NUM);
-            auto llrval = d_llr_data[llr_offset];
+            auto llrval = (float) d_llr_data[llr_offset];
             if (!d_accurate_llr)
                 // LLR approximation for high SNRs
                 llr_sum += (in[idx] == 0) ? llrval : -llrval;
-            else {
+            else if (llrval > 0) {
                 // use more accurate LLR combining function
-                if (in[idx] == 0 && llrval > 0) {
-                    int llrdiff = abs(llrval - llr_sum_pos);
+                if (in[idx] == 0) {
+                    float llrdiff = abs(llrval - llr_sum_pos);
+                    llr_sum_pos = std::max(llrval, llr_sum_pos);
                     if (llrdiff <= 2.0)
                         llr_sum_pos += 1.0;
-                    else
-                        llr_sum_pos = std::max(llr_sum_pos, (float) llrval);
-                } else if (llrval > 0) {
-                    int llrdiff = abs(llrval - llr_sum_neg);
+                } else {
+                    float llrdiff = abs(llrval - llr_sum_neg);
+                    llr_sum_neg = std::max(llrval, llr_sum_neg);
                     if (llrdiff <= 2.0)
                         llr_sum_neg += 1.0;
-                    else
-                        llr_sum_neg = std::max(llr_sum_neg, (float) llrval);
                 }
             }
             if (d_majority)
@@ -151,7 +149,7 @@ llr_combine_impl::work(int noutput_items, gr_vector_int &ninput_items,
 
         // majority vote combining
         if (d_majority && output_majority)
-            out2[idx] = (maj_sum > 0.0) ? 0 : 1;
+            out2[idx] = (maj_sum > 0) ? 0 : 1;
     }
 
     return min_input_items;

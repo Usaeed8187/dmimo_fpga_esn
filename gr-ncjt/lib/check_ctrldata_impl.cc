@@ -67,8 +67,9 @@ check_ctrldata_impl::check_ctrldata_impl(int nstrm, int ctrl_datalen, bool has_t
     {
         d_cur_txseq[ch] = 0;
         d_cur_rxseq[ch] = 0;
+        d_llr_data_valid[ch] = false;
     }
-    d_llr_data_valid = false;
+    d_max_llr = 0;
     d_rxrdy = false;
 
     message_port_register_in(pmt::mp("rxrdy"));
@@ -118,6 +119,11 @@ check_ctrldata_impl::process_llr_message(const pmt::pmt_t &msg)
     pmt::pmt_t csi_meta = pmt::car(msg);
     pmt::pmt_t csi_blob = pmt::cdr(msg);
 
+    if (pmt::dict_has_key(csi_meta, pmt::mp("maxllr"))) {
+        d_max_llr = (uint8_t) pmt::to_float(csi_blob);
+        return;
+    }
+
     if (!pmt::dict_has_key(csi_meta, pmt::mp("llr")))
         throw std::runtime_error("invalid LLR data format");
 
@@ -130,19 +136,21 @@ check_ctrldata_impl::process_llr_message(const pmt::pmt_t &msg)
     // assuming same CSI for all streams at the moment
     auto llrdata = (const uint8_t *) pmt::blob_data(csi_blob);
     for (int ch = 0; ch < d_nstrm; ch++)
+    {
         for (int n = 0; n < SD_NUM; n++)
         {
             int offset = ch * LLR_WIDTH * SD_NUM + LLR_WIDTH * n;
             uint8_t llrval = llrdata[n];
             d_llr_vals[ch * SD_NUM + n] = llrval;
-            for (int k=0; k < LLR_WIDTH; k++)
+            for (int k = 0; k < LLR_WIDTH; k++)
             {
                 d_llr_data[offset + k] = (llrval & 0x20) >> 5; // MSB first
                 llrval = (llrval << 1);
             }
         }
+        d_llr_data_valid[ch] = true;
+    }
     dout << "Receive LLR data from message" << std::endl;
-    d_llr_data_valid = true;
 }
 
 void
@@ -244,6 +252,7 @@ check_ctrldata_impl::decode_ctrl_data(int chan, const uint8_t *data, int datalen
     }
 
     // save LLR data
+    d_llr_data_valid[chan] = decode_valid;
     if (decode_valid && d_has_llr && d_extract_llr && BCH_K * num_codewords >= (HDR_LEN + SD_NUM * LLR_WIDTH))
     {
         for (int n = 0; n < SD_NUM; n++)
@@ -255,9 +264,11 @@ check_ctrldata_impl::decode_ctrl_data(int chan, const uint8_t *data, int datalen
                 d_llr_data[chan * LLR_WIDTH * SD_NUM + offset] = d_info_buf[HDR_LEN + offset];
                 llrval += d_info_buf[HDR_LEN + offset] << (LLR_WIDTH - 1 - m);
             }
+            if (d_max_llr > 0)
+                llrval = std::max(llrval, d_max_llr);
             d_llr_vals[chan * SD_NUM + n] = llrval;
         }
-        d_llr_data_valid = true;
+        d_llr_data_valid[chan] = true;
         dout << "Copy LLR data from input" << std::endl;
     }
 }
@@ -296,7 +307,7 @@ check_ctrldata_impl::work(int noutput_items, gr_vector_int &ninput_items,
         // send LLR tag to downstream blocks
         if (d_extract_llr)
         {
-            if (!d_llr_data_valid)
+            if (!d_llr_data_valid[ch])
                 memset((void *) &d_llr_vals[SD_NUM * ch], 0, sizeof(uint8_t) * SD_NUM);
             pmt::pmt_t llr_data = pmt::make_blob(&d_llr_vals[SD_NUM * ch], SD_NUM * sizeof(uint8_t));
             add_item_tag(ch, nitems_written(ch),

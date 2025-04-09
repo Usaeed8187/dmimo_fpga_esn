@@ -52,6 +52,12 @@ mimo_detect_impl::mimo_detect_impl(int fftsize, int nrx, int nss, int ndatasymbo
     d_cur_symbol = 0;
     d_total_pkts = 0;
 
+    std::stringstream str;
+    str << name() << unique_id();
+    _id = pmt::string_to_symbol(str.str());
+
+    message_port_register_out(pmt::mp("maxllr"));
+
     set_tag_propagation_policy(block::TPP_DONT);
 }
 
@@ -106,12 +112,22 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
     else
         throw std::runtime_error("Channel estimation not received before demapping!");
 
-    // Get noise estimation tag
+    // Get power and noise estimation tag
+    get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
+                       pmt::string_to_symbol("signal_pwr"));
+    if (d_tags.empty())
+        throw std::runtime_error("ERROR: cannot find signal_pwr tag");
+    float chpwr = pmt::to_float(d_tags[0].value);
+
     get_tags_in_window(d_tags, 0, (ninput_syms - 1) * d_scnum, ninput_syms * d_scnum,
                        pmt::string_to_symbol("noise_var"));
     if (d_tags.empty())
         throw std::runtime_error("ERROR: cannot find noise_var tag");
     float nvar = pmt::to_float(d_tags[0].value);
+
+    float max_llr = 8.0f * log(chpwr / nvar);
+    max_llr = (max_llr >= 63.0) ? 63.0 : max_llr;
+    send_maxllr_message(max_llr);
 
     // Get CPE estimation tags
     check_cpe_tags(ninput_syms);
@@ -166,13 +182,23 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
 }
 
 void
+mimo_detect_impl::send_maxllr_message(float maxllr)
+{
+    // make and send PDU message
+    pmt::pmt_t dict = pmt::make_dict();
+    dict = pmt::dict_add(dict, pmt::mp("maxllr"), pmt::PMT_T);
+    pmt::pmt_t pdu = pmt::from_float(maxllr);
+    message_port_pub(pmt::mp("maxllr"), pmt::cons(dict, pdu));
+}
+
+void
 mimo_detect_impl::add_packet_tag(uint64_t offset, int packet_len)
 {
     for (int ch = 0; ch < d_nss; ch++)
         add_item_tag(ch, offset,
                      pmt::string_to_symbol("packet_len"),
                      pmt::from_long(packet_len),
-                     pmt::string_to_symbol(name()));
+                     _id);
 }
 
 void

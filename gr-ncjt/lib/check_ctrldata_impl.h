@@ -27,7 +27,6 @@ private:
     bool d_has_llr; // add LLR data at RxUE
     bool d_extract_llr; // output extracted LLR
     bool d_waitrdy; // wait for ready status
-    bool d_llr_data_valid; // has received valid LLR
     bool d_rxrdy; // receiver ready status
 
     int d_ctrl_datalen;  // total control channel length (in bits)
@@ -39,6 +38,8 @@ private:
     uint16_t d_cur_rxseq[16];  // 16-bit sequence number from RxUE
     uint8_t *d_info_buf;  // information buffer
     uint8_t *d_cw_buf;  // information buffer
+    bool d_llr_data_valid[32]; // has received valid LLR
+    uint8_t d_max_llr; // maximum LLR value
     uint8_t *d_llr_data; // binary data for 6-bit LLR values
     uint8_t *d_llr_vals; // 8-bit LLR values for output
     uint8_t *d_scramble_seq; // scrambling sequence

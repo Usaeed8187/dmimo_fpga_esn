@@ -30,6 +30,7 @@ private:
     gr_complex *d_chan_est_buf; // channel estimation using H-LTFs
     gr_complex *d_mmse_coef; // MMSE channel equalization coefficients
 
+    pmt::pmt_t _id;
     const int d_logfreq;
     const bool d_debug;
 
@@ -47,6 +48,9 @@ private:
 
     void
     add_packet_tag(uint64_t offset, int packet_len);
+
+    void
+    send_maxllr_message(float maxllr);
 
 protected:
     int
