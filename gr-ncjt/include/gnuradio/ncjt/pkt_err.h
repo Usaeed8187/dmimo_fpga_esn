@@ -32,8 +32,8 @@ public:
      * creating new instances.
      */
     static sptr
-    make(int nstrms, const char *filename, int logfreq = 10,
-         bool berout = false, bool debug = false);
+    make(int nstrms, const char *filename, bool shortterm, int avgwindow, int logfreq = 10,
+         bool logpkterr = false, bool debug = false);
 };
 
 } // namespace gr::ncjt

@@ -15,8 +15,10 @@ namespace gr::ncjt
 class pkt_err_impl : public pkt_err
 {
 private:
-    int d_num_strms;  // number of channels
-    char *d_pkt_data; // transmitted packet data
+    int d_num_strms;              // number of channels
+    bool d_shortterm;             // Output short-term stats
+    int d_averaging_window;       // averaging window size for short-term stats
+    char *d_pkt_data;             // transmitted packet data
 
     uint64_t d_pkt_len;           // packet length (number of bits)
     uint64_t d_total_pkts;        // total number of packets
@@ -26,11 +28,14 @@ private:
     uint64_t d_total_bit_errs[8]; // total number of bit errors
     uint64_t d_total_pkt_errs[8]; // total number of packet errors
 
+    std::deque<double> d_ber_history;       // deque to store window of BERs
+    double d_ber_history_sum;               // sum of BERs in the d_ber_history deque
+
     uint64_t
     read_packet_data(const char *filename);
 
     int d_log_freq;
-    bool d_berout;
+    bool d_logpkterr;
     const bool d_debug;
 
 protected:
@@ -41,7 +46,8 @@ protected:
     process_reset_message(const pmt::pmt_t &msg);
 
 public:
-    pkt_err_impl(int nstrms, const char *filename, int logfreq, bool berout, bool debug);
+    pkt_err_impl(int nstrms, const char *filename, bool shortterm, int avgwindow,
+                 int logfreq, bool logpkterr, bool debug);
     ~pkt_err_impl();
 
     int

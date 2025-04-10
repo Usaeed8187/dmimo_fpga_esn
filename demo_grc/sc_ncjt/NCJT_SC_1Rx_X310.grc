@@ -165,7 +165,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '30.5'
-    value: '20'
+    value: '15'
     widget: counter_slider
   states:
     bus_sink: false
@@ -202,7 +202,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr0=192.168.40.2"'
+    value: '"addr0=192.168.50.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -225,7 +225,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 252.0]
+    coordinate: [1424, 372.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0
@@ -250,7 +250,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [640, 320.0]
+    coordinate: [640, 336.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -268,7 +268,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 336.0]
+    coordinate: [504, 352.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0
@@ -286,7 +286,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 368.0]
+    coordinate: [504, 384.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_0
@@ -294,19 +294,21 @@ blocks:
   parameters:
     affinity: '6'
     alias: ''
-    berout: 'True'
+    avgwindow: '10'
     comment: ''
     debug: 'True'
     filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
+    logpkterr: 'True'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     nstrms: '1'
+    shortterm: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1208, 288.0]
+    coordinate: [1216, 288.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_demapper_0
@@ -362,7 +364,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 336.0]
+    coordinate: [272, 352.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_decode_0
@@ -473,7 +475,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1040, 428.0]
+    coordinate: [1056, 436.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0
@@ -532,7 +534,7 @@ blocks:
     name: '""'
     nconnections: '1'
     size: '40'
-    srate: '4'
+    srate: '10'
     stemplot: 'False'
     style1: '1'
     style10: '1'
@@ -551,7 +553,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: float
-    update_time: '10'
+    update_time: '2'
     width1: '2'
     width10: '1'
     width2: '2'
@@ -570,9 +572,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 348.0]
+    coordinate: [1424, 268.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: uhd_usrp_source_0
   id: uhd_usrp_source
   parameters:
@@ -1006,7 +1008,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [40, 316.0]
+    coordinate: [40, 348.0]
     rotation: 0
     state: enabled
 
@@ -1015,8 +1017,8 @@ connections:
 - [ncjt_mu_chanest_0, '1', ncjt_stbc_decode_0, '1']
 - [ncjt_ofdm_demod_0, '0', ncjt_mu_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_mu_chanest_0, '1']
-- [ncjt_pkt_err_0_0, '0', blocks_file_sink_0_0_1_0_0_0_1, '0']
-- [ncjt_pkt_err_0_0, '1', qtgui_time_sink_x_0, '0']
+- [ncjt_pkt_err_0_0, '0', qtgui_time_sink_x_0, '0']
+- [ncjt_pkt_err_0_0, '1', blocks_file_sink_0_0_1_0_0_0_1, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0, '0']
 - [ncjt_rx_sync_0_0, '0', ncjt_ofdm_demod_0, '0']
 - [ncjt_rx_sync_0_0, '1', ncjt_ofdm_demod_0_0, '0']

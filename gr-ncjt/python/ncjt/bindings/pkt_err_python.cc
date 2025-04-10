@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(pkt_err.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(4ed8a874eba7a0d55eb6826a39bd3d0a) */
+/* BINDTOOL_HEADER_FILE_HASH(0f5f2310b32c5c53a095f2d4e95c5321) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,8 +37,9 @@ void bind_pkt_err(py::module &m) {
              std::shared_ptr<pkt_err>>(m, "pkt_err", D(pkt_err))
 
       .def(py::init(&pkt_err::make), py::arg("nstrms"), py::arg("filename"),
-           py::arg("logfreq") = 10, py::arg("berout") = false,
-           py::arg("debug") = false, D(pkt_err, make))
+           py::arg("shortterm"), py::arg("avgwindow"), py::arg("logfreq") = 10,
+           py::arg("logpkterr") = false, py::arg("debug") = false,
+           D(pkt_err, make))
 
       ;
 }

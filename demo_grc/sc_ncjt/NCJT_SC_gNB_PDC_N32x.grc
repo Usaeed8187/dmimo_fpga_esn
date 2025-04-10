@@ -255,23 +255,6 @@ blocks:
     coordinate: [8, 116.0]
     rotation: 0
     state: enabled
-- name: blocks_null_sink_0
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: int
-    vlen: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1472, 476.0]
-    rotation: 0
-    state: enabled
 - name: blocks_null_sink_0_0_0
   id: blocks_null_sink
   parameters:
@@ -306,44 +289,10 @@ blocks:
     coordinate: [1480, 788.0]
     rotation: 0
     state: disabled
-- name: blocks_null_sink_0_2
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: int
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1664, 584.0]
-    rotation: 0
-    state: enabled
-- name: blocks_null_sink_0_2_0
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: int
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1680, 752.0]
-    rotation: 0
-    state: enabled
 - name: ncjt_burst_tx_0
   id: ncjt_burst_tx
   parameters:
-    affinity: '0'
+    affinity: '15'
     alias: ''
     comment: ''
     debug: 'False'
@@ -353,18 +302,18 @@ blocks:
     pktsize: '0'
     pktspersec: pkts_per_sec
     samplerate: samp_rate
-    starttime: '1.0'
+    starttime: '2.0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1072, 36.0]
+    coordinate: [1136, 4.0]
     rotation: 0
     state: enabled
 - name: ncjt_burst_tx_0_0
   id: ncjt_burst_tx
   parameters:
-    affinity: '0'
+    affinity: '15'
     alias: ''
     comment: ''
     debug: 'False'
@@ -374,18 +323,18 @@ blocks:
     pktsize: '0'
     pktspersec: pkts_per_sec
     samplerate: samp_rate
-    starttime: '1.0'
+    starttime: '2.0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1072, 108.0]
+    coordinate: [1016, 76.0]
     rotation: 0
     state: enabled
 - name: ncjt_burst_tx_0_0_0
   id: ncjt_burst_tx
   parameters:
-    affinity: '0'
+    affinity: '15'
     alias: ''
     comment: ''
     debug: 'False'
@@ -395,18 +344,18 @@ blocks:
     pktsize: '0'
     pktspersec: pkts_per_sec
     samplerate: samp_rate
-    starttime: '1.0'
+    starttime: '2.0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1072, 180.0]
+    coordinate: [1016, 164.0]
     rotation: 0
     state: enabled
 - name: ncjt_burst_tx_0_0_1
   id: ncjt_burst_tx
   parameters:
-    affinity: '0'
+    affinity: '15'
     alias: ''
     comment: ''
     debug: 'False'
@@ -416,12 +365,12 @@ blocks:
     pktsize: '0'
     pktspersec: pkts_per_sec
     samplerate: samp_rate
-    starttime: '1.0'
+    starttime: '2.0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1072, 252.0]
+    coordinate: [1144, 236.0]
     rotation: 0
     state: enabled
 - name: ncjt_check_ctrldata_0
@@ -560,11 +509,12 @@ blocks:
     ndatasymbols: num_data_syms + num_ctrl_syms_p3
     nrx: '4'
     nss: '2'
+    showmaxllr: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [784, 776.0]
+    coordinate: [784, 792.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0
@@ -589,7 +539,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 776.0]
+    coordinate: [600, 792.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0_0
@@ -657,7 +607,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [464, 792.0]
+    coordinate: [464, 808.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0
@@ -675,7 +625,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [464, 824.0]
+    coordinate: [464, 840.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0_0
@@ -729,7 +679,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [464, 888.0]
+    coordinate: [464, 904.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_2
@@ -747,7 +697,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [464, 856.0]
+    coordinate: [464, 872.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_3
@@ -791,14 +741,16 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    berout: 'True'
+    avgwindow: '10'
     comment: ''
     debug: 'False'
     filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data_2x.bin"'
     logfreq: '50'
+    logpkterr: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrms: '2'
+    shortterm: 'False'
   states:
     bus_sink: false
     bus_source: false
@@ -811,14 +763,16 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    berout: 'True'
+    avgwindow: '10'
     comment: ''
     debug: 'False'
     filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data_2x.bin"'
     logfreq: '50'
+    logpkterr: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrms: '2'
+    shortterm: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -831,14 +785,16 @@ blocks:
   parameters:
     affinity: '11'
     alias: ''
-    berout: 'True'
+    avgwindow: '10'
     comment: ''
     debug: 'True'
     filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
+    logpkterr: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrms: '1'
+    shortterm: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -851,14 +807,16 @@ blocks:
   parameters:
     affinity: '11'
     alias: ''
-    berout: 'True'
+    avgwindow: '10'
     comment: ''
     debug: 'False'
     filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
+    logpkterr: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrms: '1'
+    shortterm: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -1343,7 +1301,7 @@ blocks:
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
-    gui_hint: (2,0,1,6)
+    gui_hint: (2,0,2,6)
     label1: P2
     label10: Signal 10
     label2: PDC
@@ -1430,7 +1388,7 @@ blocks:
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:
-    affinity: '0'
+    affinity: '15'
     alias: ''
     ant0: TX/RX
     ant1: TX/RX
@@ -1707,7 +1665,7 @@ blocks:
 - name: uhd_usrp_source_0
   id: uhd_usrp_source
   parameters:
-    affinity: '0'
+    affinity: '1'
     alias: ''
     ant0: '"TX/RX"'
     ant1: '"TX/RX"'
@@ -2173,6 +2131,7 @@ connections:
 - [ncjt_mimo_detect_0, '0', ncjt_skip_data_0, '0']
 - [ncjt_mimo_detect_0, '1', ncjt_rg_demapper_0_0_0, '1']
 - [ncjt_mimo_detect_0, '1', ncjt_skip_data_0_0, '0']
+- [ncjt_mimo_detect_0, maxllr, ncjt_check_ctrldata_0, llr]
 - [ncjt_mu_chanest_0, '0', ncjt_mimo_detect_0, '0']
 - [ncjt_mu_chanest_0, '1', ncjt_mimo_detect_0, '1']
 - [ncjt_mu_chanest_0, '2', ncjt_mimo_detect_0, '2']
@@ -2190,12 +2149,9 @@ connections:
 - [ncjt_ofdm_demod_0_3, '0', ncjt_mu_chanest_0_0, '0']
 - [ncjt_ofdm_demod_0_4, '0', ncjt_mu_chanest_0_1, '0']
 - [ncjt_pkt_err_0, '0', blocks_null_sink_0_1, '0']
-- [ncjt_pkt_err_0_0, '0', blocks_null_sink_0, '0']
-- [ncjt_pkt_err_0_0, '1', qtgui_time_sink_x_0, '0']
-- [ncjt_pkt_err_0_0_1, '0', blocks_null_sink_0_2, '0']
-- [ncjt_pkt_err_0_0_1, '1', qtgui_time_sink_x_0, '1']
-- [ncjt_pkt_err_0_0_1_0, '0', blocks_null_sink_0_2_0, '0']
-- [ncjt_pkt_err_0_0_1_0, '1', qtgui_time_sink_x_0, '2']
+- [ncjt_pkt_err_0_0, '0', qtgui_time_sink_x_0, '0']
+- [ncjt_pkt_err_0_0_1, '0', qtgui_time_sink_x_0, '1']
+- [ncjt_pkt_err_0_0_1_0, '0', qtgui_time_sink_x_0, '2']
 - [ncjt_rg_demapper_0, '0', ncjt_check_ctrldata_0_0_0, '0']
 - [ncjt_rg_demapper_0_0, '0', ncjt_check_ctrldata_0_0, '0']
 - [ncjt_rg_demapper_0_0_0, '0', ncjt_check_ctrldata_0, '0']

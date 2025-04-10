@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.pkt_err(${nstrms}, ${filename}, ${logfreq}, ${berout}, ${debug})
+  make: ncjt.pkt_err(${nstrms}, ${filename}, ${shortterm}, ${avgwindow}, ${logfreq}, ${logpkterr}, ${debug})
 
 parameters:
   - id: nstrms
@@ -17,13 +17,25 @@ parameters:
     label: Data File
     dtype: file_open
     hide: part
-  - id: logfreq
-    label: Log Frequency
+  - id: shortterm
+    label: Short-term BER
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+  - id: avgwindow
+    label: Avg. Window Size
     dtype: int
     default: 10
     hide: part
-  - id: berout
-    label: BER outputs
+  - id: logfreq
+    label: Log Frequency
+    dtype: int
+    default: 50
+    hide: part
+  - id: logpkterr
+    label: Log Packet Error
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
@@ -46,17 +58,20 @@ inputs:
     multiplicity: ${nstrms}
 
 outputs:
-  - domain: stream
-    dtype: ${int}
-    vlen: ${nstrms}
-  - domain: stream
+  - label: ber
+    domain: stream
     dtype: float
     multiplicity: "1"
+  - label: pkterr
+    domain: stream
+    dtype: int
+    vlen: ${nstrms}
     optional: true
-    hide: ${not berout}
+    hide: ${not logpkterr}
 
 asserts:
   - ${ nstrms >= 1 and nstrms <= 8}
+  - ${ avgwindow > 0 }
   - ${ logfreq > 0 }
 
 file_format: 1
