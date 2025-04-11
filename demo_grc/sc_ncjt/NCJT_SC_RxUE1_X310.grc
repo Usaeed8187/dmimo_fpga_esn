@@ -366,7 +366,7 @@ blocks:
     has_rxseq: 'True'
     has_txseq: 'True'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     nstrm: '1'
     waitrdy: 'False'
   states:

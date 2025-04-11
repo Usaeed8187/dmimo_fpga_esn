@@ -31,7 +31,7 @@ private:
 
     int d_num_chans;  // Total number of IQ data channels
     int d_frame_len1;  // frame length in samples (HT preamble + data symbols)
-    int d_ht_len1;  // HT beacon length
+    // int d_ht_len1;  // HT beacon length
     double d_samplerate;  // Baseband sampling frequency
     int d_frame_interval;   // packet repeat interval (in samples)
     int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
@@ -49,6 +49,7 @@ private:
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
 
+    bool d_rx_ready; // receiver ready status
     uint64_t d_rx_ready_cnt1, d_rx_ready_cnt2;  // receiver synchronization counter
     int d_sync_err_cnt1, d_sync_err_cnt2;  // fine synchronization errors
 

@@ -36,7 +36,7 @@ rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen, double
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex)),
                 gr::io_signature::make(nchans, 2 * nchans, sizeof(gr_complex))),
       d_samplerate(samplerate), d_use_lltf2(lltf2), d_rxpwr_thrd(rxpwr_thrd), d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd),
-      d_max_corr_len(max_corr_len), d_rx_ready_cnt1(0), d_rx_ready_cnt2(0),
+      d_max_corr_len(max_corr_len), d_rx_ready(false), d_rx_ready_cnt1(0), d_rx_ready_cnt2(0),
       d_sync_err_cnt1(0), d_sync_err_cnt2(0), d_prev_frame_start(0),
       d_xcorr_fir_1(gr::filter::kernel::fir_filter_ccc(LTF_SEQ_1)),
       d_xcorr_fir_2(gr::filter::kernel::fir_filter_ccc(LTF_SEQ_2)), d_debug(debug)
@@ -57,7 +57,7 @@ rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen, double
 
     // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF (3*SYM_LEN)
     d_frame_len1 = dataframelen + preamblelen - 3 * SYM_LEN;
-    d_ht_len1 = preamblelen;
+    // d_ht_len1 = preamblelen;
     // packet frame burst transmission period in seconds
     d_frame_interval = (int) floor(samplerate / pktspersec);
     // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT-SIG and HT-LTF
@@ -168,6 +168,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             auto packet_start = nitems_read(0) + (uint64_t) start_pos;
             dout << "Packet start detected at " << packet_start << std::endl;
             consume_each(start_pos);
+            d_rx_ready = false;
             d_sync_err_cnt1 = 0;
             d_sync_err_cnt2 = 0;
             d_clk_offset_sum = 0;
@@ -266,9 +267,15 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 send_rxtime();
 
             if (d_rx_ready_cnt1 > 20 && d_clk_offset_ok && d_rxtime_offset > 0 && (!d_p2rxue || d_rx_ready_cnt2 > 20))
+            {
+                d_rx_ready = true;
                 send_rxstate(true);
+            }
             else if (d_rx_ready_cnt1 == 0 || (d_p2rxue && d_rx_ready_cnt2 == 0))
+            {
+                d_rx_ready = false;
                 send_rxstate(false);
+            }
 
             d_rx_ready_cnt1 += 1;
 
@@ -405,7 +412,6 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 {
                     // changing from ready state
                     // std::cout << "======== P2 Receiver synchronization lost ========" << std::endl;
-                    // send_rxstate(false);
                     d_sync_err_cnt2 = 0;
                     d_rx_ready_cnt2 = 0;
                     d_prev_p2frame_start = 0;
@@ -457,7 +463,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_state = WAIT2;
             }
 
-            if (d_skip_p2_frame)
+            if (d_skip_p2_frame || !d_rx_ready)
             {
                 d_data_samples += noutput_samples;
                 consume_each(noutput_samples);
@@ -653,8 +659,8 @@ rx_sync_impl::sync_search(const gr_vector_const_void_star &input_items, int buff
         {
             // frame start should be within CORR_DELAY samples before the start of L-STF
             frame_start_pos = peak_start - (PEAK_THRD - 2) * CORR_DELAY;
-            dout << "Auto-correlation peak found at " << peak_start << " (peak duration " << peak_duration << ")"
-                 << std::endl;
+            dout << "Auto-correlation peak found at " << peak_start
+                 << " (peak duration " << peak_duration << ")" << std::endl;
             break;
         }
     }
@@ -728,7 +734,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     }
     avg_xcorr /= (double) xcorr_len;
     // if (max_xcorr < 8.0 * avg_xcorr) // TODO fine-tune max_xcorr threshold
-    if (max_xcorr < 6.0 * sig_power) // TODO fine-tune max_xcorr threshold
+    if (max_xcorr < 8.0 * sig_power) // TODO fine-tune max_xcorr threshold
     {
         dout << "Xcorr mean: " << avg_xcorr << "  Xcorr peak: " << max_xcorr << std::endl;
         dout << "No valid xcorr peaks found (" << peak_pos << ")" << std::endl;
@@ -774,8 +780,8 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - 2 * deltaCSD &&
         second_peak_pos <= first_peak_pos + FFT_LEN + 2 * deltaCSD)
     {
-        // start of the HT-LTF signals
-        // ht_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;
+        // start of the HT preambles (HT-SIGs)
+        // sig_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;
 
         // calculate the start of the HT-LTF (removing HT-SIG and HT-STF)
         // first peak pos corresponding to the start of the first FFT block in L-LTF
