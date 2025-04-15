@@ -30,6 +30,10 @@
 #include "srsran/srsvec/compare.h"
 #include "srsran/srsvec/copy.h"
 
+#if defined(__APPLE__) && !defined(__always_inline)
+#define __always_inline inline __attribute__((always_inline))
+#endif
+
 using namespace srsran;
 using namespace srsran::ldpc;
 

@@ -71,7 +71,11 @@ template <typename... Args>
   // fmt::print(stderr, "srsRAN ERROR: ");
   // fmt::println(stderr, reason_fmt, std::forward<Args>(args)...);
 
+  #ifdef __APPLE__
+  std::_Exit(1);
+  #else
   std::quick_exit(1);
+  #endif
 }
 
 /// \brief Reports a fatal error and handles the application shutdown.
