@@ -155,3 +155,11 @@ configure_package_config_file(
 install(FILES MANIFEST.yml
     RENAME MANIFEST-${VERSION_MAJOR}.${VERSION_API}.${VERSION_ABI}${VERSION_PATCH}.yml
     DESTINATION share/gnuradio/manifests/ncjt)
+
+if(APPLE)
+    set(CMAKE_MACOSX_RPATH 1)
+    target_link_libraries(gnuradio-ncjt
+    PRIVATE
+        gnuradio::gnuradio-runtime
+    )
+endif(APPLE)
