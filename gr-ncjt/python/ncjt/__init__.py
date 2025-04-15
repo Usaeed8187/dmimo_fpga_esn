@@ -19,5 +19,5 @@ try:
 except ModuleNotFoundError:
     pass
 
-# import any pure python here
-#
+from .err_stats import err_stats
+from .knobs import knobs

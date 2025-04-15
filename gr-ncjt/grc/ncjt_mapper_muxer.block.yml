@@ -1,18 +1,12 @@
-id: ncjt_rg_demapper
-label: RG Demapper
+id: ncjt_mapper_muxer
+label: Mapper Muxer
 category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rg_demapper(${phase}, ${nstrm}, ${modtype}, ${n_ofdm_syms}, ${sd_num}, ${usecsi}, ${code_rate}, ${tag_snr}, ${debug})
+  make: ncjt.mapper_muxer(${nstrm}, ${modtype}, ${n_ofdm_syms}, ${sd_num}, ${use_polar}, ${code_rate}, ${deterministic_input}, ${debug})
 
 parameters:
-  - id: phase
-    label: dMIMO Phase
-    dtype: int
-    default: 2
-    options: [2, 3]
-    option_labels: ['Phase 2 (normal CTRL)', 'Phase 3 (extended CTRL)']
   - id: nstrm
     label: Number of Streams
     dtype: int
@@ -33,49 +27,47 @@ parameters:
     dtype: int
     default: 52
     readonly: true
-  - id: usecsi
-    label: CSI
+  - id: use_polar
+    label: Polar or Repetition Code
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
-    option_labels: [ Enable, Disable ]
+    option_labels: [ Polar, Repetition ]
   - id: code_rate
     label: Code Rate
     dtype: int
     default: 0
     options: [0, 1, 2, 3, 4, 5, 6, 7]
     option_labels: [ 'Disable', '1/4', '1/3', '1/2', '2/3', '3/4', '4/5', '5/6' ]
-  - id: tag_snr
-    label: SNR from Tag
+  - id: deterministic_input
+    label: Deterministic Input
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
-    hide: part
   - id: debug
     label: Debug
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
-    hide: part
 
 inputs:
   - label: in
     domain: stream
-    dtype: complex
-    multiplicity: ${nstrm}
-  - label: csi
-    domain: stream
-    dtype: complex
-    multiplicity: ${nstrm}
-    hide: ${not usecsi}
+    dtype: byte
+    vlen: 1
+    optional: true
+    hide: ${ deterministic_input }
+  - label: sel_mod_type
+    domain: message
+    optional: true
+  - label: sel_code_rate
+    domain: message
+    optional: true
 
 outputs:
   - label: out
-    domain: stream
-    dtype: complex
-  - label: csi
     domain: stream
     dtype: complex
 

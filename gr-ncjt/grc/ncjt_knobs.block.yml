@@ -1,0 +1,70 @@
+id: ncjt_knobs
+label: Knobs
+category: '[dMIMO]'
+flags: [ show_id, python ]
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.knobs(${mcs}, ${reset}, ${noair})
+
+parameters:
+- id: mcs
+  label: Show MCS controls
+  dtype: bool
+  default: 'True'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: reset
+  label: Show Reset Stats control
+  dtype: bool
+  default: 'True'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: noair
+  label: Show NoAir controls
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: gui_hint
+  label: GUI Hint
+  dtype: gui_hint
+  hide: part
+
+inputs:
+
+outputs:
+- label: sel_mod_type
+  domain: message
+  optional: true
+  hide: ${ not mcs }
+- label: sel_code_rate
+  domain: message
+  optional: true
+  hide: ${ not mcs }
+- label: sel_snr
+  domain: message
+  optional: true
+  hide: ${ not noair }
+- label: reset
+  domain: message
+  optional: true
+  hide: ${ not reset }
+
+
+templates:
+    imports: from gnuradio.ncjt import knobs
+    var_make: self.${id} = None
+    make: |-
+        <%
+            win = '_%s_knobs'%id
+        %>\
+        ${win} = knobs(
+            ${mcs},
+            ${reset},
+            ${noair}
+        )
+        self.${id} = ${win}
+        ${gui_hint() % win} 
+
+file_format: 1

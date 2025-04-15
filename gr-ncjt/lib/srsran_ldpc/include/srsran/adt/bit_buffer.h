@@ -140,7 +140,7 @@ public:
 
   /// \brief Gets an entire byte.
   /// \remark The byte index must not point to a word that is not fully occupied by bits.
-  const uint8_t get_byte(unsigned i_byte) const
+  uint8_t get_byte(unsigned i_byte) const
   {
     // srsran_assert(i_byte < nof_full_words(),
     //               "The byte index {} exceeds the number of full words (i.e., {}).",
@@ -279,7 +279,7 @@ public:
 
   /// \brief Gets an entire byte.
   /// \remark The byte index must not point to a word that is not fully occupied by bits.
-  const uint8_t get_byte(unsigned i_byte) const { return get_reader().get_byte(i_byte); }
+  uint8_t get_byte(unsigned i_byte) const { return get_reader().get_byte(i_byte); }
 
   /// \brief Sets an entire byte.
   /// \remark The byte index must not point to a word that is not fully occupied by bits.

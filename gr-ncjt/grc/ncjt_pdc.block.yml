@@ -1,0 +1,61 @@
+id: ncjt_pdc
+label: PDC
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.pdc(${majority_enabled}, ${num_copies}, ${expire_ms}, ${num_threads}, ${deterministic_input}, ${debug})
+
+parameters:
+- id: majority_enabled
+  label: Majority Voting
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: num_copies
+  label: Number of Copies
+  dtype: int
+  default: 1
+- id: expire_ms
+  label: Expiration Time (ms)
+  dtype: int
+  default: 100
+- id: num_threads
+  label: Number of Threads
+  dtype: int
+  default: 0
+- id: deterministic_input
+  label: Deterministic Input
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: debug
+  label: Debug
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+  hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: complex
+    multiplicity: ${num_copies}
+  - label: csi
+    domain: stream
+    dtype: complex
+    multiplicity: ${num_copies}
+
+outputs:
+  - label: HLL
+    domain: stream
+    dtype: byte
+  - label: Majority
+    domain: stream
+    dtype: byte
+    optional: true
+    hide: ${not majority_enabled}
+file_format: 1

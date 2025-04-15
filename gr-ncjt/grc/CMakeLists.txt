@@ -28,4 +28,11 @@ install(FILES
     ncjt_rx_sync.block.yml
     ncjt_gnb_sync.block.yml
     ncjt_tx_frm_ctrl.block.yml
+    ncjt_mapper_muxer.block.yml
+    ncjt_noair.block.yml
+    ncjt_demapper.block.yml
+    ncjt_err_stats.block.yml
+    ncjt_knobs.block.yml
+    ncjt_mapper_muxer_phase3.block.yml
+    ncjt_pdc.block.yml
     ncjt_skip_data.block.yml DESTINATION share/gnuradio/grc/blocks)

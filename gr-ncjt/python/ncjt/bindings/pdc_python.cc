@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(rg_mapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(1f04a5f4088990a1337d483d1699b889) */
+/* BINDTOOL_HEADER_FILE(pdc.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(9e70720f47b6bb314a8be4f3143dcd6e) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,20 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/rg_mapper.h>
+#include <gnuradio/ncjt/pdc.h>
 // pydoc.h is automatically generated in the build directory
-#include <rg_mapper_pydoc.h>
+#include <pdc_pydoc.h>
 
-void bind_rg_mapper(py::module &m) {
+void bind_pdc(py::module &m) {
 
-  using rg_mapper = ::gr::ncjt::rg_mapper;
+  using pdc = gr::ncjt::pdc;
 
-  py::class_<rg_mapper, gr::tagged_stream_block, gr::block, gr::basic_block,
-             std::shared_ptr<rg_mapper>>(m, "rg_mapper", D(rg_mapper))
+  py::class_<pdc, gr::block, gr::basic_block, std::shared_ptr<pdc>>(m, "pdc",
+                                                                    D(pdc))
 
-      .def(py::init(&rg_mapper::make), py::arg("nstrm"), py::arg("n_ofdm_syms"),
-           py::arg("sc_num"), py::arg("pilot_sc_ind"), py::arg("addcs"),
-           py::arg("debug"), py::arg("numue"), py::arg("ueidx"),
-           py::arg("mucpt"), py::arg("addltf"), py::arg("ltfdata"),
-           D(rg_mapper, make))
+      .def(py::init(&pdc::make), py::arg("majority_enabled"),
+           py::arg("num_copies"), py::arg("expire_ms"), py::arg("num_threads"),
+           py::arg("deterministic_input"), py::arg("debug"), D(pdc, make))
 
       ;
 }

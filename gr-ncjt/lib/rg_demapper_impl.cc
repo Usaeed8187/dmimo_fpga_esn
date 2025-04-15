@@ -1,244 +1,493 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2025 Wireless @ Virginia Tech.
+ * Copyright 2025 Wireless@VT.
  *
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include "rg_demapper_impl.h"
-#include <gnuradio/io_signature.h>
 #include "utils.h"
+#include <algorithm>
+#include <cmath>
+#include <gnuradio/io_signature.h>
+#include <iomanip> // for std::hex, std::dec
+#include <iostream>
+#include <pmt/pmt.h>
+#include <stdexcept>
+#include "common.h"
 
-namespace gr::ncjt
+namespace gr
 {
+  namespace ncjt
+  {
 
-rg_demapper::sptr
-rg_demapper::make(int fftsize, int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms,
-                  int datamodtype, int ctrlmodtype, bool usecsi, bool mergestrm, bool debug)
-{
-    return gnuradio::make_block_sptr<rg_demapper_impl>(
-        fftsize, nstrm, framelen, ndatasyms, npilotsyms, nctrlsyms, datamodtype, ctrlmodtype, usecsi, mergestrm, debug);
-}
-
-rg_demapper_impl::rg_demapper_impl(int fftsize, int nstrm, int framelen, int ndatasyms, int npilotsyms, int nctrlsyms,
-                                   int datamodtype, int ctrlmodtype, bool usecsi, bool mergestrm, bool debug)
-    : gr::tagged_stream_block(
-    "rg_demapper",
-    gr::io_signature::make(nstrm, 2 * nstrm, sizeof(gr_complex)),
-    gr::io_signature::make(1, nstrm, sizeof(uint8_t)),
-    "packet_len"),
-      d_usecsi(usecsi), d_mergestrm(mergestrm), d_debug(debug)
-{
-    if (fftsize != 64 && fftsize != 256)
-        throw std::runtime_error("Unsupported OFDM FFT size");
-    d_fftsize = fftsize;
-    d_sdnum = (d_fftsize == 64) ? 52 : 234; // TODO add FFT sizes
-
-    if (ndatasyms < 2 || ndatasyms > 200)
-        throw std::runtime_error("Invalid number of data OFDM symbols");
-    d_ndatasyms = ndatasyms;
-    if (npilotsyms < 0 || npilotsyms > 4)
-        throw std::runtime_error("Invalid number of pilot OFDM symbols");
-    d_npilotsyms = npilotsyms;
-    if (nctrlsyms < 0 || nctrlsyms > 50)
-        throw std::runtime_error("Invalid number of control channel OFDM symbols");
-    d_nctrlsyms = nctrlsyms;
-    d_numofdmsyms = d_ndatasyms + d_npilotsyms + d_nctrlsyms;
-
-    if (nstrm < 1 || nstrm > 8)
-        throw std::runtime_error("only sport 1 to 8 data channels");
-    d_nstrm = nstrm;
-    if (datamodtype != 2 && datamodtype != 4 && datamodtype != 6 && datamodtype != 8)
-        throw std::runtime_error("unsupported modulation type");
-    d_data_modtype = datamodtype;
-
-    if (ctrlmodtype != 2 && ctrlmodtype != 4 && ctrlmodtype != 6)
-        throw std::runtime_error("Unsupported control channel modulation mode");
-    d_ctrl_modtype = ctrlmodtype;
-
-    d_frame_ctrl_len = d_nstrm * d_sdnum * d_nctrlsyms * d_ctrl_modtype;  // fixed length control channel
-    d_frame_data_len = framelen; // automatic data channel padding
-    int data_bits_available = d_nstrm * d_sdnum * d_ndatasyms * d_data_modtype;
-    if (d_frame_data_len > data_bits_available)
-        throw std::runtime_error("Data frame size too large");
-    else if (d_frame_data_len < data_bits_available - d_nstrm * d_sdnum * d_data_modtype)
-        throw std::runtime_error("Data frame require too much padding");
-
-    std::stringstream str;
-    str << name() << unique_id();
-    _id = pmt::string_to_symbol(str.str());
-
-    set_tag_propagation_policy(block::TPP_DONT);
-}
-
-rg_demapper_impl::~rg_demapper_impl()
-{
-}
-
-int
-rg_demapper_impl::calculate_output_stream_length(
-    const gr_vector_int &ninput_items)
-{
-    return d_frame_ctrl_len + d_frame_data_len;
-}
-
-int
-rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
-                       gr_vector_const_void_star &input_items,
-                       gr_vector_void_star &output_items)
-{
-    // merge output ports of multiple data streams
-    bool merge_output = (d_mergestrm || output_items.size() < d_nstrm);
-
-    int num_input_ports = d_usecsi ? 2 * d_nstrm : d_nstrm;
-    int min_input_items = ninput_items[0];
-    for (int ch = 1; ch < num_input_ports; ch++)
-        min_input_items = std::min(min_input_items, ninput_items[ch]);
-
-    if (min_input_items != d_sdnum * d_numofdmsyms)
+    // ------------------------------------------------------------------------
+    // Factory
+    // ------------------------------------------------------------------------
+    rg_demapper::sptr rg_demapper::make(int phase,
+                                        int nstrm,
+                                        int modtype,
+                                        int n_ofdm_syms,
+                                        int sd_num,
+                                        bool usecsi,
+                                        int code_rate,
+                                        bool tag_snr,
+                                        bool debug)
     {
-        std::cout << "incorrect input length: " << min_input_items << std::endl;
-        throw std::runtime_error("input frame size not correct");
+      return gnuradio::make_block_sptr<rg_demapper_impl>(
+          phase, nstrm, modtype, n_ofdm_syms, sd_num, usecsi, code_rate,
+          tag_snr, debug);
     }
-    int total_input_items = d_frame_ctrl_len / (d_ctrl_modtype * d_nstrm)
-        + d_frame_data_len / (d_data_modtype * d_nstrm);
 
-    int output_frame_len = merge_output ?
-        (d_frame_ctrl_len + d_frame_data_len) : (d_frame_ctrl_len + d_frame_data_len)/d_nstrm;
-    int output_ctrl_len = merge_output ? d_frame_ctrl_len : d_frame_ctrl_len/d_nstrm;
-
-    for (int ch = 0; ch < d_nstrm; ch++)
+    // ------------------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------------------
+    rg_demapper_impl::rg_demapper_impl(int phase,
+                                       int nstrm,
+                                       int modtype,
+                                       int n_ofdm_syms,
+                                       int sd_num,
+                                       bool usecsi,
+                                       int code_rate,
+                                       bool tag_snr,
+                                       bool debug)
+        : gr::tagged_stream_block("rg_demapper",
+                                  gr::io_signature::make(usecsi ? nstrm : nstrm,
+                                                         usecsi ? 2 * nstrm : nstrm,
+                                                         sizeof(gr_complex)),
+                                  gr::io_signature::make(2, 2, sizeof(gr_complex)),
+                                  "packet_len"),
+          d_phase(phase),
+          d_ctrl_ok(false),
+          d_code_rate(code_rate),
+          d_code_rate_phase1(code_rate),
+          d_code_rate_phase2(code_rate),
+          d_code_rate_phase3(code_rate),
+          d_modtype(modtype),
+          d_modtype_phase1(modtype),
+          d_modtype_phase2(modtype),
+          d_modtype_phase3(modtype),
+          d_nstrm_param(nstrm),
+          d_nstrm_phase1(nstrm),
+          d_nstrm_phase2(nstrm),
+          d_nstrm_phase3(nstrm),
+          d_data_checksum(0),
+          d_seqno(-1),
+          d_tag_snr(tag_snr),
+          d_debug(debug),
+          cc(0),
+          d_usecsi(usecsi),
+          d_sd_num(sd_num),
+          d_n_ofdm_syms(n_ofdm_syms),
+          d_ctrl_obj(d_debug),
+          d_extended(0),
+          d_raw_ctrl(0)
     {
-        const gr_complex *in = (const gr_complex *) input_items[ch];
-        const gr_complex *csi = d_usecsi ? (const gr_complex *) input_items[d_nstrm + ch] : nullptr;
-        char *strmdout = merge_output ? (char *) output_items[0] : (char *) output_items[ch];
+      cc = 0;
+      d_seqno = -1;
+      d_data_checksum = 0;
+      d_ctrl_ok = false;
+      if (d_nstrm_param < 1 || d_nstrm_param > 8)
+      {
+        throw std::runtime_error("[rg_demapper] invalid nstrm_param (1..8).");
+      }
+      if (d_modtype != 2 && d_modtype != 4 && d_modtype != 6 &&
+          d_modtype != 8)
+      {
+        throw std::runtime_error("[rg_demapper] invalid modtype (2,4,6,8).");
+      }
+      if (sd_num == 52)
+      {
+        d_fftsize = 64;
+      }
+      else if (sd_num == 234)
+      {
+        d_fftsize = 256;
+      }
+      else
+      {
+        throw std::runtime_error("rg_demapper: sd_num must be 52 or 234");
+      }
 
-        int cur_modtype = (d_nctrlsyms > 0) ? d_ctrl_modtype : d_data_modtype;
-        int output_offset = 0;
-        for (int di = 0; di < total_input_items; di++)
+      if (d_debug)
+      {
+        std::cout << "[CONSTRUCTOR rg_demapper_impl ("
+                  << "nstrm=" << nstrm << ", modtype=" << modtype
+                  << ", usecsi=" << usecsi
+                  << ", debug=" << debug << ", sd_num=" << sd_num
+                  << ", n_ofdm_syms=" << n_ofdm_syms << ")]" << std::endl;
+      }
+
+      set_tag_propagation_policy(gr::block::TPP_DONT);
+    }
+
+    // ------------------------------------------------------------------------
+    // TSB
+    // ------------------------------------------------------------------------
+    int rg_demapper_impl::calculate_output_stream_length(
+        const gr_vector_int &ninput_items)
+    {
+      int min_in = ninput_items[0];
+      for (int p = 0; p < d_nstrm_param; p++)
+      {
+        if (d_debug)
         {
-            auto sdata = merge_output ? (strmdout + output_offset + ch) : (strmdout + output_offset);
-            float x = in[di].real();
-            float y = in[di].imag();
-            if (cur_modtype == 2) // QPSK
-            {
-                if (merge_output)
-                {
-                    sdata[0] = (y < 0) ? 1 : 0;
-                    sdata[d_nstrm] = (x >= 0) ? 1 : 0;
-                }
-                else
-                {
-                    sdata[0] = (y < 0) ? 1 : 0;
-                    sdata[1] = (x >= 0) ? 1 : 0;
-                }
-            }
-            else if (cur_modtype == 4) // 16QAM
-            {
-                float xm = abs(x);
-                float ym = abs(y);
-                float h2 = d_usecsi ? 2.0 / sqrt(10.0) * csi[di].real() : 2.0 / sqrt(10.0);
-                if (merge_output)
-                {
-                    sdata[0] = (ym <= h2) ? 1 : 0;
-                    sdata[d_nstrm] = (y < 0) ? 1 : 0;
-                    sdata[2 * d_nstrm] = (xm <= h2) ? 1 : 0;
-                    sdata[3 * d_nstrm] = (x >= 0) ? 1 : 0;
-                }
-                else
-                {
-                    sdata[0] = (ym <= h2) ? 1 : 0;
-                    sdata[1] = (y < 0) ? 1 : 0;
-                    sdata[2] = (xm <= h2) ? 1 : 0;
-                    sdata[3] = (x >= 0) ? 1 : 0;
-                }
-            }
-            else if (cur_modtype == 6) // 64QAM
-            {
-                float xm = abs(x);
-                float ym = abs(y);
-                float a2 = 2.0 / sqrt(42.0);
-                float h2 = d_usecsi ? a2 * csi[di].real() : a2;
-                float h4 = d_usecsi ? 2.0 * a2 * csi[di].real() : 2.0 * a2;
-                float h6 = d_usecsi ? 3.0 * a2 * csi[di].real() : 3.0 * a2;
-                if (merge_output)
-                {
-                    sdata[0] = (ym >= h2 && ym <= h6) ? 1 : 0;
-                    sdata[d_nstrm] = (ym <= h4) ? 1 : 0;
-                    sdata[2 * d_nstrm] = (y <= 0) ? 1 : 0;
-                    sdata[3 * d_nstrm] = (xm >= h2 && xm <= h6) ? 1 : 0;
-                    sdata[4 * d_nstrm] = (xm <= h4) ? 1 : 0;
-                    sdata[5 * d_nstrm] = (x >= 0) ? 1 : 0;
-                }
-                else
-                {
-                    sdata[0] = (ym >= h2 && ym <= h6) ? 1 : 0;
-                    sdata[1] = (ym <= h4) ? 1 : 0;
-                    sdata[2] = (y <= 0) ? 1 : 0;
-                    sdata[3] = (xm >= h2 && xm <= h6) ? 1 : 0;
-                    sdata[4] = (xm <= h4) ? 1 : 0;
-                    sdata[5] = (x >= 0) ? 1 : 0;
-                }
-            }
-            else if (cur_modtype == 8) // 256QAM
-            {
-                float xm = abs(x);
-                float ym = abs(y);
-                float a2 = 2.0 / sqrt(170.0);
-                float h2 = d_usecsi ? a2 * csi[di].real() : a2;
-                float h4 = d_usecsi ? 2.0 * a2 * csi[di].real() : 2.0 * a2;
-                float h8 = d_usecsi ? 4.0 * a2 * csi[di].real() : 4.0 * a2;
-                if (merge_output)
-                {
-                    sdata[0] = (abs(abs(ym - h8) - h4) <= h2) ? 1 : 0;
-                    sdata[d_nstrm] = (abs(ym - h8) <= h4) ? 1 : 0;
-                    sdata[2 * d_nstrm] = (ym <= h8) ? 1 : 0;
-                    sdata[3 * d_nstrm] = (y <= 0) ? 1 : 0;
-                    sdata[4 * d_nstrm] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
-                    sdata[5 * d_nstrm] = (abs(xm - h8) <= h4) ? 1 : 0;
-                    sdata[6 * d_nstrm] = (xm <= h8) ? 1 : 0;
-                    sdata[7 * d_nstrm] = (x >= 0) ? 1 : 0;
-                }
-                else
-                {
-                    sdata[0] = (abs(abs(ym - h8) - h4) <= h2) ? 1 : 0;
-                    sdata[1] = (abs(ym - h8) <= h4) ? 1 : 0;
-                    sdata[2] = (ym <= h8) ? 1 : 0;
-                    sdata[3] = (y <= 0) ? 1 : 0;
-                    sdata[4] = (abs(abs(xm - h8) - h4) <= h2) ? 1 : 0;
-                    sdata[5] = (abs(xm - h8) <= h4) ? 1 : 0;
-                    sdata[6] = (xm <= h8) ? 1 : 0;
-                    sdata[7] = (x >= 0) ? 1 : 0;
-                }
-            }
-            output_offset += (merge_output) ? d_nstrm * cur_modtype : cur_modtype;
-            if (d_frame_ctrl_len > 0 && output_offset == output_ctrl_len)
-                    cur_modtype = d_data_modtype;
+          std::cout << "###[rg_demapper_impl::calculate_output_stream_length("
+                    << cc << ")] ninput_items[" << p << "]=" << ninput_items[p]
+                    << std::endl;
         }
+        min_in = std::min(min_in, ninput_items[p]);
+      }
 
-        auto offset = nitems_written(0);
-        add_ctrl_tag(ch, offset, output_ctrl_len);  // add control packet tag
-        add_packet_tag(ch, offset, output_frame_len);  // add data packet tag
+      if (min_in < 64)
+      {
+        throw std::runtime_error(
+            "[rg_demapper] ERROR: input ports must have at least 64 items");
+      }
+
+      int total_data_syms = d_nstrm_param * min_in;
+      if (total_data_syms >= 64)
+      {
+        total_data_syms -= 64;
+      }
+      if (total_data_syms < 0)
+      {
+        total_data_syms = 0;
+      }
+
+      if (d_debug)
+      {
+        std::cout << "###[rg_demapper_impl::calculate_output_stream_length("
+                  << cc << ")] min_in=" << min_in
+                  << ", total_data_syms=" << total_data_syms << std::endl;
+      }
+      return total_data_syms;
     }
 
-    return output_frame_len;
-}
+    void rg_demapper_impl::update_seqno()
+    {
+      d_seqno = d_ctrl_obj.get_seq_number();
+    }
 
-void
-rg_demapper_impl::add_ctrl_tag(int ch, uint64_t offset, int data_len)
-{
-    add_item_tag(ch, offset,
-                 pmt::string_to_symbol("ctrl_data"),
-                 pmt::from_long(data_len),
-                 _id);
-}
+    void rg_demapper_impl::update_coding_rate()
+    {
+      d_code_rate_phase1 = d_ctrl_obj.get_coding_rate_phase1();
+      d_code_rate_phase2 = d_ctrl_obj.get_coding_rate_phase2();
+      d_code_rate_phase3 = d_ctrl_obj.get_coding_rate_phase3();
+      switch (d_phase)
+      {
+      case 1:
+        d_code_rate = d_code_rate_phase1;
+        break;
+      case 2:
+        d_code_rate = d_code_rate_phase2;
+        break;
+      case 3:
+        d_code_rate = d_code_rate_phase3;
+        break;
+      }
+    }
 
-void
-rg_demapper_impl::add_packet_tag(int ch, uint64_t offset, int packet_len)
-{
-    add_item_tag(ch, offset,
-                 pmt::string_to_symbol("packet_len"),
-                 pmt::from_long(packet_len),
-                 _id);
-}
+    int rg_demapper_impl::convert_modtype(int modtype)
+    {
+      switch (modtype)
+      {
+      case 0:
+        return 2; // QPSK
+      case 1:
+        return 4; // 16QAM
+      case 2:
+        return 6; // 64QAM
+      case 3:
+        return 8; // 256QAM
+      default:
+        throw std::runtime_error(
+            "[rg_demapper] ERROR: Invalid modulation type");
+      }
+    }
 
-} /* namespace gr::ncjt */
+    void rg_demapper_impl::update_modtype()
+    {
+      d_modtype_phase1 = convert_modtype(d_ctrl_obj.get_mod_type_phase1());
+      d_modtype_phase2 = convert_modtype(d_ctrl_obj.get_mod_type_phase2());
+      d_modtype_phase3 = convert_modtype(d_ctrl_obj.get_mod_type_phase3());
+      switch (d_phase)
+      {
+      case 1:
+        d_modtype = d_modtype_phase1;
+        break;
+      case 2:
+        d_modtype = d_modtype_phase2;
+        break;
+      case 3:
+        d_modtype = d_modtype_phase3;
+        break;
+      }
+    }
+
+    void rg_demapper_impl::update_data_checksum()
+    {
+      d_data_checksum = d_ctrl_obj.get_data_checksum();
+    }
+
+    // ------------------------------------------------------------------------
+    // main TSB work
+    // ------------------------------------------------------------------------
+    int rg_demapper_impl::work(int noutput_items, gr_vector_int &ninput_items,
+                               gr_vector_const_void_star &input_items,
+                               gr_vector_void_star &output_items)
+    {
+      cc++;
+      int ctrl_syms_len = 64;
+      int nports = d_usecsi ? 2 * d_nstrm_param : d_nstrm_param;
+      if (d_debug)
+      {
+        std::cout << "\n[rg_demapper_impl::work(" << cc
+                  << ")] Called, noutput_items=" << noutput_items << std::endl;
+        for (int p = 0; p < nports; p++)
+        {
+          std::cout << "\t" << cc
+                    << ")] ninput_items[" << p << "]=" << ninput_items[p]
+                    << std::endl;
+        }
+      }
+
+      int min_in = ninput_items[0];
+      for (int p = 0; p < nports; p++)
+      {
+        if (ninput_items[p] < min_in)
+        {
+          min_in = ninput_items[p];
+        }
+      }
+      // All input streams must have the same number of items
+      for (int p = 0; p < nports; p++)
+      {
+        if (ninput_items[p] != min_in)
+        {
+          throw std::runtime_error(
+              "[rg_demapper] ERROR: input ports must have same length");
+        }
+      }
+      if (min_in == 0)
+      {
+        if (d_debug)
+        {
+          std::cout << " [rg_demapper_impl::work(" << cc
+                    << ")] No data, return 0" << std::endl;
+        }
+        return 0; // no data
+      }
+
+      // Parse the control symbols if enabled
+      d_seqno++;
+      if (true)
+      {
+        d_ctrl_ok = false;
+
+        for (int s = 0; s < d_nstrm_param; s++)
+        {
+          const gr_complex *in_sym = static_cast<const gr_complex *>(input_items[s]);
+          std::vector<gr_complex> ctrl_syms(in_sym, in_sym + 64);
+          const gr_complex *in_csi = static_cast<const gr_complex *>(input_items[d_nstrm_param + s]);
+          std::vector<gr_complex> ctrl_csi;
+          if (d_usecsi)
+          {
+            ctrl_csi.assign(in_csi, in_csi + 64);
+          }
+          else
+          {
+            ctrl_csi.resize(64, gr_complex(1.0f, 0.0f));
+          }
+          if (d_debug)
+          {
+            std::cout << "--> [rg_demapper_impl::work(" << cc
+                      << ")] Demodulating control symbols on stream " << s
+                      << std::endl;
+          }
+          if (d_phase == 2)
+            d_ctrl_ok = d_ctrl_obj.demodulate_and_unpack_qpsk(ctrl_syms, ctrl_csi);
+          else if (d_phase == 3)
+            d_ctrl_ok = d_ctrl_obj.demodulate_and_unpack_16qam(ctrl_syms, ctrl_csi);
+          else
+            throw std::runtime_error(
+                "[rg_demapper] ERROR: Invalid phase (currently supports phase 2 with normal CTRL and phase 3 with extended CTRL)");
+          if (!d_ctrl_ok)
+          {
+            std::cerr << "[rg_demapper_impl::work(" << cc
+                      << ")] Failed to demodulate control symbols on stream " << s
+                      << std::endl;
+            continue;
+          }
+
+          update_seqno();
+          // nstrm is not obtained from CTRL for now. Current design of upstream block does not allow this. @TODO
+          update_coding_rate();
+          update_modtype();
+          update_data_checksum();
+
+          d_extended = d_ctrl_obj.get_extended();
+          d_raw_ctrl = d_ctrl_obj.get_raw();
+        }
+      }
+
+      // Add tags
+      auto d_wrt = nitems_written(0);
+      auto d_name = pmt::string_to_symbol(this->name());
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_ctrl_ok"), pmt::from_bool(d_ctrl_ok), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_seqno"), pmt::from_uint64(d_seqno), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_data_checksum"), pmt::from_uint64(d_data_checksum), d_name);
+
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_syms_per_stream"), pmt::from_uint64(d_n_ofdm_syms * d_sd_num - 64), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("n_ofdm_syms"), pmt::from_uint64(d_n_ofdm_syms), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("sd_num"), pmt::from_uint64(d_sd_num), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("ctrl_syms_len"), pmt::from_uint64(ctrl_syms_len), d_name);
+
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_extended"), pmt::from_uint64(d_extended), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_raw_ctrl"), pmt::make_blob(&d_raw_ctrl, sizeof(d_raw_ctrl)), d_name);
+
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_nstrm"), pmt::from_uint64(d_nstrm_param), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_nstrm_phase1"), pmt::from_uint64(d_nstrm_phase1), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_nstrm_phase2"), pmt::from_uint64(d_nstrm_phase2), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_nstrm_phase3"), pmt::from_uint64(d_nstrm_phase3), d_name);
+
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_modtype"), pmt::from_uint64(d_modtype), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_modtype_phase1"), pmt::from_uint64(d_modtype_phase1), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_modtype_phase2"), pmt::from_uint64(d_modtype_phase2), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_modtype_phase3"), pmt::from_uint64(d_modtype_phase3), d_name);
+
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_coding_rate"), pmt::from_uint64(d_code_rate), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_coding_rate_phase1"), pmt::from_uint64(d_code_rate_phase1), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_coding_rate_phase2"), pmt::from_uint64(d_code_rate_phase2), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_coding_rate_phase3"), pmt::from_uint64(d_code_rate_phase3), d_name);
+
+      if (d_debug)
+      {
+        std::cout << " [rg_demapper_impl::work(" << cc
+                  << ")] Add tags [rx_nstrm (" << d_nstrm_param << "), rx_modtype ("
+                  << d_modtype << "), rx_coding_rate (" << d_code_rate << ")]"
+                  << std::endl;
+      }
+      int num_rbs = (int)std::floor(d_sd_num / RB_SIZE);
+      if (d_tag_snr)
+      {
+        std::ostringstream oss;
+
+        std::vector<gr::tag_t> qsnr_tags;
+        get_tags_in_window(qsnr_tags, 0, 0, 1, pmt::string_to_symbol("quantized_snr"));
+
+        std::vector<gr::tag_t> tags;
+        get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("snr_sc_linear"));
+        if (!tags.empty())
+        {
+          size_t blob_len = pmt::blob_length(tags[0].value);
+          const float *snr_values = reinterpret_cast<const float *>(pmt::blob_data(tags[0].value));
+          size_t num_elements = blob_len / sizeof(float);
+          if (num_elements != static_cast<size_t>(d_sd_num))
+          {
+            throw std::runtime_error("[rg_demapper] ERROR: SNR tag length mismatch!");
+          }
+          std::vector<float> snr_rbs(num_rbs);
+          for (int rb = 0; rb < num_rbs; rb++)
+          {
+            int start = rb * RB_SIZE;
+            int end = (rb != num_rbs - 1) ? start + RB_SIZE : d_sd_num;
+            float snr_sum = 0.0f;
+            for (int j = start; j < end; j++)
+            {
+              if (d_debug)
+                oss << "\t\tSNR[" << j << "] = " << snr_values[j] << "\n";
+              snr_sum += snr_values[j];
+            }
+            float snr_avg = snr_sum / (end - start);
+            float snr_avg_db = 10 * std::log10(snr_avg);
+            snr_rbs[rb] = snr_avg_db;
+            if (d_debug)
+              oss << "\tRB_SNR[" << rb << "] = " << snr_avg_db << "\n";
+          }
+          add_item_tag(0, d_wrt, pmt::string_to_symbol("snr_rbs_db"), pmt::init_f32vector(snr_rbs.size(), snr_rbs.data()), d_name);
+          if (d_debug)
+            std::cout << oss.str();
+        }
+        else
+        {
+          throw std::runtime_error("[rg_demapper] ERROR: You set tag_snr flag but no snr_sc_linear tag found in input stream!");
+        }
+      }
+      else
+      {
+        int snr_bits = B0 + Bd * (num_rbs - 1);
+        float recovered[num_rbs];
+        // Get snr_bits LSB bits from the extended field
+        uint64_t packed_bits = d_extended & ((1ULL << snr_bits) - 1);
+        if (d_debug)
+          std::cout << "[rg_demapper_impl] EXTENDED: " << std::hex << d_extended << std::dec
+                    << std::endl;
+        // De-quantisation
+        dequantize_snrs(packed_bits, num_rbs, B0, Bd,
+                        MIN_ABS, MAX_ABS,
+                        MIN_DIFF, MAX_DIFF,
+                        recovered);
+
+        if (d_debug)
+        {
+          std::cout << "Recovered SNRs from CTRL:";
+          for (auto v : recovered)
+            std::cout << ' ' << v;
+          std::cout << std::endl;
+        }
+        add_item_tag(0, d_wrt, pmt::string_to_symbol("snr_rbs_db"), pmt::init_f32vector(num_rbs, recovered), d_name);
+      }
+
+      // Put interleaved symbols and CSI into output_items
+      std::vector<const gr_complex *> data_in(d_nstrm_param);
+      std::vector<const gr_complex *> csi_in(d_nstrm_param, nullptr);
+      for (int s = 0; s < d_nstrm_param; s++)
+      {
+        data_in[s] = static_cast<const gr_complex *>(input_items[s]);
+        if (d_usecsi)
+        {
+          csi_in[s] = static_cast<const gr_complex *>(input_items[d_nstrm_param + s]);
+        }
+      }
+
+      int available_syms = min_in - ctrl_syms_len;
+      if (available_syms <= 0)
+      {
+        if (d_debug)
+        {
+          std::cout << " [rg_demapper_impl::work(" << cc << ")] No data, return 0" << std::endl;
+        }
+        return 0;
+      }
+
+      int total_syms = available_syms * d_nstrm_param;
+      int out_syms = std::min(noutput_items, total_syms);
+      auto out_data = static_cast<gr_complex *>(output_items[0]);
+      auto out_csi = static_cast<gr_complex *>(output_items[1]);
+
+      int idx = 0;
+      for (int i = 0; i < available_syms; i++)
+      {
+        for (int s = 0; s < d_nstrm_param; s++)
+        {
+          if (idx >= out_syms)
+            break;
+          out_data[idx] = data_in[s][ctrl_syms_len + i];
+          out_csi[idx] = d_usecsi ? csi_in[s][ctrl_syms_len + i] : gr_complex(1.0f, 0.0f);
+          idx++;
+        }
+        if (idx >= out_syms)
+          break;
+      }
+      // Add packet_len tag on output ports
+      for (int p = 0; p < nports; p++)
+      {
+        add_item_tag(p, nitems_written(p), pmt::string_to_symbol("packet_len"), pmt::from_long(out_syms), d_name);
+      }
+
+      return out_syms;
+    }
+
+  } // namespace ncjt
+} // namespace gr

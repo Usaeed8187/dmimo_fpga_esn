@@ -1,0 +1,48 @@
+id: ncjt_demapper
+label: Demapper
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.demapper(${coded}, ${deterministic_input}, ${debug})
+
+parameters:
+  - id: coded
+    label: Output Raw Bits
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+  - id: deterministic_input
+    label: Deterministic Input
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+    
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: complex
+  - label: csi
+    domain: stream
+    dtype: complex
+
+outputs:
+  - label: info_packed
+    domain: stream
+    dtype: byte
+  - label: coded_packed
+    domain: stream
+    dtype: byte
+    hide: ${ not coded}
+
+file_format: 1

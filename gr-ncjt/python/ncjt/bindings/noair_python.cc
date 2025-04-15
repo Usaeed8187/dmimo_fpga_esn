@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(rg_mapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(1f04a5f4088990a1337d483d1699b889) */
+/* BINDTOOL_HEADER_FILE(noair.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(aac55e3318c4adc5e31dbc2d352d5ce3) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,20 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/rg_mapper.h>
+#include <gnuradio/ncjt/noair.h>
 // pydoc.h is automatically generated in the build directory
-#include <rg_mapper_pydoc.h>
+#include <noair_pydoc.h>
 
-void bind_rg_mapper(py::module &m) {
+void bind_noair(py::module &m) {
 
-  using rg_mapper = ::gr::ncjt::rg_mapper;
+  using noair = gr::ncjt::noair;
 
-  py::class_<rg_mapper, gr::tagged_stream_block, gr::block, gr::basic_block,
-             std::shared_ptr<rg_mapper>>(m, "rg_mapper", D(rg_mapper))
+  py::class_<noair, gr::block, gr::basic_block, std::shared_ptr<noair>>(
+      m, "noair", D(noair))
 
-      .def(py::init(&rg_mapper::make), py::arg("nstrm"), py::arg("n_ofdm_syms"),
-           py::arg("sc_num"), py::arg("pilot_sc_ind"), py::arg("addcs"),
-           py::arg("debug"), py::arg("numue"), py::arg("ueidx"),
-           py::arg("mucpt"), py::arg("addltf"), py::arg("ltfdata"),
-           D(rg_mapper, make))
+      .def(py::init(&noair::make), py::arg("n_ofdm_syms"), py::arg("sc_num"),
+           py::arg("pilot_sc_ind"), py::arg("frame_per_sec"), py::arg("snr_db"),
+           py::arg("num_drop_init_packets"), py::arg("debug"), D(noair, make))
 
       ;
 }

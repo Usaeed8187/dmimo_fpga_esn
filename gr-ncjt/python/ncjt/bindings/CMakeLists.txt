@@ -45,6 +45,11 @@ list(APPEND ncjt_python_files
     rx_sync_python.cc
     gnb_sync_python.cc
     tx_frm_ctrl_python.cc
+    mapper_muxer_python.cc
+    noair_python.cc
+    demapper_python.cc
+    mapper_muxer_phase3_python.cc
+    pdc_python.cc
     skip_data_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(ncjt ../../.. gr::ncjt "${ncjt_python_files}")

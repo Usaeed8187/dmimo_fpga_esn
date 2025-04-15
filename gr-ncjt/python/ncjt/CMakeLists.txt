@@ -19,7 +19,9 @@ add_subdirectory(bindings)
 ########################################################################
 # Install python sources
 ########################################################################
-gr_python_install(FILES __init__.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/ncjt)
+gr_python_install(FILES __init__.py
+    err_stats.py
+    knobs.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/ncjt)
 
 ########################################################################
 # Handle the unit tests

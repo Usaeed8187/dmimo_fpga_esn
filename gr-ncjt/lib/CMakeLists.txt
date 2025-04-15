@@ -13,6 +13,7 @@ include(GrPlatform) #define LIB_SUFFIX
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(srsran_ldpc)
 list(APPEND ncjt_sources
+    hll/hll.cc
     burst_tx_impl.cc
     ofdm_mod_impl.cc
     ofdm_demod_impl.cc
@@ -24,6 +25,7 @@ list(APPEND ncjt_sources
     ul_precoding_impl.cc
     mimo_detect_impl.cc
     utils.cc
+    common.cc
     mu_chanest_impl.cc
     sic_detect_impl.cc
     stbc_encode_impl.cc
@@ -36,8 +38,13 @@ list(APPEND ncjt_sources
     video_sink_impl.cc
     rx_sync_impl.cc
     gnb_sync_impl.cc
-    bchclass.cc
     tx_frm_ctrl_impl.cc
+    mapper_muxer_impl.cc
+    ctrl.cc
+    noair_impl.cc
+    demapper_impl.cc
+    mapper_muxer_phase3_impl.cc
+    pdc_impl.cc
     skip_data_impl.cc)
 
 set(ncjt_sources
@@ -49,16 +56,19 @@ if(NOT ncjt_sources)
 endif(NOT ncjt_sources)
 
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(OpenMP REQUIRED)  # Added OpenMP
 
 add_library(gnuradio-ncjt SHARED ${ncjt_sources})
 target_link_libraries(gnuradio-ncjt PUBLIC
 	gnuradio-filter
 	gnuradio-fft
+    gnuradio-fec
 	Eigen3::Eigen)
 
 target_link_libraries(gnuradio-ncjt PRIVATE
     srsran_channel_coding
-    srsran_support)
+    srsran_support
+    OpenMP::OpenMP_CXX)
 
 target_include_directories(
     gnuradio-ncjt
@@ -74,6 +84,66 @@ if(APPLE)
     set_target_properties(gnuradio-ncjt PROPERTIES INSTALL_NAME_DIR
                                                     "${CMAKE_INSTALL_PREFIX}/lib")
 endif(APPLE)
+
+add_executable(ldpc_sandbox ldpc_sandbox.cc)
+target_link_libraries(ldpc_sandbox
+    srsran_channel_coding
+    srsran_ldpc
+    srsran_support
+    )
+
+target_include_directories(
+    ldpc_sandbox
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srsran_ldpc/include/>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srsran_ldpc/external>
+    PUBLIC $<INSTALL_INTERFACE:include>)
+
+add_executable(ctrl_polar_sandbox ctrl_polar_sandbox.cc ctrl.cc qam_constellation.cc common.cc)
+target_link_libraries(ctrl_polar_sandbox
+    gnuradio-ncjt
+    srsran_channel_coding
+    srsran_ldpc
+    srsran_support
+    fmt::fmt
+)
+
+target_include_directories(
+    ctrl_polar_sandbox
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srsran_ldpc/include/>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srsran_ldpc/external>
+    PUBLIC $<INSTALL_INTERFACE:include>)
+
+add_executable(hll_sandbox hll_sandbox.cc hll/hll.cc qam_constellation.cc)
+target_link_libraries(hll_sandbox
+    gnuradio-ncjt
+    OpenMP::OpenMP_CXX
+    fmt::fmt
+)
+
+target_include_directories(
+    hll_sandbox
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srsran_ldpc/include/>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srsran_ldpc/external>
+    PUBLIC $<INSTALL_INTERFACE:include>)
+
+add_executable(differential_quantization_sandbox differential_quantization_sandbox.cc)
+target_link_libraries(differential_quantization_sandbox
+    gnuradio-ncjt
+)
+
+target_include_directories(
+    differential_quantization_sandbox
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    PUBLIC $<INSTALL_INTERFACE:include>)
 
 ########################################################################
 # Install built library files

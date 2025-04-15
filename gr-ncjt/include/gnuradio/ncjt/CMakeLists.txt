@@ -31,4 +31,9 @@ install(FILES api.h
     rx_sync.h
     gnb_sync.h
     tx_frm_ctrl.h
+    mapper_muxer.h
+    noair.h
+    demapper.h
+    mapper_muxer_phase3.h
+    pdc.h
     skip_data.h DESTINATION include/gnuradio/ncjt)

@@ -1,0 +1,111 @@
+id: ncjt_err_stats
+label: Err Stats
+category: '[dMIMO]'
+flags: [ show_id, python ]
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.err_stats(${caption}, ${cols}, ${row_height}, ${frame_per_sec}, ${logfreq}, ${show_birate}, ${show_throughput}, ${show_per}, ${show_num_copies}, ${show_coded_ber}, ${show_uncoded_ber}, ${dark}, ${debug})
+
+parameters:
+- id: caption
+  label: Caption
+  dtype: string
+  default: ''
+- id: cols
+  label: Columns
+  dtype: int
+  default: '3'
+- id: row_height
+  label: Row Height (pixels)
+  dtype: int
+  default: '300'
+- id: frame_per_sec
+  label: Frame Rate
+  dtype: float
+  default: 0.0
+- id: logfreq
+  label: Log Frequency
+  dtype: int
+  default: '5'
+- id: show_birate
+  label: Show Bitrate
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: show_throughput
+  label: Show Throughput
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: show_per
+  label: Show PER
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: show_num_copies
+  label: Show Num Copies
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: show_coded_ber
+  label: Show Coded BER
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: show_uncoded_ber
+  label: Show Uncoded BER
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+- id: dark
+  label: Dark Mode
+  dtype: bool
+  default: 'True'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+  hide: part
+- id: debug
+  label: Debug
+  dtype: bool
+  default: 'False'
+  options: [ 'True', 'False' ]
+  option_labels: [ Enable, Disable ]
+  hide: part
+- id: gui_hint
+  label: GUI Hint
+  dtype: gui_hint
+  hide: part
+
+    
+inputs:
+- label: inp
+  domain: stream
+  dtype: byte
+  vlen: 1
+- label: reset
+  domain: message
+  optional: true
+
+outputs:
+
+
+templates:
+    imports: from gnuradio.ncjt import err_stats
+    var_make: self.${id} = None
+    make: |-
+        <%
+            win = '_%s_err_stats'%id
+        %>\
+        ${win} = err_stats(${caption}, ${cols}, ${row_height}, ${frame_per_sec}, ${logfreq}, ${show_birate}, ${show_throughput}, ${show_per}, ${show_num_copies}, ${show_coded_ber}, ${show_uncoded_ber}, ${dark}, ${debug})
+        self.${id} = ${win}
+        ${gui_hint() % win} 
+
+
+file_format: 1

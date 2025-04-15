@@ -1,0 +1,63 @@
+id: ncjt_noair
+label: NoAir
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.noair(${n_ofdm_syms}, ${sc_num}, ${pilot_sc_ind}, ${frame_per_sec}, ${snr_db}, ${num_drop_init_packets}, ${debug})
+
+parameters:
+  - id: n_ofdm_syms
+    label: Number of OFDM Symbols
+    dtype: int
+    default: 40
+  - id: sc_num
+    label: Numer of Subcarriers
+    dtype: int
+    default: 56
+  - id: pilot_sc_ind
+    label: Pilot Subcarrier Indices
+    dtype: int_vector
+    default: [7, 21, 34, 48]
+    readonly: true
+    hide: part
+  - id: frame_per_sec
+    label: Frame Rate
+    dtype: float
+    default: 0.0
+  - id: snr_db
+    label: SNR (dB)
+    dtype: float
+    default: 0.0
+    help: "If <= 0, no noise is added. If > 0, AWGN is injected to achieve this SNR."
+  - id: num_drop_init_packets
+    label: Numer of Dropped Initial Packets
+    dtype: int
+    default: 0
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: ['True','False']
+    option_labels: [Enable,Disable]
+    hide: part
+
+inputs:
+  - domain: stream
+    dtype: complex
+    vlen: 1
+  - label: sel_snr
+    domain: message
+    optional: true
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    vlen: 1
+  - label: csi
+    domain: stream
+    dtype: complex
+    vlen: 1
+
+file_format: 1

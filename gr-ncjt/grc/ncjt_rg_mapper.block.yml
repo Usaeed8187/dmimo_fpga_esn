@@ -4,48 +4,41 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rg_mapper(${fftsize}, ${nstrms}, ${framelen}, ${ndatasyms}, ${npilotsyms}, ${nctrlsyms}, ${datamodtype}, ${ctrlmodtype}, ${numue}, ${ueidx}, ${mucpt}, ${ltfdata}, ${addltf}, ${addcs}, ${debug})
+  make: ncjt.rg_mapper(${nstrm}, ${n_ofdm_syms}, ${sc_num}, ${pilot_sc_ind}, ${addcs}, ${debug}, ${numue}, ${ueidx}, ${mucpt}, ${addltf}, ${ltfdata})
 
 parameters:
-  - id: fftsize
-    label: FFT Size
-    dtype: int
-    default: '64'
-    hide: part
-  - id: nstrms
+  - id: nstrm
     label: Number of Streams
     dtype: int
     default: 1
-    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+  - id: n_ofdm_syms
+    label: Num OFDM Syms
+    dtype: int
+    default: 40
+  - id: sc_num
+    label: Num Subcarriers
+    dtype: int
+    default: 56
+    readonly: true
+  - id: pilot_sc_ind
+    label: Pilot Subcarrier Indices
+    dtype: int_vector
+    default: [7, 21, 34, 48]
+    readonly: true
     hide: part
-  - id: framelen
-    label: Frame Length
-    dtype: int
-  - id: ndatasyms
-    label: Data Symbols
-    dtype: int
-  - id: npilotsyms
-    label: Pilot Symbols
-    dtype: int
-    default: '0'
+  - id: addcs
+    label: Add Cyclic Shift
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
     hide: part
-  - id: nctrlsyms
-    label: Ctrl Symbols
-    dtype: int
-    default: '0'
-    hide: part
-  - id: datamodtype
-    label: Data Modulation
-    dtype: int
-    default: 2
-    options: [ 2, 4, 6, 8 ]
-    option_labels: [ 'QPSK', '16QAM', '64QAM', '256QAM' ]
-  - id: ctrlmodtype
-    label: Ctrl Modulation
-    dtype: int
-    default: 2
-    options: [ 2, 4, 6]
-    option_labels: [ 'QPSK', '16QAM', '64QAM']
   - id: numue
     label: Number of UEs
     dtype: int
@@ -62,40 +55,27 @@ parameters:
     default: 'False'
     options: [ 'True', 'False' ]
     hide: part
-  - id: ltfdata
-    label: LTF Data
-    dtype: file_open
-    hide: part
   - id: addltf
     label: Add LTF
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
     hide: part
-  - id: addcs
-    label: Add Cyclic Shift
-    dtype: bool
-    default: 'True'
-    options: [ 'True', 'False' ]
+  - id: ltfdata
+    label: LTF Data
+    dtype: file_open
     hide: part
-  - id: debug
-    label: Debug
-    dtype: bool
-    default: 'False'
-    options: [ 'True', 'False' ]
-    option_labels: [ Enable, Disable ]
-    hide: part
+
 
 inputs:
   - label: in
     domain: stream
-    dtype: byte
-    vlen: 1
+    dtype: complex
 
 outputs:
   - label: out
     domain: stream
     dtype: complex
-    multiplicity: ${nstrms}
+    multiplicity: ${nstrm}
 
 file_format: 1
