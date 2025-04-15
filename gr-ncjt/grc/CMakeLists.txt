@@ -28,7 +28,4 @@ install(FILES
     ncjt_rx_sync.block.yml
     ncjt_gnb_sync.block.yml
     ncjt_tx_frm_ctrl.block.yml
-    ncjt_add_ctrldata.block.yml
-    ncjt_check_ctrldata.block.yml
-    ncjt_llr_combine.block.yml
     ncjt_skip_data.block.yml DESTINATION share/gnuradio/grc/blocks)

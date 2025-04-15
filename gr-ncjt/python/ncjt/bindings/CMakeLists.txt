@@ -45,9 +45,6 @@ list(APPEND ncjt_python_files
     rx_sync_python.cc
     gnb_sync_python.cc
     tx_frm_ctrl_python.cc
-    add_ctrldata_python.cc
-    check_ctrldata_python.cc
-    llr_combine_python.cc
     skip_data_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(ncjt ../../.. gr::ncjt "${ncjt_python_files}")
