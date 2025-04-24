@@ -742,7 +742,6 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     }
 
     // scan for first and second xcorr peaks
-    int deltaCSD = 4;
     float first_peak = 0, second_peak = 0;
     int first_peak_pos = -1, second_peak_pos = -1;
     for (int i = LTF_LEN; i < xcorr_len - FFT_LEN; i++)
@@ -776,6 +775,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     dout << "Found LTF xcorr peaks at " << first_peak_pos << ", " << second_peak_pos << std::endl;
 
     // sanity checks
+    int deltaCSD = 4;
     int ht_start = -1;
     if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - 2 * deltaCSD &&
         second_peak_pos <= first_peak_pos + FFT_LEN + 2 * deltaCSD)
@@ -795,7 +795,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
 
     // estimate fine FOE
     gr_complex corr_foe = 0;
-    for (int k = first_peak_pos - 12; k < first_peak_pos + FFT_LEN; k++)
+    for (int k = first_peak_pos - 2 * deltaCSD; k < first_peak_pos + FFT_LEN - 2 * deltaCSD; k++)
     {
         int delay_idx = k + FFT_LEN;
         for (int ch = 0; ch < d_num_chans; ch++)

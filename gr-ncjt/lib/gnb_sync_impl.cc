@@ -715,7 +715,7 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
     }
     avg_xcorr /= (double) xcorr_len;
     // if (max_xcorr < 8.0 * avg_xcorr) // TODO fine-tune max_xcorr threshold
-    if (max_xcorr < 6.0 * sig_power) // TODO fine-tune max_xcorr threshold
+    if (max_xcorr < 8.0 * sig_power) // TODO fine-tune max_xcorr threshold
     {
         dout << "Xcorr mean: " << avg_xcorr << "  Xcorr peak: " << max_xcorr << std::endl;
         dout << "No valid xcorr peaks found (" << peak_pos << ")" << std::endl;
@@ -723,10 +723,9 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
     }
 
     // scan for first and second xcorr peaks
-    int deltaCSD = 4;
     float first_peak = 0, second_peak = 0;
     int first_peak_pos = -1, second_peak_pos = -1;
-    for (int i = 0; i < xcorr_len; i++)
+    for (int i = LTF_LEN; i < xcorr_len - FFT_LEN; i++)
     {
         float xcorr_val = d_xcorr_val[i];
         if (xcorr_val < d_xcorr_thrd * max_xcorr)
@@ -738,7 +737,7 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
             first_peak = xcorr_val;
             first_peak_pos = i;
         }
-        else if (i <= first_peak_pos + LTF_LEN / 4 + 5)
+        else if (i <= first_peak_pos + FFT_LEN / 4)
         {
             // within scope of first peak
             if (xcorr_val > first_peak)
@@ -757,6 +756,7 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
     dout << "Found LTF xcorr peaks at " << first_peak_pos << ", " << second_peak_pos << std::endl;
 
     // sanity checks
+    int deltaCSD = 4;
     int ht_start = -1;
     if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - deltaCSD &&
         second_peak_pos <= first_peak_pos + FFT_LEN + deltaCSD)
@@ -776,7 +776,7 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
 
     // estimate fine FOE
     gr_complex corr_foe = 0;
-    for (int k = first_peak_pos - 12; k < first_peak_pos + FFT_LEN; k++)
+    for (int k = first_peak_pos - 2 * deltaCSD; k < first_peak_pos + FFT_LEN - 2 * deltaCSD; k++)
     {
         int delay_idx = k + FFT_LEN;
         for (int ch = 0; ch < d_num_chans; ch++)
