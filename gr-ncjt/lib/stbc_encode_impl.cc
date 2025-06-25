@@ -95,7 +95,7 @@ stbc_encode_impl::generate_cpt_pilots()
             for (int k = 0; k < d_ntx; k++)  // for all streams
             {
                 int offset = symidx * d_npt * d_ntx + k * d_npt + i;
-                if (d_ueidx >=0 && symidx % d_ntx != d_ueidx)
+                if (d_ueidx >= 0 && symidx % d_ntx != d_ueidx)
                     d_cpt_pilot[offset] = 0;
                 else
                     d_cpt_pilot[offset] = pilot_parity * basePilot[k][idx];
@@ -134,17 +134,16 @@ stbc_encode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     tx1.chip(1, 1) = s0.conjugate();
 
     // Generate packing pilots
+    const unsigned pilot_idx4[8] = {7, 21, 34, 48};
+    const unsigned pilot_idx8[8] = {6, 32, 74, 100, 141, 167, 209, 235};
+    auto pilot_idx = (d_scnum == 56) ? pilot_idx4 : pilot_idx8;
     for (int n = 0; n < d_numsyms; n++)
     {
         int offset = d_scnum * n;
-        out0[offset + 7]  = d_cpt_pilot[8 * n];
-        out0[offset + 21] = d_cpt_pilot[8 * n + 1];
-        out0[offset + 34] = d_cpt_pilot[8 * n + 2];
-        out0[offset + 48] = d_cpt_pilot[8 * n + 3];
-        out1[offset + 7]  = d_cpt_pilot[8 * n + 4];
-        out1[offset + 21] = d_cpt_pilot[8 * n + 5];
-        out1[offset + 34] = d_cpt_pilot[8 * n + 6];
-        out1[offset + 48] = d_cpt_pilot[8 * n + 7];
+        for (int k=0; k < d_npt; k++) {
+            out0[offset + pilot_idx[k]] = d_cpt_pilot[d_ntx * d_npt * n + k];
+            out1[offset + pilot_idx[k]] = d_cpt_pilot[d_ntx * d_npt * n + d_npt + k];
+        }
     }
 
     return d_scnum * d_numsyms;
