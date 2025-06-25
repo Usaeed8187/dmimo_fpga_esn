@@ -4,9 +4,15 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.burst_tx(${filename}, ${samplerate}, ${pktspersec}, ${pktsize}, ${starttime}, ${debug})
+  make: ncjt.burst_tx(${ntx}, ${filename}, ${samplerate}, ${pktspersec}, ${pktsize}, ${starttime}, ${debug})
 
 parameters:
+  - id: ntx
+    label: Number of Tx Antennas
+    dtype: int
+    default: '1'
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
   - id: filename
     label: Data File
     dtype: file_open
@@ -39,6 +45,6 @@ outputs:
   - label: out
     domain: stream
     dtype: complex
-    multiplicity: '1'
+    multiplicity: ${ntx}
 
 file_format: 1
