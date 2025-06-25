@@ -17,8 +17,8 @@ namespace gr::ncjt
 class ul_precoding_impl : public ul_precoding
 {
 private:
-    const int FFTSIZE = 64; // OFDM FFT size
-    const int SC_NUM = 56; // Number of valid subcarriers
+    int d_fftsize;  // OFDM FFT size
+    int d_scnum;  // Number of valid subcarriers
     int d_nss;  // Number of uplink spatial streams
     int d_ntx;  // Number of uplink transmitter antennas = number of downlink receive antennas
     int d_ntx_gnb;  // Number of downlink transmitter antennas
@@ -64,7 +64,7 @@ protected:
     read_offline_csi(const char *filename, int csidlen);
 
 public:
-    ul_precoding_impl(int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
+    ul_precoding_impl(int fftsize, int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
                       bool eigenmode, bool wideband, bool loadcsi, const char *csifile, bool debug);
     ~ul_precoding_impl();
 
