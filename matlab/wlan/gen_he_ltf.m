@@ -1,7 +1,7 @@
 % System configuration
 modtype = "QPSK"; % QPSK/16QAM/64QAM
 PSDULength = 847; % use 484 for QPSK, 970 for 16QAM, 1456 for 64QAM
-cfg = sys_config_he('2x2', PSDULength, modtype, 'LDPC');
+cfg = sys_config_he('2t2s', PSDULength, modtype, 'LDPC');
 
 % Load 802.11 beacon signals
 load('beacon2x2he.mat')
@@ -15,7 +15,8 @@ ltfRef = [-1,-1,1,-1,1,-1,1,1,1,-1,1,1,1,-1,-1,1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,
          -1,-1,-1,1,-1,1,-1,-1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,-1,-1,1,1,-1,1,1,1,1,1,1,1,-1,1, ...
          1,-1,-1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1,1,1,1,1,-1,-1,1,1,1,1,1,-1, ...
          1,1,-1,-1,-1,1,-1,-1,-1,1,-1,1,-1,1,1].';
-% for Nsc=244
+
+% Nsc=244 for HW testing
 % ltfRef = [1; ltfRef; -1];
 
 % LTFs for 2x2 case, P matrix = [1, -1; 1, 1]
@@ -39,4 +40,4 @@ heltfx = reshape(ltfx, [], 2);
 %     assert(max(abs(d(:))) <= 1e-8, "LTF generation not OK")
 % end
 
-save('heltfx.mat','heltfx')
+save('heltf.mat','heltfx')

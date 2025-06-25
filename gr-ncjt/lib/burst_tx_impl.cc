@@ -12,20 +12,25 @@ namespace gr::ncjt
 {
 
 burst_tx::sptr
-burst_tx::make(const char *filename, double samplerate,
+burst_tx::make(int ntx, const char *filename, double samplerate,
                int pktspersec, int pktsize, double starttime, bool debug)
 {
-    return gnuradio::make_block_sptr<burst_tx_impl>(filename, samplerate,
+    return gnuradio::make_block_sptr<burst_tx_impl>(ntx, filename, samplerate,
                                                     pktspersec, pktsize, starttime, debug);
 }
 
-burst_tx_impl::burst_tx_impl(const char *filename, double samplerate, int pktspersec, int pktsize, double starttime, bool debug)
+burst_tx_impl::burst_tx_impl(int ntx, const char *filename, double samplerate, int pktspersec, int pktsize,
+                             double starttime, bool debug)
     : gr::tagged_stream_block("burst_tx",
                               gr::io_signature::make(0, 0, 0),
-                              gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                              gr::io_signature::make(ntx, ntx, sizeof(gr_complex)),
                               "packet_len"),
       d_first_burst(true), d_debug(debug)
 {
+    if (ntx < 1 || ntx > 8)
+        throw std::runtime_error("only support 1 to 8 transmitter antennas");
+    d_ntx = ntx;
+
     if (pktspersec <= 0 || pktspersec > 100)
         throw std::runtime_error("invalid sampling packet transmission interval specified");
     d_repeat_interval = 1.0 / (double) pktspersec;
@@ -39,19 +44,22 @@ burst_tx_impl::burst_tx_impl(const char *filename, double samplerate, int pktspe
         throw std::runtime_error("failed to read frame data");
 
     if (d_pktsize == 0)
-        d_pktsize = d_data_len;
+        d_pktsize = d_data_len / d_ntx;
+    else if (d_data_len % (d_pktsize * d_ntx) != 0)
+        throw std::runtime_error("data size does not match packet size");
 
-    if (d_pktsize > 0.5 * d_repeat_interval * samplerate)
+    if (d_pktsize > 0.75 * d_repeat_interval * samplerate)
     {
         std::cout << "Packet size: " << d_pktsize << std::endl;
         throw std::runtime_error("packet size too large");
     }
 
-    if (starttime < 0 || starttime > 10.0)
+    if (starttime < 1.0 || starttime > 10.0)
         throw std::runtime_error("invalid transmission start time");
+    d_starttime = starttime;
 
     d_buf_pos = 0;
-    d_time_secs = starttime;
+    d_time_secs = std::max(2.0, starttime - 0.5);
     d_time_fracs = 0.0;
 
     std::stringstream str;
@@ -59,6 +67,7 @@ burst_tx_impl::burst_tx_impl(const char *filename, double samplerate, int pktspe
     _id = pmt::string_to_symbol(str.str());
 
     set_min_output_buffer(0, 2 * d_pktsize * sizeof(gr_complex));
+
     set_tag_propagation_policy(block::TPP_DONT);
 }
 
@@ -80,8 +89,6 @@ burst_tx_impl::work(int noutput_items,
                     gr_vector_const_void_star &input_items,
                     gr_vector_void_star &output_items)
 {
-    auto out = (gr_complex *) output_items[0];
-
     if (noutput_items < d_pktsize)
     {
         std::cout << "Output buffer size: " << noutput_items << std::endl;
@@ -92,32 +99,37 @@ burst_tx_impl::work(int noutput_items,
     if (data_remaining == 0) {
         d_buf_pos = 0;
     }
-    else if (data_remaining < d_pktsize) {
+    else if (data_remaining < d_ntx * d_pktsize) {
         throw std::runtime_error("packet fragmentation occurs");
     }
 
-    add_item_tag(0,
-                 nitems_written(0),
-                 pmt::string_to_symbol("tx_pkt_len"),
-                 pmt::from_long(d_pktsize),
-                 _id);
+    for (int ch=0; ch < d_ntx; ch++)
+    {
+        add_item_tag(ch,
+                     nitems_written(ch),
+                     pmt::string_to_symbol("tx_pkt_len"),
+                     pmt::from_long(d_pktsize),
+                     _id);
 
-    const pmt::pmt_t tx_time = pmt::make_tuple(pmt::from_uint64(d_time_secs), pmt::from_double(d_time_fracs));
-    add_item_tag(0,
-                 nitems_written(0),
-                 pmt::string_to_symbol("tx_time"),
-                 tx_time,
-                 _id);
+        const pmt::pmt_t tx_time = pmt::make_tuple(pmt::from_uint64(d_time_secs), pmt::from_double(d_time_fracs));
+        add_item_tag(ch,
+                     nitems_written(ch),
+                     pmt::string_to_symbol("tx_time"),
+                     tx_time,
+                     _id);
 
-    memcpy(&out[0], &d_frame_data[d_buf_pos], sizeof(gr_complex) * d_pktsize);
+        auto out = (gr_complex *) output_items[ch];
+        memcpy(&out[0], &d_frame_data[d_buf_pos], sizeof(gr_complex) * d_pktsize);
+        d_buf_pos += d_pktsize;
+    }
 
     // Update next time stamps
     if (d_first_burst)
     {
         d_first_burst = false;
-        d_time_secs = 2;
+        d_time_secs = d_starttime;
     }
-    d_buf_pos += d_pktsize;
+
     d_time_fracs += d_repeat_interval;
     double intpart; // normalize
     d_time_fracs = std::modf(d_time_fracs, &intpart);

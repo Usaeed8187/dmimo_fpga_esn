@@ -15,15 +15,19 @@ namespace gr::ncjt
 class burst_tx_impl : public burst_tx
 {
 private:
+    int d_ntx; // number of transmit antennas
+    int d_pktsize;      // packet size
+    int d_starttime;   // transmission start time
+
     double d_repeat_interval;
+    bool d_first_burst;
     uint64_t d_time_secs;
     double d_time_fracs;
-    int d_pktsize;      // packet size
+
     int d_data_len;     // total length of data samples
     int d_buf_pos;      // current position of the data buffer
-    bool d_first_burst;
-
     gr_complex *d_frame_data;
+
     pmt::pmt_t _id;
     const bool d_debug;
 
@@ -35,7 +39,7 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    burst_tx_impl(const char *filename, double samplerate, int pktspersec,
+    burst_tx_impl(int ntx, const char *filename, double samplerate, int pktspersec,
                   int pktsize, double starttime, bool debug);
     ~burst_tx_impl();
 

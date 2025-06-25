@@ -4,9 +4,14 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.ul_precoding(${nss}, ${ntx}, ${ntx_gnb}, ${numltfsyms}, ${ndatasyms}, ${eigenmode}, ${wideband}, ${loadcsi}, ${csifile}, ${debug})
+  make: ncjt.ul_precoding(${fftsize}, ${nss}, ${ntx}, ${ntx_gnb}, ${numltfsyms}, ${ndatasyms}, ${eigenmode}, ${wideband}, ${loadcsi}, ${csifile}, ${debug})
 
 parameters:
+  - id: fftsize
+    label: FFT Size
+    dtype: int
+    default: '64'
+    hide: part
   - id: nss
     label: Number of Streams
     dtype: int

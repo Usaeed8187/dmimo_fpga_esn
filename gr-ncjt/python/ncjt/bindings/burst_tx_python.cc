@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(burst_tx.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(c3542f2055b29b77e91cb43e6d485d21) */
+/* BINDTOOL_HEADER_FILE_HASH(85056bd0b8e84431d542f70c7a05aaa6) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,7 +36,7 @@ void bind_burst_tx(py::module &m) {
   py::class_<burst_tx, gr::tagged_stream_block, gr::block, gr::basic_block,
              std::shared_ptr<burst_tx>>(m, "burst_tx", D(burst_tx))
 
-      .def(py::init(&burst_tx::make), py::arg("filename"),
+      .def(py::init(&burst_tx::make), py::arg("ntx"), py::arg("filename"),
            py::arg("samplerate"), py::arg("pktspersec"), py::arg("pktsize"),
            py::arg("starttime"), py::arg("debug"), D(burst_tx, make))
 

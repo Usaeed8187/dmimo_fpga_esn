@@ -1,20 +1,21 @@
-function mu_mimo_ul_sigen(mimotype, psdulen, modtype, cctype, datadir)
+function mu_mimo_ul_sigen_he(mimotype, psdulen, modtype, cctype, datadir)
 
 % System configuration
-cfg = sys_config(mimotype, psdulen, modtype, cctype);
+cfg = sys_config_he(mimotype, psdulen, modtype, cctype);
 
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder
 
 % Load 802.11 beacon signals
-b = load('beacon2x2.mat');
+b = load('beacon2x2he.mat');
+bx = load('heltfx.mat');
 
 % orthonal LTF for 2 Tx
 % htltfx = cat(1, [b.htltf(1:80,1), zeros(80, 1)], ...
 %                 [zeros(80, 1), b.htltf(81:160,2)]);
 
-htltfx = cat(1, [b.htltf(1:80,1), zeros(80, 1)], ...
-                [zeros(80, 1), b.htltf(1:80,1)]);
+heltfx = cat(1, [bx.heltfx(1:cfg.SymLen,1), zeros(cfg.SymLen, 1)], ...
+                [zeros(cfg.SymLen, 1), bx.heltfx(1:cfg.SymLen,1)]);
 
 % Set random substream
 stream = RandStream('mt19937ar','Seed',2201203);
@@ -26,8 +27,8 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 % Generate data symbols
 [txdata, encdata, strmdata, txdsyms] = tx_processing(cfg, txPSDU);
 
-% Time-domain preamble signals (HT-SIG, HT-STF, HT-LTF)
-preamble = [b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; htltfx];
+% Time-domain preamble signals (HE-SIGA, HE-STF, HE-LTF)
+preamble = [b.lstf; b.lltf; b.lsig; b.hesiga; b.hestf; b.hestf; heltfx];
 
 % Prepare transmitter signal for USRP
 txFrame = reshape([preamble; txdata], [], cfg.Nt);
@@ -43,10 +44,10 @@ txsig = [padding; txsig; padding];
 
 % Show system parameters
 nLegacyPreamble = 5;
-nHTPreamble = (size(preamble,1) - 80*nLegacyPreamble) / (cfg.Nfft+cfg.Ncp);
+nHEPreamble = (size(preamble,1) - 80*nLegacyPreamble) / (cfg.Nfft+cfg.Ncp);
 nDataSymbols = size(txdata, 1) / (cfg.Nfft+cfg.Ncp);
-fprintf("Number of HT symbols: %d\nNumber of Data symbols: %d\n", ...
-        nHTPreamble, nDataSymbols);
+fprintf("Number of HE symbols: %d\nNumber of Data symbols: %d\n", ...
+        nHEPreamble, nDataSymbols);
 fprintf("Tx signal frame size: %d\n", size(txsig,1));
 fprintf("Tx frame data length (bits): %d\n", size(strmdata,1));
 fprintf("Tx signal scaling: %.15f\n", scaling);
@@ -59,17 +60,21 @@ for k=1:cfg.Nt
 end
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/preamble.bin',datadir,mimotype,modtype));
-write_complex_binary(scaling*preamble(1:end-160,:), ...
+write_complex_binary(scaling*preamble(1:end-2*cfg.SymLen,:), ...
     sprintf('%s/%s/%s/preamble_noltfx.bin',datadir,mimotype,modtype));
-write_complex_binary(zeros(size(preamble(1:end-160,:))), ...
+write_complex_binary(zeros(size(preamble(1:end-2*cfg.SymLen,:))), ...
     sprintf('%s/%s/%s/preamble_null.bin',datadir,mimotype,modtype));
 
 % Generate LTF for precoding
-ltfRef = [1, 1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, ...
-          1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, 1, ...
-          1,-1,-1, 1, 1,-1, 1,-1, 1,-1,-1,-1,-1,-1, ...
-          1, 1,-1,-1, 1,-1, 1,-1, 1, 1, 1, 1,-1,-1 ].';
-ltf2x2 = cat(3, [ltfRef, zeros(56,1)], [zeros(56,1), ltfRef]);
+ltfRef = [-1,-1,1,-1,1,-1,1,1,1,-1,1,1,1,-1,-1,1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,1,1,-1, ...
+         1,-1,1,1,1,1,-1,1,-1,-1,1,1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,1,1,1,1,-1,1,1,-1,-1,-1,-1,1, ...
+         -1,-1,1,1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,-1,1,-1,-1,1,1,1, ...
+         -1,1,1,1,-1,1,-1,1,-1,-1,-1,-1,-1,1,1,1,-1,-1,-1,1,-1,1,1,1,-1,1,-1,1,-1,1,1,-1, ...
+         1,1,1,-1,-1,1,-1,-1,1,-1,1,-1,1,1,1,-1,1,1,1,-1,-1,1,-1,-1,-1,-1,-1,1,1,-1,-1,-1, ...
+         -1,-1,-1,1,-1,1,-1,-1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,-1,-1,1,1,-1,1,1,1,1,1,1,1,-1,1, ...
+         1,-1,-1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1,1,1,1,1,-1,-1,1,1,1,1,1,-1, ...
+         1,1,-1,-1,-1,1,-1,-1,-1,1,-1,1,-1,1,1].';
+ltf2x2 = cat(3, [ltfRef, zeros(cfg.Nsc,1)], [zeros(cfg.Nsc,1), ltfRef]);
 ltf2x2 = reshape(ltf2x2, [], 2);
 write_complex_binary(ltf2x2, ...
     sprintf('%s/%s/%s/ltf2x2.bin',datadir,mimotype,modtype));
@@ -79,8 +84,8 @@ write_complex_binary(ltf2x2(:,2), ...
     sprintf('%s/%s/%s/ltf2x2_t2.bin',datadir,mimotype,modtype));
 
 % Save LTF for debugging
-write_complex_binary(scaling*htltfx, ...
-    sprintf('%s/%s/%s/htltfx.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*heltfx, ...
+    sprintf('%s/%s/%s/heltfx.bin',datadir,mimotype,modtype));
 
 % Save binary data
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');

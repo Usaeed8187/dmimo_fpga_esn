@@ -29,8 +29,7 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 preamble = [b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; b.htltf];
 
 % Prepare transmitter signal for USRP
-txFrame = reshape([preamble; txdata], (cfg.Nfft+cfg.Ncp), [], cfg.Nt);
-txFrame = reshape(txFrame, [], cfg.Nt);
+txFrame = reshape([preamble; txdata], [], cfg.Nt);
 
 % Convert Tx signals to range (-1,1)
 % scaling = 1.0/max(abs([real(txFrame(:)); imag(txFrame(:))]));
@@ -53,6 +52,8 @@ fprintf("Tx signal scaling: %.15f\n", scaling);
 
 % Save data fro GNU Radio implementation
 fprintf("Saving GNU Radio Tx data files ...\n")
+write_complex_binary(txsig, ...
+        sprintf('%s/%s/%s/txsig_all.bin',datadir,mimotype,modtype));
 for k=1:cfg.Nt
     write_complex_binary(txsig(:,k), ...
         sprintf('%s/%s/%s/txsig_s%d.bin',datadir,mimotype,modtype,k));

@@ -16,6 +16,7 @@ namespace gr::ncjt
 class stbc_decode_impl : public stbc_decode
 {
 private:
+    const int RG_SIZE = 13; // 13 subcarriers per resource group
     const int d_nrx = 2; // number of receive antennas
     int d_scnum; // number of valid subcarriers
     int d_scdata; // number data subcarriers

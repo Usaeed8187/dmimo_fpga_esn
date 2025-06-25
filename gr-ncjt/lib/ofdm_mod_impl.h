@@ -19,8 +19,10 @@ private:
     int d_fftsize; // OFDM FFT size
     int d_cplen; // OFDM cyclic prefix length
     int d_symlen; // SYM_LEN = FFT_SIZE + CP_LEN;
-    int d_scnum; // SC_NUM number of valid subcarriers
-    int d_scnum_half; // SC_NUM_HALF = SC_NUM/2
+    int d_scnum; // d_scnum number of valid subcarriers
+    int d_scnum_half; // SC_NUM_HALF = d_scnum/2
+    int d_left_guard_scnum; // number of left guard subcarriers
+    int d_center_null_scnum_pos_half; // number of center null subcarriers on the positive half subcarriers
 
     float d_scaling; // IQ sample scaling
     fft::fft_complex_rev d_ifft;

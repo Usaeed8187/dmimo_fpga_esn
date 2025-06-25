@@ -32,7 +32,7 @@ public:
      * creating new instances.
      */
     static sptr
-    make(const char *filename, double samplerate, int pktspersec,
+    make(int ntx, const char *filename, double samplerate, int pktspersec,
          int pktsize, double starttime, bool debug);
 };
 

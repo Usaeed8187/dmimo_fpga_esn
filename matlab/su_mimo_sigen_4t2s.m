@@ -1,4 +1,4 @@
-% Generate 4Tx-4Ss SU-MIMO Tx signal for testing
+% Generate 4Tx-2Ss SU-MIMO Tx signal for testing
 
 clear
 addpath("./wlan", "./gnuradio/");

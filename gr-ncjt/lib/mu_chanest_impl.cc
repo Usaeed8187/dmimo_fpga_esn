@@ -72,14 +72,15 @@ mu_chanest_impl::mu_chanest_impl(int fftsize, int ntx, int nrx, int nue,
     generate_cpt_pilots();
 
     // cyclic shift compensation
-    // TODO: fft_size = 256
+    int scidx_offset_1 = (d_fftsize == 64) ? d_scnum / 2 : (d_scnum / 2 + 1);
+    int scidx_offset_2 = (d_fftsize == 64) ? (d_scnum / 2  - 1) : (d_scnum / 2 - 2);
     float cshift[4] = {0, -8, -4, -12};
     for (int m = 0; m < 4; m++)
     {
         for (int k = 0; k < d_scnum / 2; k++)
-            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - 28)));
+            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - scidx_offset_1)));
         for (int k = d_scnum / 2; k < d_scnum; k++)
-            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - 27)));
+            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - scidx_offset_2)));
     }
 
     // Pd: nSTS x nLTF
@@ -286,7 +287,7 @@ void
 mu_chanest_impl::generate_cpt_pilots()
 {
     // initial state for first data symbol
-    d_pilot_lsfr = (d_fftsize == 64) ? 0x78 : 0x70; // TODO: check offset values
+    d_pilot_lsfr = (d_fftsize == 64) ? 0x78 : 0x70; // offset = 3 or 4
 
     // base pilot sequence for 64-FFT & 2/4-stream case
     const float basePilots4[6][8] = {{1, 1, -1, -1}, {1, -1, -1, 1}, // 2Rx
@@ -314,12 +315,12 @@ mu_chanest_impl::generate_cpt_pilots()
             for (int k = 0; k < d_ntx; k++)  // for all streams
             {
                 int ueidx = k / d_nss;  // UE index
-                int si = k % 2; // FIXME n_nrx // (d_nue * d_nss);  // stream index per total streams across all users
+                int sidx = k % 2; // FIXME n_nrx // (d_nue * d_nss);  // stream index per total streams across all users
                 int offset = d_ntx * d_ncpt * symidx + k * d_ncpt + i;
                 if (d_mucpt && (symidx % d_nue) != ueidx)
                     d_cpt_pilot[offset] = 0;
                 else
-                    d_cpt_pilot[offset] = pilot_parity * basePilot[si][idx];
+                    d_cpt_pilot[offset] = pilot_parity * basePilot[sidx][idx];
             }
         }
     }
@@ -646,20 +647,13 @@ const gr_vector_float mu_chanest_impl::NORM_LTF_SEQ_64 = {
     -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1, 1, 1, 1, 1, -1, -1};
 
 const gr_vector_float mu_chanest_impl::NORM_LTF_SEQ_256 = {
-    -1, -1, 1, -1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1,
-    1,
-    -1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1,
-    -1, -1, 1,
-    -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1,
-    1, 1, 1,
-    -1, 1, 1, 1, -1, 1, -1, 1, -1, -1, -1, -1, -1, 1, 1, 1, -1, -1, -1, 1, -1, 1, 1, 1, -1, 1, -1, 1, -1, 1, 1,
-    -1,
-    1, 1, 1, -1, -1, 1, -1, -1, 1, -1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, -1,
-    -1,
-    -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 1, 1, 1, 1,
-    -1, 1,
-    1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1,
-    1, -1,
+    -1, -1, 1, -1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, 1,
+    -1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, 1,
+    -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1,
+    -1, 1, 1, 1, -1, 1, -1, 1, -1, -1, -1, -1, -1, 1, 1, 1, -1, -1, -1, 1, -1, 1, 1, 1, -1, 1, -1, 1, -1, 1, 1, -1,
+    1, 1, 1, -1, -1, 1, -1, -1, 1, -1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1,
+    -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, 1,
+    1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1,
     1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, -1, 1, 1};
 
 } /* namespace gr::ncjt */

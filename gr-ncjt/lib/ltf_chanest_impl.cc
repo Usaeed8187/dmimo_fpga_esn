@@ -69,14 +69,15 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
     generate_cpt_pilots();
 
     // cyclic shift compensation
-    // TODO: fft_size = 256
+    int scidx_offset_1 = (d_fftsize == 64) ? d_scnum / 2 : (d_scnum / 2 + 1);
+    int scidx_offset_2 = (d_fftsize == 64) ? (d_scnum / 2  - 1) : (d_scnum / 2 - 2);
     float cshift[4] = {0, -8, -4, -12};
     for (int m = 0; m < 4; m++)
     {
         for (int k = 0; k < d_scnum / 2; k++)
-            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - 28)));
+            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - scidx_offset_1)));
         for (int k = d_scnum / 2; k < d_scnum; k++)
-            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - 27)));
+            d_cshift[m * d_scnum + k] = exp(gr_complex(0, 2.0 * M_PI / d_fftsize * cshift[m] * (k - scidx_offset_2)));
     }
 
     // Pd: nSTS x nLTF
@@ -323,7 +324,7 @@ void
 ltf_chanest_impl::generate_cpt_pilots()
 {
     // initial state for first data symbol
-    d_pilot_lsfr = (d_fftsize == 64) ? 0x78 : 0x71; // offset = 3 or 4
+    d_pilot_lsfr = (d_fftsize == 64) ? 0x78 : 0x70; // offset = 3 or 4
 
     for (int symidx = 0; symidx < d_data_symbols; symidx++)
     {

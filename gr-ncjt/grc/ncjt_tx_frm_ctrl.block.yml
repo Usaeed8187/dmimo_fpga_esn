@@ -4,17 +4,17 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.tx_frm_ctrl(${ntx},${ndatasyms},${filename},${fs},${pktspersec},${starttime},${padding},${autostart},${delay},${debug})
+  make: ncjt.tx_frm_ctrl(${ntx},${frmdatalen},${filename},${fs},${pktspersec},${starttime},${padding},${autostart},${delay},${debug})
 
 parameters:
   - id: ntx
     label: Number of Tx Antennas
     dtype: int
-    default: 1
+    default: '1'
     options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
     hide: part
-  - id: ndatasyms
-    label: Data Symbols
+  - id: frmdatalen
+    label: Frame Data Length
     dtype: int
   - id: filename
     label: Beacon Data
@@ -36,7 +36,7 @@ parameters:
   - id: padding
     label: Padding
     dtype: int
-    default: 500
+    default: '500'
     hide: part
   - id: autostart
     label: Auto Start

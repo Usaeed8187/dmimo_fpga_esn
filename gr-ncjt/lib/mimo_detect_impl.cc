@@ -147,11 +147,11 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
         int sc_cnt = 0;
         for (int i = 0; i < d_scnum; i++)
         {
-            if ((d_scnum == 56) & (i == 7 || i == 21 || i == 34 || i == 48))
+            if ((d_scnum == 56) && (i == 7 || i == 21 || i == 34 || i == 48))
                 continue;
 
             if ((d_scnum == 242)
-                & (i == 6 || i == 32 || i == 74 || i == 100 || i == 141 || i == 167 || i == 209 || i == 235))
+                && (i == 6 || i == 32 || i == 74 || i == 100 || i == 141 || i == 167 || i == 209 || i == 235))
                 continue;
 
             unsigned raddr = (cur_sym + d_nss) * d_scnum + i;

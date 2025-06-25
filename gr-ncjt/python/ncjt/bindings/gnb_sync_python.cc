@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(gnb_sync.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(d1669888e8d4b5eaac2a78af35997382) */
+/* BINDTOOL_HEADER_FILE_HASH(164995b1c02dd074285f51c8a0786587) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,11 +37,12 @@ void bind_gnb_sync(py::module &m) {
       m, "gnb_sync", D(gnb_sync))
 
       .def(py::init(&gnb_sync::make), py::arg("nchans"), py::arg("samplerate"),
-           py::arg("pktspersec"), py::arg("hwdelayp2"), py::arg("hwdelayp3"),
-           py::arg("p2_htlen"), py::arg("p2_datalen"), py::arg("p3_htlen"),
-           py::arg("p3_datalen"), py::arg("p2_start"), py::arg("p3_start"),
-           py::arg("rxpwr_thrd"), py::arg("acorr_thrd"), py::arg("xcorr_thrd"),
-           py::arg("max_corr_len"), py::arg("debug"), D(gnb_sync, make))
+           py::arg("pktspersec"), py::arg("p3rx"), py::arg("hwdelayp2"),
+           py::arg("hwdelayp3"), py::arg("p2_htlen"), py::arg("p2_datalen"),
+           py::arg("p3_htlen"), py::arg("p3_datalen"), py::arg("p2_start"),
+           py::arg("p3_start"), py::arg("rxpwr_thrd"), py::arg("acorr_thrd"),
+           py::arg("xcorr_thrd"), py::arg("max_corr_len"), py::arg("debug"),
+           D(gnb_sync, make))
 
       ;
 }
