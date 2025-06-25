@@ -25,7 +25,7 @@ private:
     const int CORR_BUF_LEN = 64; // Ring buffer length
     const int XCORR_DATA_LEN = LTF_LEN * 4; // Cross-correlation data buffer length
     const int MAX_XCORR_LEN = 1024;   // Maximum cross-correlation output buffer length
-    const int MAX_PREAMBLE_SYMS = 12; // Maximal number of HT preamble symbols (HT-SIG, etc.)
+    const int MAX_PREAMBLE_SYMS = 30; // Maximal number of HT preamble symbols (HT-SIG, etc.)
     const int MAX_CHANS = 8;   // Maximum number of IQ channels
     const int PEAK_THRD = 5;   // Minimum peak duration of auto-correlation windows
 
@@ -40,6 +40,7 @@ private:
     float d_acorr_thrd;  // Auto-correlation detection threshold
     float d_xcorr_thrd;  // Cross-correlation detection threshold
     int d_max_corr_len;  // Maximal auto-correlation buffer length
+    bool d_p3rx;         // Enable P3 receiving
 
     uint64_t d_frame_interval;  // frame interval in samples
     uint64_t d_p2_offset;  // phase 2 transmission start position
@@ -102,7 +103,7 @@ private:
     check_rxtime(int rx_windows_size);
 
 public:
-    gnb_sync_impl(int nchans, double samplerate, int pktspersec, int hwdelayp2, int hwdelayp3,
+    gnb_sync_impl(int nchans, double samplerate, int pktspersec, bool p3rx, int hwdelayp2, int hwdelayp3,
                   int p2_htlen, int p2_datalen, int p3_htlen, int p3_datalen, double p2_start, double p3_start,
                   double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug);
     ~gnb_sync_impl();

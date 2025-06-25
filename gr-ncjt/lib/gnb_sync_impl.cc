@@ -19,17 +19,17 @@ static const pmt::pmt_t TIME_KEY = pmt::string_to_symbol("rx_time");
 
 gnb_sync::sptr
 gnb_sync::make(
-    int nchans, double samplerate, int pktspersec, int hwdelayp2, int hwdelayp3,
+    int nchans, double samplerate, int pktspersec, bool p3rx, int hwdelayp2, int hwdelayp3,
     int p2_htlen, int p2_datalen, int p3_htlen, int p3_datalen, double p2_start, double p3_start,
     double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug)
 {
     return gnuradio::make_block_sptr<gnb_sync_impl>(
-        nchans, samplerate, pktspersec, hwdelayp2, hwdelayp3, p2_htlen, p2_datalen, p3_htlen, p3_datalen, p2_start, p3_start,
+        nchans, samplerate, pktspersec, p3rx, hwdelayp2, hwdelayp3, p2_htlen, p2_datalen, p3_htlen, p3_datalen, p2_start, p3_start,
         rxpwr_thrd, acorr_thrd, xcorr_thrd, max_corr_len, debug);
 }
 
 gnb_sync_impl::gnb_sync_impl(
-    int nchans, double samplerate, int pktspersec, int hwdelayp2, int hwdelayp3,
+    int nchans, double samplerate, int pktspersec, bool p3rx, int hwdelayp2, int hwdelayp3,
     int p2_htlen, int p2_datalen, int p3_htlen, int p3_datalen, double p2_start, double p3_start,
     double rxpwr_thrd, double acorr_thrd, double xcorr_thrd, int max_corr_len, bool debug)
     : gr::block("gnb_sync",
@@ -53,6 +53,7 @@ gnb_sync_impl::gnb_sync_impl(
     // packet transmission cycles period in seconds
     d_pkt_interval = 1.0 / (double) pktspersec;
     d_frame_interval = (uint64_t) floor(d_samplerate / pktspersec);
+    d_p3rx = p3rx;
 
     if (hwdelayp2 < 0 || hwdelayp2 > samplerate / 1000)
         throw std::runtime_error("invalid P2 USRP processing delay specified");
@@ -67,22 +68,22 @@ gnb_sync_impl::gnb_sync_impl(
     if (p2_datalen < 0 || (p2_datalen > int(samplerate / pktspersec)))
         throw std::runtime_error("invalid data frame length specified");
 
-    if (p3_htlen < 0 || (p3_htlen >= SYM_LEN * MAX_PREAMBLE_SYMS))
+    if (p3_htlen < 0 || p3_htlen >= SYM_LEN * MAX_PREAMBLE_SYMS)
         throw std::runtime_error("invalid HT preamble length specified");
     d_p3_htlen = p3_htlen;
-    if (p3_datalen < 0 || (p3_datalen > int(samplerate / pktspersec)))
+    if (p3_datalen < 0 || p3_datalen > int(samplerate / pktspersec))
         throw std::runtime_error("invalid data frame length specified");
 
     if (p2_start < 0 || p2_start > 0.5 * d_pkt_interval)
         throw std::runtime_error("invalid phase 2 start time specified");
     d_p2_offset = (uint64_t) floor(p2_start * samplerate);
-    if (p3_start < p2_start || p3_start > d_pkt_interval)
+    if (p3rx && (p3_start < p2_start || p3_start > d_pkt_interval))
         throw std::runtime_error("invalid phase 3 start time specified");
     d_p3_offset = (uint64_t) floor(p3_start * samplerate);
 
-    // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF (3*SYM_LEN)
-    d_frame_len_1 = p2_htlen + p2_datalen - 3 * SYM_LEN;
-    d_frame_len_2 = p3_htlen + p3_datalen - 3 * SYM_LEN;
+    // total length of HT/HE-LTF and data symbols
+    d_frame_len_1 = p2_datalen;
+    d_frame_len_2 = p3_datalen;
     d_frame_start1 = 0;
     d_frame_start2 = 0;
 
@@ -201,7 +202,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_frame_start2 = next_frame_pos + uint64_t(start_offset + d_p3_offset + d_hw_delay_p3);
 
                 // calculate sample clocks until next P2 transmission
-                d_wait_interval0 = int(d_frame_start1 - cur_frame_pos) - d_max_corr_len / 4;
+                d_wait_interval0 = int(d_frame_start1 - cur_frame_pos) - d_max_corr_len / 2;
                 d_wait_count = 0;
                 d_state = WAIT0;
                 dout << "Adjusting P2 start: " << d_frame_start1 << std::endl;
@@ -218,7 +219,6 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             int new_data_count = d_wait_count - d_wait_interval0;
             if (new_data_count >= 0)
             {
-                d_wait_count = 0;
                 min_input_items -= new_data_count;
                 d_data_samples = 0;
                 d_fine_foe_cnt1 = 0;
@@ -231,6 +231,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_rx_ready_cnt2 = 0;
                 d_sync_err_cnt1 = 0;
                 d_sync_err_cnt2 = 0;
+                d_wait_count = 0;
                 d_state = P2SEARCH;
                 dout << "Phase 2: Entering SYNC state" << std::endl;
             }
@@ -243,7 +244,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (buffer_len < 10 * STF_LEN)
                 break;
 
-            // search for frame start
+            // search for packet start
             int start_pos = sync_search(input_items, buffer_len, d_current_foe_comp1);
             if (start_pos < 0)
             {
@@ -251,7 +252,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_current_foe_comp1 = 0.0;
                 d_skip_p2_frame = true;
                 // skip the search buffer
-                int skip_samples = d_max_corr_len / 4;
+                int skip_samples = d_max_corr_len / 2;
                 consume_each(skip_samples);
                 d_data_samples = 0;
                 d_state = P2DEFRAME;
@@ -281,6 +282,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                     d_rx_ready_cnt1 = 0;
                     d_sync_err_cnt1 = 0;
                 }
+                // d_current_foe_comp1 = 0.0;
                 // skip the whole beacon
                 consume_each(5 * SYM_LEN + d_p2_htlen);
                 d_data_samples = 0;
@@ -288,6 +290,8 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 break;
             }
 
+            // skip HT preambles excluding LTFs
+            ht_start += d_p2_htlen;
             uint64_t frame_start = nitems_read(0) + ht_start;
             dout << "Phase 2: Frame start at " << ht_start << " (" << frame_start << ")" << std::endl;
             consume_each(ht_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
@@ -302,7 +306,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             }
 
             d_rx_ready_cnt1 += 1;
-            if (d_rx_ready_cnt1 >= 10 && d_rx_ready_cnt2 >= 10) // changing to ready state
+            if (d_rx_ready_cnt1 >= 10 && (!d_p3rx || d_rx_ready_cnt2 >= 10)) // changing to ready state
                 send_rxstate(true);
             else
                 send_rxstate(false);
@@ -316,9 +320,18 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
                 noutput_samples = d_frame_len_1 - d_data_samples;
                 d_frame_start1 += d_frame_interval;
-                d_wait_interval1 = int(d_frame_start2 - nitems_read(0)) - noutput_samples;
-                if (d_rx_ready_cnt2 == 0)
-                    d_wait_interval1 -= d_max_corr_len / 4;
+                if (!d_p3rx)
+                {
+                    d_wait_interval1 = int(d_frame_start1 - nitems_read(0)) - noutput_samples;
+                    if (d_rx_ready_cnt1 == 0)
+                        d_wait_interval1 -= d_max_corr_len / 2;
+                }
+                else
+                {
+                    d_wait_interval1 = int(d_frame_start2 - nitems_read(0)) - noutput_samples;
+                    if (d_rx_ready_cnt2 == 0)
+                        d_wait_interval1 -= d_max_corr_len / 2;
+                }
                 d_wait_count = 0;
                 d_state = WAIT1;
             }
@@ -358,7 +371,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             for (int ch = 0; ch < d_num_chans; ch++)
             {
                 produce(ch, noutput_samples);
-                produce(d_num_chans + ch, 0);
+                // produce(d_num_chans + ch, 0);
             }
             break;
         }
@@ -371,8 +384,15 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
                 d_data_samples = 0;
-                d_state =  (d_rx_ready_cnt2 == 0) ? P3SEARCH : P3SYNC;
-                dout << "Phase 3: Entering SYNC state" << std::endl;
+                if (!d_p3rx)
+                {
+                    d_state = (d_rx_ready_cnt1 == 0) ? P2SEARCH : P2SYNC;
+                }
+                else
+                {
+                    d_state = (d_rx_ready_cnt2 == 0) ? P3SEARCH : P3SYNC;
+                    dout << "Phase 3: Entering SYNC state" << std::endl;
+                }
             }
             consume_each(min_input_items);
             break;
@@ -391,7 +411,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_current_foe_comp2 = 0.0;
                 d_skip_p3_frame = true;
                 // skip the search buffer
-                int skip_samples = d_max_corr_len / 4;
+                int skip_samples = d_max_corr_len / 2;
                 consume_each(skip_samples);
                 d_data_samples = 0;
                 d_state = P3DEFRAME;
@@ -422,7 +442,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                     d_rx_ready_cnt2 = 0;
                     d_sync_err_cnt2 = 0;
                 }
-                d_current_foe_comp2 = 0.0;
+                // d_current_foe_comp2 = 0.0;
                 // skip the whole beacon
                 consume_each(5 * SYM_LEN + d_p3_htlen);
                 d_data_samples = 0;
@@ -430,6 +450,8 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 break;
             }
 
+            // skip HT preambles excluding LTFs
+            ht_start += d_p3_htlen;
             uint64_t frame_start = nitems_read(0) + ht_start;
             dout << "Phase 3: Frame start at " << ht_start << " (" << frame_start << ")" << std::endl;
             consume_each(ht_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
@@ -460,7 +482,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 d_frame_start2 += d_frame_interval;
                 d_wait_interval2 = int(d_frame_start1 - nitems_read(0)) - noutput_samples;
                 if (d_rx_ready_cnt1 == 0)
-                    d_wait_interval2 -= d_max_corr_len / 4;
+                    d_wait_interval2 -= d_max_corr_len / 2;
                 d_wait_count = 0;
                 d_state = WAIT2;
             }
@@ -499,7 +521,7 @@ gnb_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             consume_each(noutput_samples);
             for (int ch = 0; ch < d_num_chans; ch++)
             {
-                produce(ch, 0);
+                // produce(ch, 0);
                 produce(d_num_chans + ch, noutput_samples);
             }
 
@@ -690,7 +712,7 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
             d_input_buf[i + ch * XCORR_DATA_LEN] = in[i] * comp_val;
         }
     }
-    sig_power /= buffer_len;
+    sig_power /= (float) buffer_len;
 
     // compute cross-correlation of received signal and L-LTF
     int xcorr_len = buffer_len - FFT_LEN;
@@ -758,16 +780,17 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
     // sanity checks
     int deltaCSD = 4;
     int ht_start = -1;
-    if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - deltaCSD &&
-        second_peak_pos <= first_peak_pos + FFT_LEN + deltaCSD)
+    if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - 2 * deltaCSD &&
+        second_peak_pos <= first_peak_pos + FFT_LEN + 2 * deltaCSD)
     {
-        // start of the HT-LTF signals
-        // ht_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;
+        // calculate the start of the HT preambles (HT-SIGs)
+        // first_peak_pos corresponding to the start of the first FFT block in L-LTF
+        ht_start = first_peak_pos + 2 * FFT_LEN + SYM_LEN; // - deltaCSD;
 
         // calculate the start of the HT-LTF (removing HT-SIG and HT-STF)
-        // first peak pos corresponding to the start of the first FFT block in L-LTF
+        // first_peak_pos corresponding to the start of the first FFT block in L-LTF
         // 4 * SYM_LEN : L-SIG, HT-SIG, HT-STF
-        ht_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
+        // ht_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
     }
     else
     {
@@ -809,7 +832,7 @@ gnb_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffe
              << current_foe_comp * d_samplerate / (2.0 * M_PI) << " Hz)" << std::endl;
     }
 
-    // return start position of HT-LTF
+    // return start position of HT preambles
     return ht_start;
 }
 

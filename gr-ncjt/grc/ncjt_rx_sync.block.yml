@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rx_sync(${nchans}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${p2rxue}, ${p2preamblelen}, ${p2framelen}, ${p2start}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${lltf2}, ${debug})
+  make: ncjt.rx_sync(${nchans}, ${p1rx}, ${preamblelen}, ${dataframelen}, ${samplerate}, ${pktspersec}, ${p2rx}, ${hwdelayp2}, ${p2preamblelen}, ${p2framelen}, ${p2start}, ${p3rx}, ${hwdelayp3}, ${p3preamblelen}, ${p3framelen}, ${p3start}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${lltf2}, ${debug})
 
 parameters:
   - id: nchans
@@ -13,8 +13,14 @@ parameters:
     default: 1
     options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
     hide: part
+  - id: p1rx
+    label: P1 Rx
+    dtype: bool
+    default: 'True'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
   - id: preamblelen
-    label: HTPreamble Length
+    label: Preamble Length
     dtype: int
     default: '400'
   - id: dataframelen
@@ -29,15 +35,20 @@ parameters:
     label: Packets/Sec
     dtype: int
     default: '8'
-  - id: p2rxue
-    label: P2 RxUE
+  - id: p2rx
+    label: P2 Rx
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
     hide: part
+  - id: hwdelayp2
+    label: HW Delay (P2)
+    dtype: int
+    default: '0'
+    hide: part
   - id: p2preamblelen
-    label: P2 HTPreamble Length
+    label: P2 Preamble Length
     dtype: int
     default: '0'
     hide: part
@@ -48,6 +59,33 @@ parameters:
     hide: part
   - id: p2start
     label: P2 Start Time
+    dtype: float
+    default: '0'
+    hide: part
+  - id: p3rx
+    label: P3 Rx
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+  - id: hwdelayp3
+    label: HW Delay (P3)
+    dtype: int
+    default: '0'
+    hide: part
+  - id: p3preamblelen
+    label: P3 Preamble Length
+    dtype: int
+    default: '0'
+    hide: part
+  - id: p3framelen
+    label: P3 DataFrame Length
+    dtype: int
+    default: '0'
+    hide: part
+  - id: p3start
+    label: P3 Start Time
     dtype: float
     default: '0'
     hide: part
@@ -94,12 +132,19 @@ outputs:
     domain: stream
     dtype: complex
     multiplicity: ${nchans}
+    hide: ${not p1rx}
   - label: out2
     domain: stream
     dtype: complex
     multiplicity: ${nchans}
     optional: true
-    hide: ${not p2rxue}
+    hide: ${not p2rx}
+  - label: out3
+    domain: stream
+    dtype: complex
+    multiplicity: ${nchans}
+    optional: true
+    hide: ${not p3rx}
   - label: uhdcmd
     domain: message
     optional: true

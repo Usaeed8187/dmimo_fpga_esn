@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.gnb_sync(${nchans}, ${samplerate}, ${pktspersec}, ${hwdelayp2}, ${hwdelayp3},${p2preamblelen}, ${p2datalen}, ${p3preamblelen}, ${p3datalen}, ${p2start}, ${p3start}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
+  make: ncjt.gnb_sync(${nchans}, ${samplerate}, ${pktspersec}, ${p3rx}, ${hwdelayp2}, ${hwdelayp3}, ${p2preamblelen}, ${p2datalen}, ${p3preamblelen}, ${p3datalen}, ${p2start}, ${p3start}, ${rxpwrthrd}, ${acorrthrd}, ${xcorrthrd}, ${maxcorrlen}, ${debug})
 
 parameters:
   - id: nchans
@@ -22,6 +22,13 @@ parameters:
     label: Cycles/sec
     dtype: int
     default: '8'
+  - id: p3rx
+    label: P3 Rx
+    dtype: bool
+    default: 'True'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
   - id: hwdelayp2
     label: HW Delay (P2)
     dtype: int
@@ -95,7 +102,7 @@ outputs:
     dtype: complex
     multiplicity: ${nchans}
     optional: true
-    hide: ${not gnbrx}
+    hide: ${not p3rx}
   - label: uhdcmd
     domain: message
     optional: true
@@ -108,8 +115,7 @@ outputs:
 
 asserts:
   - ${ (pktspersec >= 1) and (pktspersec <= 100) }
-  - ${ (p2preamblelen > 0) and (p3preamblelen > 0) }
-  - ${ (p2datalen > 0) and (p3datalen > 0) }
-  - ${ (p2start > 0) and (p3start > 0) and (p2start < p3start) }
+  - ${ (p2preamblelen > 0) and ((not p3rx) or p3preamblelen > 0) }
+  - ${ (p2datalen > 0) and ((not p3rx) or p3datalen > 0) }
 
 file_format: 1

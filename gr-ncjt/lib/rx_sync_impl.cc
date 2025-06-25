@@ -19,75 +19,115 @@ static const pmt::pmt_t TIME_KEY = pmt::string_to_symbol("rx_time");
 // static const pmt::pmt_t FREQ_KEY = pmt::string_to_symbol("rx_freq");
 
 rx_sync::sptr
-rx_sync::make(int nchans, int preamblelen, int dataframelen, double samplerate, int pktspersec,
-              bool p2rxue, int p2preamblelen, int p2framelen, double p2_start, double rxpwr_thrd,
+rx_sync::make(int nchans, bool p1rx, int preamblelen, int dataframelen, double samplerate, int pktspersec,
+              bool p2rx, int hwdelayp2, int p2preamblelen, int p2framelen, double p2_start,
+              bool p3rx, int hwdelayp3, int p3preamblelen, int p3framelen, double p3_start, double rxpwr_thrd,
               double acorr_thrd, double xcorr_thrd, int max_corr_len, bool lltf2, bool debug)
 {
     return gnuradio::make_block_sptr<rx_sync_impl>(
-        nchans, preamblelen, dataframelen, samplerate, pktspersec,
-        p2rxue, p2preamblelen, p2framelen, p2_start, rxpwr_thrd,
-        acorr_thrd, xcorr_thrd, max_corr_len, lltf2, debug);
+        nchans, p1rx, preamblelen, dataframelen, samplerate, pktspersec,
+        p2rx, hwdelayp2, p2preamblelen, p2framelen, p2_start, p3rx, hwdelayp3, p3preamblelen, p3framelen, p3_start,
+        rxpwr_thrd, acorr_thrd, xcorr_thrd, max_corr_len, lltf2, debug);
 }
 
-rx_sync_impl::rx_sync_impl(int nchans, int preamblelen, int dataframelen, double samplerate, int pktspersec,
-                           bool p2rxue, int p2preamblelen, int p2framelen, double p2_start, double rxpwr_thrd,
+rx_sync_impl::rx_sync_impl(int nchans, bool p1rx, int preamblelen, int dataframelen, double samplerate, int pktspersec,
+                           bool p2rx, int hwdelayp2, int p2preamblelen, int p2framelen, double p2_start,
+                           bool p3rx, int hwdelayp3, int p3preamblelen, int p3framelen, double p3_start, double rxpwr_thrd,
                            double acorr_thrd, double xcorr_thrd, int max_corr_len, bool lltf2, bool debug)
     : gr::block("rx_sync",
                 gr::io_signature::make(nchans, nchans, sizeof(gr_complex)),
-                gr::io_signature::make(nchans, 2 * nchans, sizeof(gr_complex))),
-      d_samplerate(samplerate), d_use_lltf2(lltf2), d_rxpwr_thrd(rxpwr_thrd), d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd),
-      d_max_corr_len(max_corr_len), d_rx_ready(false), d_rx_ready_cnt1(0), d_rx_ready_cnt2(0),
-      d_sync_err_cnt1(0), d_sync_err_cnt2(0), d_prev_frame_start(0),
+                gr::io_signature::make(nchans, 3 * nchans, sizeof(gr_complex))),
+      d_use_lltf2(lltf2), d_rxpwr_thrd(rxpwr_thrd), d_acorr_thrd(acorr_thrd), d_xcorr_thrd(xcorr_thrd), d_max_corr_len(max_corr_len),
       d_xcorr_fir_1(gr::filter::kernel::fir_filter_ccc(LTF_SEQ_1)),
       d_xcorr_fir_2(gr::filter::kernel::fir_filter_ccc(LTF_SEQ_2)), d_debug(debug)
 {
     if (nchans < 1 || nchans > MAX_CHANS)
-        throw std::runtime_error("Currently support 1 to 8 IQ channels");
+        throw std::runtime_error("Currently support 1 to 20 IQ channels");
     d_num_chans = nchans;
 
-    if (samplerate < 10000)
+    if (samplerate < 10000 || samplerate > 100000000)
         throw std::runtime_error("invalid sampling frequency specified");
     if (pktspersec <= 0 || pktspersec > 100)
-        throw std::runtime_error("invalid sampling packet transmission interval specified");
+        throw std::runtime_error("invalid packet transmission interval specified");
+    d_samplerate = samplerate;
 
+    // packet frame burst transmission period in seconds
+    d_frame_interval = (int) floor(samplerate / pktspersec);
+
+    // reception enable flags for P1/P2/P3 phases
+    d_p1rx = p1rx;
+    d_p2rx = p2rx;
+    d_p3rx = p3rx;
+
+    // total length of HT/HT-LTF and data symbols, excluding HT/HE-SIG and HT/HE-STF
+    d_frame_len1 = dataframelen;
     if (preamblelen < 0 || preamblelen >= SYM_LEN * MAX_PREAMBLE_SYMS)
         throw std::runtime_error("invalid HT preamble length specified");
     if (preamblelen < 0 || preamblelen > int(samplerate / pktspersec))
         throw std::runtime_error("invalid data frame length specified");
+    d_ht_len1 = preamblelen;
 
-    // total length of HT-LTF and data symbols, excluding HT-SIG and HT-LTF (3*SYM_LEN)
-    d_frame_len1 = dataframelen + preamblelen - 3 * SYM_LEN;
-    // d_ht_len1 = preamblelen;
-    // packet frame burst transmission period in seconds
-    d_frame_interval = (int) floor(samplerate / pktspersec);
-    // assuming legacy preamble of 5 symbol length (L-STF, L-LTF, and L-SIG) and 3 symbols of HT-SIG and HT-LTF
-    // d_wait_interval = d_frame_interval - d_frame_len1 - 8 * SYM_LEN;
-
-    // Phase RxUE mode
-    d_p2rxue = p2rxue;
-    d_frame_len2 = p2framelen + p2preamblelen - 3 * SYM_LEN;
+    // Phase-2 frame params
+    d_frame_len2 = p2framelen;
+    if (p2preamblelen < 0 || p2preamblelen >= SYM_LEN * MAX_PREAMBLE_SYMS)
+        throw std::runtime_error("invalid HT preamble length specified");
+    if (p2preamblelen < 0 || p2preamblelen > int(samplerate / pktspersec))
+        throw std::runtime_error("invalid data frame length specified");
     d_ht_len2 = p2preamblelen;
     d_p2start_offset = (uint64_t) floor(p2_start * samplerate);
+    d_skip_p2_frame = false;
+    d_hw_delay_p2 = hwdelayp2;
+
+    // Phase-3 frame params
+    d_frame_len3 = p3framelen;
+    if (p3preamblelen < 0 || p3preamblelen >= SYM_LEN * MAX_PREAMBLE_SYMS)
+        throw std::runtime_error("invalid HT preamble length specified");
+    if (p3preamblelen < 0 || p3preamblelen > int(samplerate / pktspersec))
+        throw std::runtime_error("invalid data frame length specified");
+    d_ht_len3 = p3preamblelen;
+    d_p3start_offset = (uint64_t) floor(p3_start * samplerate);
+    d_skip_p3_frame = false;
+    d_hw_delay_p3 = hwdelayp3;
 
     d_corr_buf_pos = 0;
     d_corr_buf = malloc_complex(CORR_BUF_LEN);
     d_pwrest_buf = malloc_float(CORR_BUF_LEN);
-
     d_input_buf = malloc_complex(XCORR_DATA_LEN * nchans);
     d_xcorr_buf = malloc_complex(MAX_XCORR_LEN * nchans);
     d_xcorr_val = malloc_float(1024);
 
     d_state = P1SEARCH;
+    d_wait_interval = 0;
     d_wait_count = 0;
     d_data_samples = 0;
     d_fine_foe_comp1 = 0.0;
     d_fine_foe_cnt1 = 0;
     d_current_foe_comp1 = 0.0;
+    d_fine_foe_comp2 = 0.0;
+    d_fine_foe_cnt2 = 0;
+    d_current_foe_comp2 = 0.0;
+    d_fine_foe_comp3 = 0.0;
+    d_fine_foe_cnt3 = 0;
+    d_current_foe_comp3 = 0.0;
     d_rxtime_offset = 0;
     d_clk_offset_ok = false;
     d_clk_offset_cnt = 0;
     d_clk_offset_sum = 0;
     d_clk_offset_est = 0.0;
+
+    d_rx_ready = false;
+    d_rx_ready_cnt1 = 0;
+    d_rx_ready_cnt2 = 0;
+    d_rx_ready_cnt3 = 0;
+    d_sync_err_cnt1 = 0;
+    d_sync_err_cnt2 = 0;
+    d_sync_err_cnt3 = 0;
+    d_next_p1frame_start = 0;
+    d_next_p2frame_start = 0;
+    d_next_p3frame_start = 0;
+    d_prev_p1frame_start = 0;
+    d_prev_p2frame_start = 0;
+    d_prev_p3frame_start = 0;
 
     message_port_register_out(pmt::mp("uhdcmd"));
     message_port_register_out(pmt::mp("rxtime"));
@@ -121,6 +161,12 @@ rx_sync_impl::forecast(int noutput_items, gr_vector_int &ninput_items_required)
             break;
         }
         case P2SEARCH:
+        {
+            for (int ch = 0; ch < d_num_chans; ch++)
+                ninput_items_required[ch] = 16 * LTF_LEN;
+            break;
+        }
+        case P3SEARCH:
         {
             for (int ch = 0; ch < d_num_chans; ch++)
                 ninput_items_required[ch] = 16 * LTF_LEN;
@@ -171,11 +217,13 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             d_rx_ready = false;
             d_sync_err_cnt1 = 0;
             d_sync_err_cnt2 = 0;
+            d_sync_err_cnt3 = 0;
             d_clk_offset_sum = 0;
             d_clk_offset_cnt = 0;
             d_clk_offset_est = 0.0;
-            d_prev_frame_start = 0;
+            d_prev_p1frame_start = 0;
             d_prev_p2frame_start = 0;
+            d_prev_p3frame_start = 0;
             d_state = P1FINESYNC;
             break;
         }
@@ -212,6 +260,8 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             }
             else
             {
+                // skip HT preambles excluding LTFs
+                ht_start += d_ht_len1;
                 cur_frame_start = nitems_read(0) + ht_start;
                 dout << "Data frame start at " << ht_start << " (" << cur_frame_start << ")" << std::endl;
             }
@@ -222,15 +272,15 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                           << d_current_foe_comp1 * d_samplerate / (2.0 * M_PI) << " Hz)" << std::endl;
             }
 
-            int64_t frame_offset = int64_t(cur_frame_start - d_prev_frame_start) - d_frame_interval;
-            if (ht_start <= 0 || (d_prev_frame_start > 0 && (frame_offset < -SYM_LEN || frame_offset > SYM_LEN)))
+            int64_t frame_offset = int64_t(cur_frame_start - d_prev_p1frame_start) - d_frame_interval;
+            if (ht_start <= 0 || (d_prev_p1frame_start > 0 && (frame_offset < -SYM_LEN || frame_offset > SYM_LEN)))
             {
                 // use frame start prediction
-                cur_frame_start = d_prev_frame_start + uint64_t(d_frame_interval + d_clk_offset_est);
+                cur_frame_start = d_prev_p1frame_start + uint64_t(d_frame_interval + d_clk_offset_est);
                 ht_start = std::max(0, int(cur_frame_start - nitems_read(0)));
                 std::cout << "Fine frame synchronization not correct, using prediction instead!" << std::endl;
             }
-            else if (d_prev_frame_start > 0) // frame_offset >= -SYM_LEN && frame_offset <= SYM_LEN
+            else if (d_prev_p1frame_start > 0) // frame_offset >= -SYM_LEN && frame_offset <= SYM_LEN
             {
                 // clock offset estimation
                 d_clk_offset_sum += frame_offset;
@@ -249,9 +299,11 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
 
             // predict the next frame start positions
             if (d_rx_ready_cnt2 == 0 || d_prev_p2frame_start == 0)
-                d_next_p2frame_start = cur_frame_start + d_p2start_offset - 8 * SYM_LEN;
-            d_next_frame_start = cur_frame_start + d_frame_interval;
-            d_prev_frame_start = cur_frame_start;
+                d_next_p2frame_start = cur_frame_start + d_p2start_offset - d_ht_len2 - 5 * SYM_LEN + d_hw_delay_p2;
+            if (d_rx_ready_cnt3 == 0 || d_prev_p3frame_start == 0)
+                d_next_p3frame_start = cur_frame_start + d_p3start_offset - d_ht_len3 - 5 * SYM_LEN + d_hw_delay_p3;
+            d_next_p1frame_start = cur_frame_start + d_frame_interval;
+            d_prev_p1frame_start = cur_frame_start;
 
             d_data_samples = 0;
             d_state = P1DEFRAME;
@@ -266,12 +318,13 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_rx_ready_cnt1 % 10 == 0 && d_rxtime_offset > 0) // && d_clk_offset_ok
                 send_rxtime();
 
-            if (d_rx_ready_cnt1 > 20 && d_clk_offset_ok && d_rxtime_offset > 0 && (!d_p2rxue || d_rx_ready_cnt2 > 20))
+            if (d_rx_ready_cnt1 > 20 && d_clk_offset_ok && d_rxtime_offset > 0
+                && (!d_p2rx || d_rx_ready_cnt2 > 20) &&  (!d_p3rx || d_rx_ready_cnt3 > 20))
             {
                 d_rx_ready = true;
                 send_rxstate(true);
             }
-            else if (d_rx_ready_cnt1 == 0 || (d_p2rxue && d_rx_ready_cnt2 == 0))
+            else if (d_rx_ready_cnt1 == 0 || (d_p2rx && d_rx_ready_cnt2 == 0) || (d_p3rx && d_rx_ready_cnt3 == 0) )
             {
                 d_rx_ready = false;
                 send_rxstate(false);
@@ -291,14 +344,20 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_data_samples + noutput_samples >= d_frame_len1)
             {
                 noutput_samples = d_frame_len1 - d_data_samples;
-                if (!d_p2rxue)
+                if (!d_p2rx && !d_p3rx)  // only phase 1 reception
                 {
-                    d_wait_interval = d_next_frame_start - uint64_t(noutput_samples + 8 * SYM_LEN) - nitems_read(0);
+                    d_wait_interval = d_next_p1frame_start - uint64_t(noutput_samples + d_ht_len1 + 5 * SYM_LEN) - nitems_read(0);
                 }
-                else
+                else if (d_p2rx)  // phase 1 & 2 reception
                 {
-                    d_wait_interval = d_next_p2frame_start - uint64_t(noutput_samples + 8 * SYM_LEN) - nitems_read(0);
+                    d_wait_interval = d_next_p2frame_start - uint64_t(noutput_samples + d_ht_len2 + 5 * SYM_LEN) - nitems_read(0);
                     if (d_rx_ready_cnt2 == 0) // additional samples for sync search buffer
+                        d_wait_interval -= d_max_corr_len / 4;
+                }
+                else  // phase 1 & 3 reception
+                {
+                    d_wait_interval = d_next_p3frame_start - uint64_t(noutput_samples + d_ht_len3 + 5 * SYM_LEN) - nitems_read(0);
+                    if (d_rx_ready_cnt3 == 0) // additional samples for sync search buffer
                         d_wait_interval -= d_max_corr_len / 4;
                 }
                 d_wait_count = 0;
@@ -307,7 +366,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
 
             // skip initial frames with unstable FOE
             // wait for all other receiver all synced
-            if (d_rx_ready_cnt1 <= 20)
+            if (!d_p1rx || d_rx_ready_cnt1 <= 20)
             {
                 d_data_samples += noutput_samples;
                 consume_each(noutput_samples);
@@ -357,11 +416,12 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
-                if (!d_p2rxue)
+                if (!d_p2rx && !d_p3rx)
                     d_state = P1FINESYNC;
-                else
+                else if (d_p2rx)
                     d_state = (d_rx_ready_cnt2 == 0) ? P2SEARCH : P2FINESYNC;
-
+                else
+                    d_state = (d_rx_ready_cnt3 == 0) ? P3SEARCH : P3FINESYNC;
             }
 
             if (d_rxtime_offset <= 0)
@@ -397,7 +457,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (min_input_items < 3 * LTF_LEN)
                 break;
 
-            // fine_sync return the start of the first HT-LTF field
+            // fine_sync return the start of the first HT preambles
             int ht_start = fine_sync(input_items, 3 * LTF_LEN, false,
                                      d_current_foe_comp2, d_fine_foe_comp2,
                                      d_rx_ready_cnt2, d_fine_foe_cnt2);
@@ -424,6 +484,8 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             }
             else
             {
+                // skip HT preambles excluding LTFs
+                ht_start += d_ht_len2;
                 cur_frame_start = nitems_read(0) + ht_start;
                 dout << "P2 data frame start at " << ht_start << " (" << cur_frame_start << ")" << std::endl;
             }
@@ -458,7 +520,15 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_data_samples + noutput_samples >= d_frame_len2)
             {
                 noutput_samples = d_frame_len2 - d_data_samples;
-                d_wait_interval = d_next_frame_start - uint64_t(noutput_samples + 8 * SYM_LEN) - nitems_read(0);
+                if (!d_p3rx)
+                    d_wait_interval = d_next_p1frame_start - uint64_t(noutput_samples + d_ht_len1 + 5 * SYM_LEN);
+                else
+                {
+                    d_wait_interval = d_next_p3frame_start - uint64_t(noutput_samples + d_ht_len3 + 5 * SYM_LEN);
+                    if (d_rx_ready_cnt3 == 0) // additional samples for sync search buffer
+                        d_wait_interval -= d_max_corr_len / 4;
+                }
+                d_wait_interval -= nitems_read(0);
                 d_wait_count = 0;
                 d_state = WAIT2;
             }
@@ -503,6 +573,161 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             break;
         }
         case WAIT2:
+        {
+            d_wait_count += min_input_items;
+            int new_data_count = d_wait_count - d_wait_interval;
+            if (new_data_count >= 0)
+            {
+                d_wait_count = 0;
+                min_input_items -= new_data_count;
+                if (!d_p3rx)
+                    d_state = P1FINESYNC;
+                else
+                    d_state = (d_rx_ready_cnt3 == 0) ? P3SEARCH : P3FINESYNC;
+
+            }
+
+            if (d_rxtime_offset <= 0)
+                check_rxtime(noutput_samples);
+            consume_each(min_input_items);
+            break;
+        }
+        case P3SEARCH:
+        {
+            // search for frame start
+            int buffer_len = ((min_input_items > d_max_corr_len) ? d_max_corr_len : min_input_items);
+            if (buffer_len < 8 * STF_LEN)
+                break;
+            int start_pos = sync_search(input_items, buffer_len, d_current_foe_comp3);
+            if (start_pos < 0)
+            {
+                // frame start not found, discard samples
+                consume_each(buffer_len - 2 * STF_LEN);
+                d_skip_p3_frame = true;
+                d_state = P3DEFRAME;
+                break;
+            }
+            auto packet_start = nitems_read(0) + (uint64_t) start_pos;
+            dout << "P3 packet start detected at " << packet_start << std::endl;
+            consume_each(start_pos);
+            d_sync_err_cnt3 = 0;
+            d_skip_p3_frame = false;
+            d_state = P3FINESYNC;
+            break;
+        }
+        case P3FINESYNC:
+        {
+            if (min_input_items < 3 * LTF_LEN)
+                break;
+
+            // fine_sync return the start of the first HT preambles
+            int ht_start = fine_sync(input_items, 3 * LTF_LEN, false,
+                                     d_current_foe_comp3, d_fine_foe_comp3,
+                                     d_rx_ready_cnt3, d_fine_foe_cnt3);
+
+            uint64_t cur_frame_start = 0;
+            if (ht_start < 0)
+            {
+                dout << "P3 fine synchronize failed!" << std::endl;
+                // consume_each(min_input_items);
+                d_sync_err_cnt3 += 1;
+                if (d_sync_err_cnt3 >= 5)
+                {
+                    // changing from ready state
+                    std::cout << "======== P3 Receiver synchronization lost ========" << std::endl;
+                    d_sync_err_cnt3 = 0;
+                    d_rx_ready_cnt3 = 0;
+                    d_prev_p3frame_start = 0;
+                    d_skip_p3_frame = true;
+                    // skip the whole beacon
+                    consume_each(5 * SYM_LEN + d_ht_len3);
+                    d_state = P3DEFRAME;
+                    break;
+                }
+            }
+            else
+            {
+                // skip HT preambles excluding LTFs
+                ht_start += d_ht_len3;
+                cur_frame_start = nitems_read(0) + ht_start;
+                dout << "P3 data frame start at " << ht_start << " (" << cur_frame_start << ")" << std::endl;
+            }
+
+            if (d_rx_ready_cnt3 > 20 && (d_rx_ready_cnt3 % 100) == 0)
+            {
+                std::cout << "P3 fine frequency offset compensation: " << d_current_foe_comp3 << "    ("
+                          << d_current_foe_comp3 * d_samplerate / (2.0 * M_PI) << " Hz)" << std::endl;
+            }
+
+            int64_t frame_offset = int64_t(cur_frame_start - d_prev_p3frame_start) - d_frame_interval;
+            if (ht_start <= 0 || (d_prev_p3frame_start > 0 && (frame_offset < -SYM_LEN || frame_offset > SYM_LEN)))
+            {
+                // use frame start prediction
+                cur_frame_start = d_prev_p3frame_start + uint64_t(d_frame_interval);
+                ht_start = std::max(0, int(cur_frame_start - nitems_read(0)));
+                std::cout << "P3 fine frame synchronization not correct, using prediction instead!" << std::endl;
+            }
+            d_next_p3frame_start = cur_frame_start + d_frame_interval;
+            d_prev_p3frame_start = cur_frame_start;
+
+            d_data_samples = 0;
+            d_state = P3DEFRAME;
+            d_rx_ready_cnt3 += 1;
+
+            consume_each(ht_start); // remove L-STF/L-LTF/L-SIG/HT-SIG/HT-STF
+            break;
+        }
+        case P3DEFRAME:
+        {
+            noutput_samples = std::min(min_input_items, noutput_items);
+            if (d_data_samples + noutput_samples >= d_frame_len3)
+            {
+                noutput_samples = d_frame_len3 - d_data_samples;
+                d_wait_interval = d_next_p1frame_start - uint64_t(noutput_samples + d_ht_len1 + 5 * SYM_LEN) - nitems_read(0);
+                d_wait_count = 0;
+                d_state = WAIT3;
+            }
+
+            if (d_skip_p3_frame || !d_rx_ready)
+            {
+                d_data_samples += noutput_samples;
+                consume_each(noutput_samples);
+                noutput_samples = 0;
+                break;
+            }
+
+            // add packet frame start tag
+            if (d_data_samples == 0)
+            {
+                for (int ch = 0; ch < d_num_chans; ch++)
+                    add_item_tag(2 * d_num_chans + ch,
+                                 nitems_written(2 * d_num_chans + ch),
+                                 pmt::string_to_symbol("frame_start"),
+                                 pmt::from_long(d_frame_len2),
+                                 _id);
+            }
+
+            for (int i = 0; i < noutput_samples; i++)
+            {
+                gr_complex comp_val = exp(gr_complex(0, d_current_foe_comp3 * (double) d_data_samples));
+                for (int ch = 0; ch < d_num_chans; ch++)
+                {
+                    auto in = (const gr_complex *) input_items[ch];
+                    auto out = (gr_complex *) output_items[2 * d_num_chans + ch];
+                    out[i] = in[i] * comp_val;
+                }
+                d_data_samples += 1;
+            }
+
+            consume_each(noutput_samples);
+            for (int ch = 0; ch < d_num_chans; ch++)
+            {
+                // produce(ch, 0);
+                produce(2 * d_num_chans + ch, noutput_samples);
+            }
+            break;
+        }
+        case WAIT3:
         {
             d_wait_count += min_input_items;
             int new_data_count = d_wait_count - d_wait_interval;
@@ -576,7 +801,7 @@ void
 rx_sync_impl::send_rxtime()
 {
     // adjusted frame start position
-    uint64_t frame_start_offset = d_prev_frame_start + d_rxtime_offset;
+    uint64_t frame_start_offset = d_prev_p1frame_start + d_rxtime_offset;
     // double frame_start_time = (frame_start_offset / d_samplerate);
 
     // send current frame start position and clock offset estimate
@@ -780,13 +1005,14 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
     if (first_peak_pos > 0 && second_peak_pos >= first_peak_pos + FFT_LEN - 2 * deltaCSD &&
         second_peak_pos <= first_peak_pos + FFT_LEN + 2 * deltaCSD)
     {
-        // start of the HT preambles (HT-SIGs)
-        // sig_start = first_peak_pos - deltaCSD + 2 * FFT_LEN + SYM_LEN;
+        // calculate the start of the HT preambles (HT-SIGs)
+        // first_peak_pos corresponding to the start of the first FFT block in L-LTF
+        ht_start = first_peak_pos + 2 * FFT_LEN + SYM_LEN; // - deltaCSD;
 
         // calculate the start of the HT-LTF (removing HT-SIG and HT-STF)
-        // first peak pos corresponding to the start of the first FFT block in L-LTF
+        // first_peak_pos corresponding to the start of the first FFT block in L-LTF
         // 4 * SYM_LEN : L-SIG, HT-SIG, HT-STF
-        ht_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
+        // ht_start = first_peak_pos + 2 * FFT_LEN + 4 * SYM_LEN;
     }
     else
     {
@@ -828,7 +1054,7 @@ rx_sync_impl::fine_sync(const gr_vector_const_void_star &input_items, int buffer
              << current_foe_comp * d_samplerate / (2.0 * M_PI) << " Hz)" << std::endl;
     }
 
-    // return start position of HT-LTF
+    // return start position of HT preambles
     return ht_start;
 }
 

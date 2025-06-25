@@ -32,8 +32,9 @@ public:
      * creating new instances.
      */
     static sptr
-    make(int nchans, int npreamblesyms, int ndatasyms, double sampling_freq, int pktspersec,
-         bool p2rxue, int p2preamblelen, int p2framelen, double p2_start, double rxpwr_thrd,
+    make(int nchans, bool p1rx, int npreamblesyms, int ndatasyms, double sampling_freq, int pktspersec,
+         bool p2rx, int hwdelayp2, int p2preamblelen, int p2framelen, double p2_start,
+         bool p3rx, int hwdelayp3, int p3preamblelen, int p3framelen, double p3_start, double rxpwr_thrd,
          double acorr_thrd, double xcorr_thrd, int max_corr_len, bool lltf2 = false, bool debug = false);
 };
 

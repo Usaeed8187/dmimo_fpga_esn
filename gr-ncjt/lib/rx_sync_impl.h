@@ -25,24 +25,26 @@ private:
     const int CORR_BUF_LEN = 64; // Ring buffer length
     const int XCORR_DATA_LEN = LTF_LEN * 4; // Cross-correlation data buffer length
     const int MAX_XCORR_LEN = 512;  // Maximum cross-correlation output buffer length
-    const int MAX_PREAMBLE_SYMS = 12; // Maximal number of HT preamble symbols (HT-SIG, etc.)
+    const int MAX_PREAMBLE_SYMS = 50; // Maximal number of HT preamble symbols (HT-SIG, etc.)
     const int MAX_CHANS = 20;  // Maximum number of IQ channels
     const int PEAK_THRD = 5;   // Minimum peak duration of auto-correlation windows
+    const int CLK_EST_SAMPLES = 200; // number of samples for clock offset estimation
 
     int d_num_chans;  // Total number of IQ data channels
     int d_frame_len1;  // frame length in samples (HT preamble + data symbols)
-    // int d_ht_len1;  // HT beacon length
+    int d_ht_len1;  // HT/HE preamble length
     double d_samplerate;  // Baseband sampling frequency
     int d_frame_interval;   // packet repeat interval (in samples)
     int d_wait_interval;  // Wait interval between packets (in number of IQ samples)
     int64_t d_rxtime_offset; // Rx time difference from tag[offset] samples
     bool d_use_lltf2; // Use alternative L-LTF for synchronization
+    int d_hw_delay_p2, d_hw_delay_p3;
 
-    bool d_p2rxue;  // Phase 2 RxUE mode
-    int d_frame_len2;  // Phase 2 frame length in samples (HT preamble + data symbols)
-    int d_ht_len2; // Phase 2 HT beacon length
-    uint64_t d_p2start_offset; // Phase 2 frame start offset
-    bool d_skip_p2_frame; // skip phase-2 deframing
+    bool d_p1rx, d_p2rx, d_p3rx;  // Phase 1/2/3 Rx mode
+    int d_frame_len2, d_frame_len3;  // Phase 2/3frame length in samples (HT preamble + data symbols)
+    int d_ht_len2, d_ht_len3; // Phase 2/2 HT beacon length
+    uint64_t d_p2start_offset, d_p3start_offset; // Phase 2/3 frame start offset
+    bool d_skip_p2_frame, d_skip_p3_frame; // skip phase-2 deframing
 
     float d_rxpwr_thrd;  // Receiver power threshold for signal detection
     float d_acorr_thrd;  // Auto-correlation detection threshold
@@ -50,19 +52,19 @@ private:
     int d_max_corr_len;  // Maximal auto-correlation buffer length
 
     bool d_rx_ready; // receiver ready status
-    uint64_t d_rx_ready_cnt1, d_rx_ready_cnt2;  // receiver synchronization counter
-    int d_sync_err_cnt1, d_sync_err_cnt2;  // fine synchronization errors
+    uint64_t d_rx_ready_cnt1, d_rx_ready_cnt2, d_rx_ready_cnt3;  // receiver synchronization counter
+    int d_sync_err_cnt1, d_sync_err_cnt2, d_sync_err_cnt3;  // fine synchronization errors
 
     int d_corr_buf_pos;
-    float d_current_foe_comp1, d_current_foe_comp2;
-    float d_fine_foe_comp1, d_fine_foe_comp2;
-    int d_fine_foe_cnt1, d_fine_foe_cnt2;
+    float d_current_foe_comp1, d_current_foe_comp2, d_current_foe_comp3;
+    float d_fine_foe_comp1, d_fine_foe_comp2, d_fine_foe_comp3;
+    int d_fine_foe_cnt1, d_fine_foe_cnt2, d_fine_foe_cnt3;
     int d_data_samples;
     int d_wait_count;
 
-    const int CLK_EST_SAMPLES = 200; // number of samples for clock offset estimation
+    uint64_t d_prev_p1frame_start, d_next_p1frame_start;
     uint64_t d_prev_p2frame_start, d_next_p2frame_start;
-    uint64_t d_prev_frame_start, d_next_frame_start;
+    uint64_t d_prev_p3frame_start, d_next_p3frame_start;
     int64_t d_clk_offset_sum;
     int d_clk_offset_cnt;
     double d_clk_offset_est;
@@ -81,7 +83,12 @@ private:
     const bool d_debug;
     pmt::pmt_t _id;
 
-    enum { P1SEARCH, P1FINESYNC, P1DEFRAME, WAIT1, P2SEARCH, P2FINESYNC, P2DEFRAME, WAIT2} d_state;
+    enum
+    {
+        P1SEARCH, P1FINESYNC, P1DEFRAME, WAIT1,
+        P2SEARCH, P2FINESYNC, P2DEFRAME, WAIT2,
+        P3SEARCH, P3FINESYNC, P3DEFRAME, WAIT3
+    } d_state;
 
     int
     sync_search(const gr_vector_const_void_star &input_items, int buffer_len, float &current_foe_comp);
@@ -103,8 +110,9 @@ private:
     send_rxtime();
 
 public:
-    rx_sync_impl(int nchans, int npreamblesyms, int ndatasyms, double sampling_freq, int pktspersec,
-                 bool p2rxue, int p2preamblelen, int p2framelen, double p2_start, double rxpwr_thrd,
+    rx_sync_impl(int nchans, bool p1rx, int preamblelen, int dataframelen, double samplerate, int pktspersec,
+                 bool p2rx, int hwdelayp2, int p2preamblelen, int p2framelen, double p2_start,
+                 bool p3rx, int hwdelayp3, int p3preamblelen, int p3framelen, double p3_start, double rxpwr_thrd,
                  double acorr_thrd, double xcorr_thrd, int max_corr_len, bool lltf2, bool debug);
     ~rx_sync_impl();
 
