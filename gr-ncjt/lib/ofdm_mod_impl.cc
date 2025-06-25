@@ -41,11 +41,15 @@ ofdm_mod_impl::ofdm_mod_impl(int fftsize, int cplen, int ntx, float scaling, boo
     {
         d_scnum = 56;
         d_scnum_half = 28;
+        d_left_guard_scnum = 4;
+        d_center_null_scnum_pos_half = 1;
     }
     else
     {
         d_scnum = 242;
         d_scnum_half = 121;
+        d_left_guard_scnum = 6;
+        d_center_null_scnum_pos_half = 2;
     }
 
     if (scaling <= 0 || scaling > 1.0)
@@ -85,8 +89,8 @@ ofdm_mod_impl::work(int noutput_items, gr_vector_int &ninput_items,
     for (int i = 0; i < num_blks; i++)
     {
         // IFFT shift
-        memcpy(&d_ifft.get_inbuf()[d_fftsize / 2 + 4], &in0[nblk * d_scnum], sizeof(gr_complex) * d_scnum_half);
-        memcpy(&d_ifft.get_inbuf()[1], &in0[nblk * d_scnum + d_scnum_half], sizeof(gr_complex) * d_scnum_half);
+        memcpy(&d_ifft.get_inbuf()[d_fftsize / 2 + d_left_guard_scnum], &in0[nblk * d_scnum], sizeof(gr_complex) * d_scnum_half);
+        memcpy(&d_ifft.get_inbuf()[d_center_null_scnum_pos_half], &in0[nblk * d_scnum + d_scnum_half], sizeof(gr_complex) * d_scnum_half);
         // compute IFFT
         d_ifft.execute();
         // output scaling
