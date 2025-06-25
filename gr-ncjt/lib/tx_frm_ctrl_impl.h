@@ -16,8 +16,6 @@ namespace gr::ncjt
 class tx_frm_ctrl_impl : public tx_frm_ctrl
 {
 private:
-    const int SYM_LEN = 80; // OFDM symbol length (FFT+CP)
-
     int d_ntx;            // number of transmitter antennas
     int d_frame_length;   // full transmission frame length (beacon, data, and padding)
     int d_beacon_len;     // beacon length in samples
@@ -63,7 +61,7 @@ protected:
     process_txen_message(const pmt::pmt_t &msg);
 
 public:
-    tx_frm_ctrl_impl(int ntx, int ndatasyms, const char *filename, double samplerate, int pktspersec,
+    tx_frm_ctrl_impl(int ntx, int frame_data_len, const char *filename, double samplerate, int pktspersec,
                      double starttime, int padding, bool autostart, int delay, bool debug);
     ~tx_frm_ctrl_impl();
 
