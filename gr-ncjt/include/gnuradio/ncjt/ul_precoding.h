@@ -33,7 +33,7 @@ public:
  * creating new instances.
  */
     static sptr
-    make(int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
+    make(int fftsize, int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
          bool eigenmode, bool wideband, bool loadcsi, const char *csifile, bool debug = false);
 };
 
