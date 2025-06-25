@@ -1,20 +1,24 @@
-function mu_mimo_ul_sigen(mimotype, psdulen, modtype, cctype, datadir)
+function su_mimo_sigen_he_csd(mimotype, psdulen, modtype, cctype, datadir)
+% Generate Tx signal for 4x2 MIMO downlink
+% using CSD for 2-stream transmission,
+% with additional 4x4 HT-LTF for CSI feedback
 
 % System configuration
-cfg = sys_config(mimotype, psdulen, modtype, cctype);
+cfg = sys_config_he(mimotype, psdulen, modtype, cctype);
 
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder
 
-% Load 802.11 beacon signals
-b = load('beacon2x2.mat');
+% Load 4x4 HT LTF signals (for CSI feedback)
+b = load('beacon4x4he.mat');
+load('lltfx4.mat','lltfx4');
 
-% orthonal LTF for 2 Tx
-% htltfx = cat(1, [b.htltf(1:80,1), zeros(80, 1)], ...
-%                 [zeros(80, 1), b.htltf(81:160,2)]);
-
-htltfx = cat(1, [b.htltf(1:80,1), zeros(80, 1)], ...
-                [zeros(80, 1), b.htltf(1:80,1)]);
+% Spatial mapping for HT-LTF (for data reception)
+ltf = load('heltfx.mat', 'heltfx').heltfx;
+ltf = reshape(ltf, cfg.SymLen, [], 2);
+ltfx = fftshift(fft(ltf(cfg.Ncp+1:end,:,:)), 1);
+heltfx = ifft(ifftshift(spatialMapping(ltfx, cfg), 1));
+heltfx = sqrt(0.5)*reshape([heltfx(cfg.Nfft-cfg.Ncp+1:end,:,:); heltfx], [], 4); % add CP
 
 % Set random substream
 stream = RandStream('mt19937ar','Seed',2201203);
@@ -27,7 +31,8 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 [txdata, encdata, strmdata, txdsyms] = tx_processing(cfg, txPSDU);
 
 % Time-domain preamble signals (HT-SIG, HT-STF, HT-LTF)
-preamble = [b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; htltfx];
+% preamble = sqrt(2)*[b.lstf; b.lltf; b.lsig; b.hesiga; b.hestf; b.hestf; b.heltf; heltfx];
+preamble = sqrt(2)*[b.lstf; lltfx4; b.lsig; b.hesiga; b.hestf; b.hestf; b.heltf; heltfx];
 
 % Prepare transmitter signal for USRP
 txFrame = reshape([preamble; txdata], [], cfg.Nt);
@@ -38,8 +43,8 @@ scaling = 0.5; % fixed scaling
 txsig = signal_clipping(scaling * txFrame);
 
 % Zero-padding for burst transmission
-padding = zeros(1000, cfg.Nt);
-txsig = [padding; txsig; padding];
+padding = zeros(500, cfg.Nt);
+txsig = [padding; txsig;]; % padding];
 
 % Show system parameters
 nLegacyPreamble = 5;
@@ -53,48 +58,22 @@ fprintf("Tx signal scaling: %.15f\n", scaling);
 
 % Save data fro GNU Radio implementation
 fprintf("Saving GNU Radio Tx data files ...\n")
+write_complex_binary(txsig, ...
+        sprintf('%s/%s/%s/txsig_all.bin',datadir,mimotype,modtype));
 for k=1:cfg.Nt
     write_complex_binary(txsig(:,k), ...
         sprintf('%s/%s/%s/txsig_s%d.bin',datadir,mimotype,modtype,k));
 end
+
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/preamble.bin',datadir,mimotype,modtype));
-write_complex_binary(scaling*preamble(1:end-160,:), ...
-    sprintf('%s/%s/%s/preamble_noltfx.bin',datadir,mimotype,modtype));
-write_complex_binary(zeros(size(preamble(1:end-160,:))), ...
-    sprintf('%s/%s/%s/preamble_null.bin',datadir,mimotype,modtype));
 
-% Generate LTF for precoding
-ltfRef = [1, 1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, ...
-          1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, 1, ...
-          1,-1,-1, 1, 1,-1, 1,-1, 1,-1,-1,-1,-1,-1, ...
-          1, 1,-1,-1, 1,-1, 1,-1, 1, 1, 1, 1,-1,-1 ].';
-ltf2x2 = cat(3, [ltfRef, zeros(56,1)], [zeros(56,1), ltfRef]);
-ltf2x2 = reshape(ltf2x2, [], 2);
-write_complex_binary(ltf2x2, ...
-    sprintf('%s/%s/%s/ltf2x2.bin',datadir,mimotype,modtype));
-write_complex_binary(ltf2x2(:,1), ...
-    sprintf('%s/%s/%s/ltf2x2_t1.bin',datadir,mimotype,modtype));
-write_complex_binary(ltf2x2(:,2), ...
-    sprintf('%s/%s/%s/ltf2x2_t2.bin',datadir,mimotype,modtype));
-
-% Save LTF for debugging
-write_complex_binary(scaling*htltfx, ...
-    sprintf('%s/%s/%s/htltfx.bin',datadir,mimotype,modtype));
-
-% Save binary data
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, encdata(:), "char");
 fclose(fid);
 
 fid = fopen(sprintf('%s/%s/%s/strm_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, strmdata(:), "char");
-fclose(fid);
-fid = fopen(sprintf('%s/%s/%s/strm_data_s1.bin',datadir,mimotype,modtype),'wb');
-fwrite(fid, strmdata(:,1), "char");
-fclose(fid);
-fid = fopen(sprintf('%s/%s/%s/strm_data_s2.bin',datadir,mimotype,modtype),'wb');
-fwrite(fid, strmdata(:,2), "char");
 fclose(fid);
 
 fid = fopen(sprintf('%s/%s/%s/tx_strm_data.bin',datadir,mimotype,modtype),'wb');

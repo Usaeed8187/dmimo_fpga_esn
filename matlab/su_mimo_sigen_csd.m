@@ -15,10 +15,10 @@ load('lltfx4.mat','lltfx4');
 
 % Spatial mapping for HT-LTF (for data reception)
 ltf = load('beacon2x2.mat', 'htltf').htltf;
-ltf = reshape(ltf, 80, [], 2);
-ltfx = fftshift(fft(ltf(17:end,:,:)), 1);
+ltf = reshape(ltf, cfg.SymLen, [], 2);
+ltfx = fftshift(fft(ltf(cfg.Ncp+1:end,:,:)), 1);
 htltfx = ifft(ifftshift(spatialMapping(ltfx, cfg), 1));
-htltfx = sqrt(0.5)*reshape([htltfx(49:end,:,:); htltfx], [], 4); % add CP
+htltfx = sqrt(0.5)*reshape([htltfx(cfg.Nfft-cfg.Ncp+1:end,:,:); htltfx], [], 4); % add CP
 
 % Set random substream
 stream = RandStream('mt19937ar','Seed',2201203);
@@ -35,8 +35,7 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 preamble = sqrt(2)*[b.lstf; lltfx4; b.lsig; b.htsig; b.htstf; b.htltf; htltfx];
 
 % Prepare transmitter signal for USRP
-txFrame = reshape([preamble; txdata], (cfg.Nfft+cfg.Ncp), [], cfg.Nt);
-txFrame = reshape(txFrame, [], cfg.Nt);
+txFrame = reshape([preamble; txdata], [], cfg.Nt);
 
 % Convert Tx signals to range (-1,1)
 % scaling = 1.0/max(abs([real(txFrame(:)); imag(txFrame(:))]));
@@ -59,6 +58,8 @@ fprintf("Tx signal scaling: %.15f\n", scaling);
 
 % Save data fro GNU Radio implementation
 fprintf("Saving GNU Radio Tx data files ...\n")
+write_complex_binary(txsig, ...
+        sprintf('%s/%s/%s/txsig_all.bin',datadir,mimotype,modtype));
 for k=1:cfg.Nt
     write_complex_binary(txsig(:,k), ...
         sprintf('%s/%s/%s/txsig_s%d.bin',datadir,mimotype,modtype,k));

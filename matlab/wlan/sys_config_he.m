@@ -1,10 +1,7 @@
 function  cfg = sys_config_he(mode, psdulen, modtype, cctype)
 % Return system configuration
-% 
-% mode 1: 2Tx/2Rx, 2-stream, QPSK, r=1/2 BCC/LDPC
-% mode 2: 4Tx/4Rx, 4-stream, QPSK, r=1/2 BCC/LDPC
 %
-% By Donald Liang, last updated July 20, 2021
+% By Donald Liang, last updated April 20, 2025
 
 % NCBPSSHORT % Number of coded bits per symbol (short)
 % NDBPSSHORT % Number of data bits per symbol (short)
@@ -41,55 +38,52 @@ elseif strcmpi(modtype, '16QAM')
     cfg.Mord = 4;
 elseif strcmpi(modtype, '64QAM')
     cfg.Mord = 6;
-elseif (modtype == 2 || modtype == 4 || modtype == 6)
+elseif strcmpi(modtype, '256QAM')
+    cfg.Mord = 8;
+elseif (modtype == 2 || modtype == 4 || modtype == 6 || modtype == 8)
     cfg.Mord = modtype;
 else
     error('Unkown modulation')
 end
 
 cfg.spatialExpansion = false;
-if strcmpi(mode, '2x2')
+cfg.mode = mode;
+if strcmpi(mode, '1t1s')
+    cfg.Nt  = 1; % Number of transmit antennas
+    cfg.Nss = 1; % Number of spatial streams
+    cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)
+elseif strcmpi(mode, '2t1s')
+    cfg.Nt  = 1; % Number of transmit antennas
+    cfg.Nss = 1; % Number of spatial streams
+    cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)
+elseif strcmpi(mode, '2t2s')
+    cfg.Nt  = 2; % Number of transmit antennas
+    cfg.Nss = 2; % Number of spatial streams
+    cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)
+elseif strcmpi(mode, '2t2s_csi')
+    cfg.Nt  = 2; % Number of transmit antennas
+    cfg.Nss = 2; % Number of spatial streams
+elseif strcmpi(mode, '2t1s_svd')
     cfg.Nt = 2;  % Number of transmit antennas
-    cfg.Nr = 2;  % Number of receive antennas
-    cfg.Nss = 2; % Number of spatial streams
-    if nargin < 2
-        cfg.PSDUlen = 512;
-    else
-        cfg.PSDUlen = psdulen;
-    end
-    cfg.ltfLen = 160;
-elseif strcmpi(mode, '4x2')
+    cfg.Nss = 1; % Number of spatial streams per user
+    cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)
+elseif strcmpi(mode, '4t2s')
     cfg.Nt = 4;  % Number of transmit antennas
-    cfg.Nr = 2;  % Number of receive antennas
     cfg.Nss = 2; % Number of spatial streams
+    cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)
     cfg.spatialExpansion = true;
-    % cfg.spatialMapping = sqrt(2)*spatialExpansionMatrix();
-    cfg.spatialMapping = repmat([1,0; 0,1; 1,0; 0,1].', 1, 1, 56);
-    if nargin < 2
-        cfg.PSDUlen = 512;
-    else
-        cfg.PSDUlen = psdulen;
-    end    
-elseif strcmpi(mode, '4x2csd')
+    cfg.spatialMapping = repmat([1,0; 0,1; 1,0; 0,1].', 1, 1, cfg.Nsc);   
+elseif strcmpi(mode, '4t2s_csd')
     cfg.Nt = 4;  % Number of transmit antennas
-    cfg.Nr = 4;  % Number of receive antennas
     cfg.Nss = 2; % Number of spatial streams
+    cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)
     cfg.spatialExpansion = true;  % Enable spatial expansion
-    cfg.spatialMapping = sqrt(2)*spatialExpansionMatrix();
-    if nargin < 2
-        cfg.PSDUlen = 512;
-    else
-        cfg.PSDUlen = psdulen;
-    end
-elseif strcmpi(mode, '4x4')
+    cfg.spatialMapping = sqrt(2) * ...
+        spatialExpansionMatrix(cfg.Nfft, cfg.Nsc, cfg.Nt, cfg.Nss);
+elseif strcmpi(mode, '4t4s')
     cfg.Nt = 4;  % Number of transmit antennas
-    cfg.Nr = 4;  % Number of receive antennas
     cfg.Nss = 4; % Number of spatial streams
-    if nargin < 2
-        cfg.PSDUlen = 980;
-    else
-        cfg.PSDUlen = psdulen;
-    end
+    cfg.Nr = min(cfg.Nt, cfg.Nss); % mumber of receive antennas (default)
 else
     error('Unsupported mode')
 end
@@ -98,6 +92,7 @@ end
 cfg.SymLen = cfg.Nfft + cfg.Ncp;
 
 % Coded bits per symbol
+cfg.PSDUlen = psdulen;
 bitspersym = cfg.Nss*cfg.Mord*cfg.Nsd;
 
 % framing and BCC/LDPC encoder params

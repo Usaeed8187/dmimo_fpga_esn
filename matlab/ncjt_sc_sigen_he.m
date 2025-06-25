@@ -1,14 +1,15 @@
-function ncjt_sc_sigen(psdulen, modtype, cctype, datadir)
+function ncjt_sc_sigen_he(psdulen, modtype, cctype, datadir)
 
 % System configuration
 mimotype = '1t1s';
-cfg = sys_config(mimotype, psdulen, modtype, cctype);
+cfg = sys_config_he(mimotype, psdulen, modtype, cctype);
 
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder
 
 % Load 802.11 beacon signals
-b = load('beacon2x2.mat');
+b = load('beacon2x2he.mat');
+load('heltfx.mat')
 
 % Set random substream
 stream = RandStream('mt19937ar','Seed',2201203);
@@ -24,11 +25,10 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 txdata = 1/sqrt(2) * [txdata(:), txdata(:)];
 
 % Time-domain preamble signals (HT-SIG, HT-STF, HT-LTF)
-% htltfx = cat(1, [b.htltf(1:80,1), zeros(80,1)], ...
-%                 [zeros(80,1), b.htltf(1:80,1)]);
-htltfx = b.htltf;
+% heltfx = cat(1, [b.heltf(1:80,1), zeros(80,1)], ...
+%                 [zeros(80,1), b.heltf(1:80,1)]);
 
-preamble = [b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; htltfx];
+preamble = [b.lstf; b.lltf; b.lsig; b.hesiga; b.hestf; b.hestf; heltfx];
 
 % Prepare transmitter signal for USRP
 txFrame = reshape([preamble; txdata], [], 2);
@@ -63,9 +63,15 @@ write_complex_binary(txsig(:,2), ...
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/ncjt_preamble.bin',datadir,mimotype,modtype));
 
+% Save preamble signals for gNB
+load('lltfx2.mat','lltfx');
+preamble2 = [b.lstf; lltfx; b.lsig; b.hesiga; b.hestf; b.hestf; heltfx];
+write_complex_binary(scaling*preamble2, ...
+    sprintf('%s/%s/%s/ncjt_preamble_gnb.bin',datadir,mimotype,modtype));
+
 % Save LTF for debugging
-write_complex_binary(scaling*htltfx, ...
-    sprintf('%s/%s/%s/htltfx.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*heltfx, ...
+    sprintf('%s/%s/%s/heltfx.bin',datadir,mimotype,modtype));
 
 % Save binary data
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');
