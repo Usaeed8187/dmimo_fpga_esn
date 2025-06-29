@@ -3,6 +3,10 @@
 clear
 addpath("./wlan", "./gnuradio/");
 
+% System configuration
+mimotype = '2t2s';
+cctype = 'LDPC';
+
 % data output folder
 datadir = '../data/mc_ncjt/';
 
@@ -11,17 +15,21 @@ datadir = '../data/mc_ncjt/';
 
 modtype = "QPSK";
 psdulen = 510;
-ncjt_mc_sigen(psdulen, modtype, 'LDPC', datadir);
+cfg = sys_config(mimotype, psdulen, modtype, cctype);
+ncjt_mc_sigen(cfg, mimotype, psdulen, modtype, datadir);
 
 modtype = "16QAM";
 psdulen = 1038;
-ncjt_mc_sigen(psdulen, modtype, 'LDPC', datadir);
+cfg = sys_config(mimotype, psdulen, modtype, cctype);
+ncjt_mc_sigen(cfg, mimotype, psdulen, modtype, datadir);
 
 modtype = "64QAM";
 psdulen = 1558;
-ncjt_mc_sigen(psdulen, modtype, 'LDPC', datadir);
+cfg = sys_config(mimotype, psdulen, modtype, cctype);
+ncjt_mc_sigen(cfg, mimotype, psdulen, modtype, datadir);
 
 modtype = "256QAM";
 psdulen = 2078;
-ncjt_mc_sigen(psdulen, modtype, 'LDPC', datadir);
+cfg = sys_config(mimotype, psdulen, modtype, cctype);
+ncjt_mc_sigen(cfg, mimotype, psdulen, modtype, datadir);
 

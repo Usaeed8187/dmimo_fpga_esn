@@ -8,28 +8,28 @@ mimotype = '1t1s';
 cctype = 'LDPC';
 
 % data output folder
-datadir = '../data/sc_ncjt_he/';
+datadir = '../data/sc_ncjt_nr/';
 
-% use 406 for QPSK, 816 for 16QAM, 1226 for 64QAM, 1532 for 256QAM
+% use 228 for QPSK, 460 for 16QAM, 690 for 64QAM, 922 for 256QAM
 % to generate 14 OFDM symbols per frame
 
 modtype = "QPSK";
-psdulen = 406;
-cfg = sys_config_he(mimotype, psdulen, modtype, cctype);
+psdulen = 228;
+cfg = sys_config_nr(mimotype, psdulen, modtype, cctype);
 ncjt_sc_sigen_he(cfg, mimotype, psdulen, modtype, datadir);
 
 modtype = "16QAM";
-psdulen = 816;
-cfg = sys_config_he(mimotype, psdulen, modtype, cctype);
+psdulen = 460;
+cfg = sys_config_nr(mimotype, psdulen, modtype, cctype);
 ncjt_sc_sigen_he(cfg, mimotype, psdulen, modtype, datadir);
 
 modtype = "64QAM";
-psdulen = 1226;
-cfg = sys_config_he(mimotype, psdulen, modtype, cctype);
+psdulen = 690;
+cfg = sys_config_nr(mimotype, psdulen, modtype, cctype);
 ncjt_sc_sigen_he(cfg, mimotype, psdulen, modtype, datadir);
 
 modtype = "256QAM";
-psdulen = 1632;
-cfg = sys_config_he(mimotype, psdulen, modtype, cctype);
+psdulen = 922;
+cfg = sys_config_nr(mimotype, psdulen, modtype, cctype);
 ncjt_sc_sigen_he(cfg, mimotype, psdulen, modtype, datadir);
 

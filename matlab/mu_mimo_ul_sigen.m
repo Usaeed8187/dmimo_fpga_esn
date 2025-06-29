@@ -1,7 +1,4 @@
-function mu_mimo_ul_sigen(mimotype, psdulen, modtype, cctype, datadir)
-
-% System configuration
-cfg = sys_config(mimotype, psdulen, modtype, cctype);
+function mu_mimo_ul_sigen(cfg, mimotype, psdulen, modtype, datadir)
 
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder
@@ -13,8 +10,8 @@ b = load('beacon2x2.mat');
 % htltfx = cat(1, [b.htltf(1:80,1), zeros(80, 1)], ...
 %                 [zeros(80, 1), b.htltf(81:160,2)]);
 
-htltfx = cat(1, [b.htltf(1:80,1), zeros(80, 1)], ...
-                [zeros(80, 1), b.htltf(1:80,1)]);
+htltfx = cat(1, [b.htltf(1:cfg.SymLen,1), zeros(cfg.SymLen, 1)], ...
+                [zeros(cfg.SymLen, 1), b.htltf(1:cfg.SymLen,1)]);
 
 % Set random substream
 stream = RandStream('mt19937ar','Seed',2201203);
@@ -59,9 +56,9 @@ for k=1:cfg.Nt
 end
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/preamble.bin',datadir,mimotype,modtype));
-write_complex_binary(scaling*preamble(1:end-160,:), ...
+write_complex_binary(scaling*preamble(1:end-2*cfg.SymLen,:), ...
     sprintf('%s/%s/%s/preamble_noltfx.bin',datadir,mimotype,modtype));
-write_complex_binary(zeros(size(preamble(1:end-160,:))), ...
+write_complex_binary(zeros(size(preamble(1:end-2*cfg.SymLen,:))), ...
     sprintf('%s/%s/%s/preamble_null.bin',datadir,mimotype,modtype));
 
 % Generate LTF for precoding
@@ -69,7 +66,7 @@ ltfRef = [1, 1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, ...
           1, 1, 1,-1,-1, 1, 1,-1, 1,-1, 1, 1, 1, 1, ...
           1,-1,-1, 1, 1,-1, 1,-1, 1,-1,-1,-1,-1,-1, ...
           1, 1,-1,-1, 1,-1, 1,-1, 1, 1, 1, 1,-1,-1 ].';
-ltf2x2 = cat(3, [ltfRef, zeros(56,1)], [zeros(56,1), ltfRef]);
+ltf2x2 = cat(3, [ltfRef, zeros(size(ltfRef))], [zeros(size(ltfRef)), ltfRef]);
 ltf2x2 = reshape(ltf2x2, [], 2);
 write_complex_binary(ltf2x2, ...
     sprintf('%s/%s/%s/ltf2x2.bin',datadir,mimotype,modtype));

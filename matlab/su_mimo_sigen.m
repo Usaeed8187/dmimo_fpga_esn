@@ -1,7 +1,4 @@
-function su_mimo_sigen(mimotype, psdulen, modtype, cctype, datadir)
-
-% System configuration
-cfg = sys_config(mimotype, psdulen, modtype, cctype);
+function su_mimo_sigen(cfg, mimotype, psdulen, modtype, datadir)
 
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder

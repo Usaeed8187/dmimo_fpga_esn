@@ -1,8 +1,6 @@
-function ncjt_mc_sigen(psdulen, modtype, cctype, datadir)
+function ncjt_mc_sigen(cfg, mimotype, psdulen, modtype, datadir)
 
-% System configuration
-mimotype = '2t2s';
-cfg = sys_config(mimotype, psdulen, modtype, cctype);
+
 
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder

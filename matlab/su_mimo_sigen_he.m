@@ -1,7 +1,4 @@
-function su_mimo_sigen_he(mimotype, psdulen, modtype, cctype, datadir)
-
-% System configuration
-cfg = sys_config_he(mimotype, psdulen, modtype, cctype);
+function su_mimo_sigen_he(cfg, mimotype, psdulen, modtype, datadir)
 
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder
@@ -26,6 +23,10 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 
 % Generate data symbols
 [txdata, encdata, strmdata, txdsyms] = tx_processing(cfg, txPSDU);
+
+% scaling for Nsc=140
+ltf_scaling = sqrt(242/cfg.Nsc);
+bx.heltfx = ltf_scaling * bx.heltfx;
 
 % Time-domain preamble signals (HE-SIGA, HE-STF, HE-LTF)
 preamble = [b.lstf; b.lltf; b.lsig; b.hesiga; b.hestf; b.hestf; bx.heltfx];
@@ -77,6 +78,10 @@ ltfRef = [-1,-1,1,-1,1,-1,1,1,1,-1,1,1,1,-1,-1,1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,
          1,-1,-1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1,1,1,1,1,-1,-1,1,1,1,1,1,-1, ...
          1,1,-1,-1,-1,1,-1,-1,-1,1,-1,1,-1,1,1].';
 ltf2x2 = cat(3, [ltfRef, -ltfRef], [ltfRef, ltfRef]);
+if (size(ltfRef, 1) ~= cfg.Nsc)
+    npos = (size(ltfRef, 1) - cfg.Nsc)/2;
+    ltf2x2 = ltf2x2(npos+1:end-npos, :, :);
+end
 ltf2x2 = reshape(ltf2x2, [], 2);
 write_complex_binary(ltf2x2, ...
     sprintf('%s/%s/%s/ltf2x2.bin',datadir,mimotype,modtype));
@@ -104,7 +109,7 @@ txdsyms_intlv = reshape(permute(txdsyms, [3, 1, 2]), [], 1); % (Nss, Nsc, Nsyms)
 write_complex_binary(txdsyms_intlv, ...
     sprintf("%s/%s/%s/txdsyms.bin",datadir,mimotype,modtype));
 
-for k=1:cfg.Nt
+for k=1:cfg.Nss
     write_complex_binary(txdsyms(:,:,k), ...
         sprintf("%s/%s/%s/txdsyms_s%d.bin",datadir,mimotype,modtype,k));
 end
