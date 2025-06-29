@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(ofdm_mod.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(4a3451f6362a6ec5724e5e2e1fbc1612) */
+/* BINDTOOL_HEADER_FILE_HASH(de0e3b389bd6c33a6dbc2c2a0a4fd75d) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,9 +36,8 @@ void bind_ofdm_mod(py::module &m) {
   py::class_<ofdm_mod, gr::tagged_stream_block, gr::block, gr::basic_block,
              std::shared_ptr<ofdm_mod>>(m, "ofdm_mod", D(ofdm_mod))
 
-      .def(py::init(&ofdm_mod::make), py::arg("fftsize"), py::arg("cplen"),
-           py::arg("ntx"), py::arg("scaling"), py::arg("debug") = false,
-           D(ofdm_mod, make))
+      .def(py::init(&ofdm_mod::make), py::arg("rgmode"), py::arg("cplen"),
+           py::arg("ntx"), py::arg("scaling"), D(ofdm_mod, make))
 
       ;
 }

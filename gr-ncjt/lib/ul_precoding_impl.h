@@ -10,6 +10,7 @@
 #include <gnuradio/ncjt/ul_precoding.h>
 #include <gnuradio/message.h>
 #include "cmatrix.h"
+#include "rg_modes.h"
 
 namespace gr::ncjt
 {

@@ -9,6 +9,7 @@
 
 #include <gnuradio/ncjt/ltf_chanest.h>
 #include "cmatrix.h"
+#include "rg_modes.h"
 
 namespace gr::ncjt
 {
@@ -23,6 +24,7 @@ private:
     int d_nss;  // number of transmitter data streams
     int d_nrx;  // number of receive antennas
     int d_npt; // number of tracking pilots per symbol
+    int d_cpt_idx[MAX_NUM_CPT]; // cpt indices
     int d_preamble_symbols; // total number of HT preamble symbols
     int d_data_symbols;        // total number of data symbols per packet
     float d_cpe_phi;           // CPE in radian
@@ -41,7 +43,8 @@ private:
     gr_complex *d_cshift; // cyclic shift compensation
     CMatrixX d_Pd; // P matrix for MMSE detection
     static const gr_vector_float NORM_LTF_SEQ_64; // normalized LTF sequence
-    static const gr_vector_float NORM_LTF_SEQ_256; // normalized LTF sequence
+    static const gr_vector_float NORM_LTF_SEQ_256A; // normalized LTF sequence
+    static const gr_vector_float NORM_LTF_SEQ_256B; // normalized LTF sequence
     gr_vector_float NORM_LTF_SEQ; // current normalized LTF sequence
 
     bool d_csi_en; // enable CSI feedback
@@ -102,7 +105,7 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
+    ltf_chanest_impl(int rgmode, int ntx, int nrx, int npreamblesyms, int ndatasyms,
                      bool csifb, bool removecs, int logfreq, bool debug);
     ~ltf_chanest_impl();
 

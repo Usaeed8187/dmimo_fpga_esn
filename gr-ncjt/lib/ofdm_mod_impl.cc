@@ -7,7 +7,7 @@
 #include "ofdm_mod_impl.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-//#include "utils.h"
+#include "rg_modes.h"
 
 namespace gr::ncjt
 {
@@ -17,47 +17,39 @@ namespace gr::ncjt
 // #define NORM_FACTOR_4TX 0.066815310478106    // for 4-Tx
 
 ofdm_mod::sptr
-ofdm_mod::make(int fftsize, int cplen, int ntx, float scaling, bool debug)
+ofdm_mod::make(int rgmode, int cplen, int ntx, float scaling)
 {
-    return gnuradio::make_block_sptr<ofdm_mod_impl>(fftsize, cplen, ntx, scaling, debug);
+    return gnuradio::make_block_sptr<ofdm_mod_impl>(rgmode, cplen, ntx, scaling);
 }
 
-ofdm_mod_impl::ofdm_mod_impl(int fftsize, int cplen, int ntx, float scaling, bool debug)
+ofdm_mod_impl::ofdm_mod_impl(int rgmode, int cplen, int ntx, float scaling)
     : gr::tagged_stream_block("ofdm_mod",
                               gr::io_signature::make2(1, 1, sizeof(gr_complex), sizeof(gr_complex)),
                               gr::io_signature::make2(1, 1, sizeof(gr_complex), sizeof(gr_complex)),
-                              "packet_len"), d_ifft(fftsize, 1), d_debug(debug)
+                              "packet_len")
 {
-    if (fftsize != 64 && fftsize != 256)
-        throw std::runtime_error("Unsupported OFDM FFT size");
-    d_fftsize = fftsize;
+    if (rgmode < 0 || rgmode >=8)
+        throw std::runtime_error("Unsupported RG mode");
 
-    if (cplen <= 0 || cplen > fftsize / 4 || (cplen != 16 && cplen != 32 && cplen != 64))
+    d_fftsize = RG_FFT_SIZE[rgmode];
+    d_scnum = RG_NUM_VALID_SC[rgmode];
+    d_scnum_half = d_scnum / 2;
+    d_left_guard_scnum = RG_NUM_GUARD_SC[rgmode];
+    d_center_null_scnum_pos_half = (rgmode < 2) ? 1 : 2;
+
+    if (cplen <= 0 || cplen > d_fftsize / 4 || (cplen != 16 && cplen != 32 && cplen != 64))
         throw std::runtime_error("Unsupported OFDM CP length");
     d_cplen = cplen;
     d_symlen = d_fftsize + d_cplen;
 
-    if (d_fftsize == 64)
-    {
-        d_scnum = 56;
-        d_scnum_half = 28;
-        d_left_guard_scnum = 4;
-        d_center_null_scnum_pos_half = 1;
-    }
-    else
-    {
-        d_scnum = 242;
-        d_scnum_half = 121;
-        d_left_guard_scnum = 6;
-        d_center_null_scnum_pos_half = 2;
-    }
-
     if (scaling <= 0 || scaling > 1.0)
         throw std::runtime_error("invalid number of preamble symbols for training specified");
 
+    d_ifft = new fft::fft_complex_rev(d_fftsize, 1);
+
     const double normfactor = sqrt(ntx * d_scnum);
     d_scaling = scaling / normfactor;
-    memset((void *) &d_ifft.get_inbuf()[0], 0, sizeof(gr_complex) * d_fftsize);
+    memset((void *) &d_ifft->get_inbuf()[0], 0, sizeof(gr_complex) * d_fftsize);
 
     set_tag_propagation_policy(block::TPP_DONT);
 }
@@ -89,13 +81,13 @@ ofdm_mod_impl::work(int noutput_items, gr_vector_int &ninput_items,
     for (int i = 0; i < num_blks; i++)
     {
         // IFFT shift
-        memcpy(&d_ifft.get_inbuf()[d_fftsize / 2 + d_left_guard_scnum], &in0[nblk * d_scnum], sizeof(gr_complex) * d_scnum_half);
-        memcpy(&d_ifft.get_inbuf()[d_center_null_scnum_pos_half], &in0[nblk * d_scnum + d_scnum_half], sizeof(gr_complex) * d_scnum_half);
+        memcpy(&d_ifft->get_inbuf()[d_fftsize / 2 + d_left_guard_scnum], &in0[nblk * d_scnum], sizeof(gr_complex) * d_scnum_half);
+        memcpy(&d_ifft->get_inbuf()[d_center_null_scnum_pos_half], &in0[nblk * d_scnum + d_scnum_half], sizeof(gr_complex) * d_scnum_half);
         // compute IFFT
-        d_ifft.execute();
+        d_ifft->execute();
         // output scaling
         volk_32f_s32f_multiply_32f((float *) &out0[nblk * d_symlen + d_cplen],
-                                   (const float *) &d_ifft.get_outbuf()[0],
+                                   (const float *) &d_ifft->get_outbuf()[0],
                                    d_scaling,
                                    2 * d_fftsize);
         // add CP

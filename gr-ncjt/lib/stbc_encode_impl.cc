@@ -13,27 +13,26 @@ namespace gr::ncjt
 {
 
 stbc_encode::sptr
-stbc_encode::make(int fftsize, int ndatasyms, int npilotsyms, int ueidx, bool debug)
+stbc_encode::make(int rgmode, int ndatasyms, int npilotsyms, int ueidx, bool debug)
 {
-    return gnuradio::make_block_sptr<stbc_encode_impl>(fftsize, ndatasyms, npilotsyms, ueidx, debug);
+    return gnuradio::make_block_sptr<stbc_encode_impl>(rgmode, ndatasyms, npilotsyms, ueidx, debug);
 }
 
-stbc_encode_impl::stbc_encode_impl(int fftsize, int ndatasyms, int npilotsyms, int ueidx, bool debug)
+stbc_encode_impl::stbc_encode_impl(int rgmode, int ndatasyms, int npilotsyms, int ueidx, bool debug)
     : gr::tagged_stream_block(
     "stbc_encode",
     gr::io_signature::make(1, 1, sizeof(gr_complex)),
     gr::io_signature::make(2, 2, sizeof(gr_complex)),
     "packet_len"), d_debug(debug)
 {
-    d_fftsize = fftsize;
-    if (d_fftsize == 64)
-        d_scnum = 56;
-    else if (d_fftsize == 256)
-        d_scnum = 242;
-    else
-        throw std::runtime_error("Unsupported OFDM FFT size");
+    if (rgmode < 0 || rgmode >=8)
+        throw std::runtime_error("Unsupported RG mode");
 
-    d_npt = (d_fftsize == 64) ? 4 : 8;
+    d_fftsize = RG_FFT_SIZE[rgmode];
+    d_scnum = RG_NUM_VALID_SC[rgmode];
+    d_npt = RG_NUM_CPT[rgmode];
+    for (int k=0; k < MAX_NUM_CPT; k++)
+        d_cpt_idx[k] = RG_CPT_INDX[rgmode][k];
 
     if (ndatasyms <= 0 || ndatasyms % 2 != 0 || npilotsyms < 0 || npilotsyms > 2)
         throw std::runtime_error("Invalid number of data/pilot OFDM symbols");
@@ -134,15 +133,12 @@ stbc_encode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     tx1.chip(1, 1) = s0.conjugate();
 
     // Generate packing pilots
-    const unsigned pilot_idx4[8] = {7, 21, 34, 48};
-    const unsigned pilot_idx8[8] = {6, 32, 74, 100, 141, 167, 209, 235};
-    auto pilot_idx = (d_scnum == 56) ? pilot_idx4 : pilot_idx8;
     for (int n = 0; n < d_numsyms; n++)
     {
         int offset = d_scnum * n;
         for (int k=0; k < d_npt; k++) {
-            out0[offset + pilot_idx[k]] = d_cpt_pilot[d_ntx * d_npt * n + k];
-            out1[offset + pilot_idx[k]] = d_cpt_pilot[d_ntx * d_npt * n + d_npt + k];
+            out0[offset + d_cpt_idx[k]] = d_cpt_pilot[d_ntx * d_npt * n + k];
+            out1[offset + d_cpt_idx[k]] = d_cpt_pilot[d_ntx * d_npt * n + d_npt + k];
         }
     }
 

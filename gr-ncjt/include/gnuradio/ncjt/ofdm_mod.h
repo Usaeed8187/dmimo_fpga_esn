@@ -32,8 +32,7 @@ public:
      * creating new instances.
      */
     static sptr
-    make(int fftsize, int cplen, int ntx, float scaling,
-         bool debug = false);
+    make(int rgmode, int cplen, int ntx, float scaling);
 };
 
 } // namespace gr::ncjt

@@ -32,7 +32,7 @@ public:
  * creating new instances.
  */
     static sptr
-    make(int fftsize, int ntx, int nrx, int nue, int npreamblesyms,
+    make(int rgmode, int ntx, int nrx, int nue, int npreamblesyms,
          int ndatasyms, bool mucpt = false, bool removecs = false, int logfreq = 10, bool debug = false);
 };
 

@@ -6,52 +6,44 @@
 
 #include "ofdm_demod_impl.h"
 #include <gnuradio/io_signature.h>
+#include "rg_modes.h"
 
 namespace gr::ncjt
 {
 
 ofdm_demod::sptr
-ofdm_demod::make(int fftsize, int cplen, int symoffset)
+ofdm_demod::make(int rgmode, int cplen, int symoffset)
 {
-    return gnuradio::make_block_sptr<ofdm_demod_impl>(fftsize, cplen, symoffset);
+    return gnuradio::make_block_sptr<ofdm_demod_impl>(rgmode, cplen, symoffset);
 }
 
-ofdm_demod_impl::ofdm_demod_impl(int fftsize, int cplen, int symoffset)
+ofdm_demod_impl::ofdm_demod_impl(int rgmode, int cplen, int symoffset)
     : gr::tagged_stream_block(
     "ofdm_demod",
     gr::io_signature::make(1, 1, sizeof(gr_complex)),
     gr::io_signature::make(1, 1, sizeof(gr_complex)),
-    "frame_start"),
-      d_fft(fftsize, 1)
+    "frame_start")
 {
-    if (fftsize != 64 && fftsize != 256)
-        throw std::runtime_error("Unsupported OFDM FFT size");
-    d_fftsize = fftsize;
+    if (rgmode < 0 || rgmode >=8)
+        throw std::runtime_error("Unsupported RG mode");
 
-    if (cplen <= 0 || cplen > fftsize / 4 || (cplen != 16 && cplen != 32 && cplen != 64))
+    d_fftsize = RG_FFT_SIZE[rgmode];
+    d_scnum = RG_NUM_VALID_SC[rgmode];
+    d_scnum_half = d_scnum / 2;
+    d_left_guard_scnum = RG_NUM_GUARD_SC[rgmode];
+    d_center_null_scnum_pos_half = (rgmode < 2) ? 1 : 2;
+
+    if (cplen <= 0 || cplen > d_fftsize / 4 || (cplen != 16 && cplen != 32 && cplen != 64))
         throw std::runtime_error("Unsupported OFDM CP length");
     d_cplen = cplen;
     d_symlen = d_fftsize + d_cplen;
 
-    if (d_fftsize == 64)
-    {
-        d_scnum = 56;
-        d_scnum_half = 28;
-        d_left_guard_scnum = 4;
-        d_center_null_scnum_pos_half = 1;
-    }
-    else
-    {
-        d_scnum = 242;
-        d_scnum_half = 121;
-        d_left_guard_scnum = 6;
-        d_center_null_scnum_pos_half = 2;
-    }
-
     if (symoffset > 0 && symoffset < d_cplen)
         d_symbol_offset = symoffset;
     else
-        d_symbol_offset = 12; // default value
+        d_symbol_offset = d_cplen - 4; // default value
+
+    d_fft = new fft::fft_complex_fwd(d_fftsize, 1);
 
     set_tag_propagation_policy(block::TPP_DONT);
 }
@@ -87,15 +79,15 @@ ofdm_demod_impl::work(int noutput_items, gr_vector_int &ninput_items,
         unsigned int input_offset = i * d_symlen + d_symbol_offset;
 
         // remove CP
-        memcpy(d_fft.get_inbuf(), &in0[input_offset], sizeof(gr_complex) * d_fftsize);
+        memcpy(d_fft->get_inbuf(), &in0[input_offset], sizeof(gr_complex) * d_fftsize);
         // compute FFT
-        d_fft.execute();
+        d_fft->execute();
         // FFT shift
         memcpy(&out0[nblk * d_scnum],
-               &d_fft.get_outbuf()[d_fftsize / 2 + d_left_guard_scnum],
+               &d_fft->get_outbuf()[d_fftsize / 2 + d_left_guard_scnum],
                sizeof(gr_complex) * d_scnum_half);
         memcpy(&out0[nblk * d_scnum + d_scnum_half],
-               &d_fft.get_outbuf()[d_center_null_scnum_pos_half],
+               &d_fft->get_outbuf()[d_center_null_scnum_pos_half],
                sizeof(gr_complex) * d_scnum_half);
 
         nblk += 1;

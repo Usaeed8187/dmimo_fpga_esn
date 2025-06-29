@@ -14,30 +14,27 @@ namespace gr::ncjt
 {
 
 mc_stbc_decode::sptr
-mc_stbc_decode::make(int fftsize, int ndatasyms, int npilotsyms, int modtype, bool debug)
+mc_stbc_decode::make(int rgmode, int ndatasyms, int npilotsyms, int modtype, bool debug)
 {
-    return gnuradio::make_block_sptr<mc_stbc_decode_impl>(fftsize, ndatasyms, npilotsyms, modtype, debug);
+    return gnuradio::make_block_sptr<mc_stbc_decode_impl>(rgmode, ndatasyms, npilotsyms, modtype, debug);
 }
 
-mc_stbc_decode_impl::mc_stbc_decode_impl(int fftsize, int ndatasyms, int npilotsyms, int modtype, bool debug)
+mc_stbc_decode_impl::mc_stbc_decode_impl(int rgmode, int ndatasyms, int npilotsyms, int modtype, bool debug)
     : gr::tagged_stream_block(
     "stbc_decode",
     gr::io_signature::make(2, 2, sizeof(gr_complex)),
     gr::io_signature::make(2, 6, sizeof(gr_complex)),
     "packet_len"), d_debug(debug)
 {
-    if (fftsize == 64)
-    {
-        d_scnum = 56;
-        d_scdata = 52;
-    }
-    else if (fftsize == 256)
-    {
-        d_scnum = 242;
-        d_scdata = 234;
-    }
-    else
-        throw std::runtime_error("Unsupported OFDM FFT size");
+    if (rgmode < 0 || rgmode >=8)
+        throw std::runtime_error("Unsupported RG mode");
+
+    // d_fftsize = RG_FFT_SIZE[rgmode];
+    d_scnum = RG_NUM_VALID_SC[rgmode];
+    d_scdata = RG_NUM_DATA_SC[rgmode];
+    d_npt = RG_NUM_CPT[rgmode];
+    for (int k=0; k < MAX_NUM_CPT; k++)
+        d_cpt_idx[k] = RG_CPT_INDX[rgmode][k];
 
     if (ndatasyms <= 0 || ndatasyms % 2 != 0 || npilotsyms < 0 || npilotsyms > 2)
         throw std::runtime_error("Invalid number of data/pilot OFDM symbols");
@@ -221,8 +218,15 @@ mc_stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
         int sc_cnt = 0;
         for (int i = 0; i < d_scnum; i++)
         {
-            if ((d_scnum == 56) & (i == 7 || i == 21 || i == 34 || i == 48))
+            bool is_cpt_idx = false;
+            for (int k = 0; k < d_npt; k++)
+                if (i == d_cpt_idx[k]) {
+                    is_cpt_idx = true;
+                    break;
+                }
+            if (is_cpt_idx)
                 continue;
+
             // output has row-major layout, shape  (num_syms, num_sc)
             int offset = m * d_scdata + sc_cnt;
             out0[offset] = y(0, m, i);

@@ -8,6 +8,7 @@
 #define INCLUDED_NCJT_SIC_DETECT_IMPL_H
 
 #include <gnuradio/ncjt/sic_detect.h>
+#include "rg_modes.h"
 
 namespace gr::ncjt
 {
@@ -55,7 +56,7 @@ protected:
     check_cpe_tags(int ninput_syms);
 
 public:
-    sic_detect_impl(int fftsize, int nrx, int nss, int modtype, int ndatasymbols, bool debug);
+    sic_detect_impl(int rgmode, int nrx, int nss, int modtype, int ndatasymbols, bool debug);
     ~sic_detect_impl();
 
     int
