@@ -23,17 +23,16 @@ private:
     int d_scnum_half; // SC_NUM_HALF = d_scnum/2
     int d_left_guard_scnum; // number of left guard subcarriers
     int d_center_null_scnum_pos_half; // number of center null subcarriers on the positive half subcarriers
-
     float d_scaling; // IQ sample scaling
-    fft::fft_complex_rev d_ifft;
-    bool d_debug;
+
+    fft::fft_complex_rev *d_ifft;
 
 protected:
     int
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    ofdm_mod_impl(int fftsize, int cplen, int ntx, float scaling, bool debug);
+    ofdm_mod_impl(int rgmode, int cplen, int ntx, float scaling);
     ~ofdm_mod_impl();
 
     int

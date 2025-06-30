@@ -14,13 +14,13 @@ namespace gr::ncjt
 {
 
 sic_detect::sptr
-sic_detect::make(int fftsize, int nrx, int nss, int modtype, int ndatasymbols, bool debug)
+sic_detect::make(int rgmode, int nrx, int nss, int modtype, int ndatasymbols, bool debug)
 {
     return gnuradio::make_block_sptr<sic_detect_impl>(
-        fftsize, nrx, nss, modtype, ndatasymbols, debug);
+        rgmode, nrx, nss, modtype, ndatasymbols, debug);
 }
 
-sic_detect_impl::sic_detect_impl(int fftsize, int nrx, int nss, int modtype, int ndatasymbols, bool debug)
+sic_detect_impl::sic_detect_impl(int rgmode, int nrx, int nss, int modtype, int ndatasymbols, bool debug)
     : gr::tagged_stream_block(
     "sic_detect",
     gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
@@ -28,18 +28,11 @@ sic_detect_impl::sic_detect_impl(int fftsize, int nrx, int nss, int modtype, int
     "packet_len"),
       d_num_symbols(ndatasymbols), d_debug(debug)
 {
-    if (fftsize == 64)
-    {
-        d_scnum = 56;
-        d_scdata = 52;
-    }
-    else if (fftsize == 256)
-    {
-        d_scnum = 242;
-        d_scdata = 234;
-    }
-    else
-        throw std::runtime_error("Unsupported OFDM FFT size");
+    if (rgmode < 0 || rgmode >=8)
+        throw std::runtime_error("Unsupported RG mode");
+
+    d_scnum = RG_NUM_VALID_SC[rgmode];
+    d_scdata = RG_NUM_DATA_SC[rgmode];
 
     if (nrx < 1 || nrx > MAX_NSS)
         throw std::runtime_error("only support 1 to 8 Rx antennas");

@@ -16,7 +16,7 @@ if nargin < 3
 end
 
 if nargin < 4
-    if Nsd == 52
+    if (Nsd == 52 || Nsd == 132)
         symOffset = 3; % HT/VHT
     else
         symOffset = 4; % HE
@@ -33,7 +33,7 @@ if Nsd == 52
     elseif Nss == 4
 	    basePilot = [1 1 1 -1; 1 1 -1 1; 1 -1 1 1; -1 1 1 1];
     end
-elseif Nsd == 234
+elseif (Nsd == 234 || Nsd == 132)
     pilotMod = 8;
     basePilot = [1 1 1 -1 -1 1 1 1];
     % HE use single stream pilots

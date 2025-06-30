@@ -1,16 +1,18 @@
-function Q = spatialExpansionMatrix(Nfft, numSD, NumTx, numSTS)
+function Q = spatialExpansionMatrix(Nfft, numSC, NumTx, numSTS)
 
 % Default system params
 if nargin < 1
     NumTx = 4;
     numSTS = 2;
     Nfft = 64;
-    numSD = 56;
+    numSC = 56;
 end
 
 % Calculate cyclic shift matrix
-if numSD == 242
+if numSC == 242
     nn = [-122:-2 2:122].';
+elseif numSC == 140
+    nn = [-71:-2 2:71].';
 else
     nn = [-28:-1 1:28].';
 end
@@ -31,7 +33,7 @@ end
 D = sqrt(numSTS/NumTx)*D;  % normalize power
 
 % Calculate spatial expansion matrix for occupied subcarriers
-Q = repmat(Mcsd,1,numSTS,1).*repmat(permute(D,[3 2 1]),numSD,1,1);
+Q = repmat(Mcsd,1,numSTS,1).*repmat(permute(D,[3 2 1]),numSC,1,1);
 Q = permute(Q, [2,3,1]);
 
 end

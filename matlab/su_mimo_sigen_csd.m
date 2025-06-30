@@ -1,10 +1,7 @@
-function su_mimo_sigen_csd(mimotype, psdulen, modtype, cctype, datadir)
+function su_mimo_sigen_csd(cfg, mimotype, psdulen, modtype, datadir)
 % Generate Tx signal for 4x2 MIMO downlink
 % using CSD for 2-stream transmission,
 % with additional 4x4 HT-LTF for CSI feedback
-
-% System configuration
-cfg = sys_config(mimotype, psdulen, modtype, cctype);
 
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder

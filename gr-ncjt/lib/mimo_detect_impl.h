@@ -8,6 +8,7 @@
 #define INCLUDED_NCJT_MIMO_DETECT_IMPL_H
 
 #include <gnuradio/ncjt/mimo_detect.h>
+#include "rg_modes.h"
 
 namespace gr::ncjt
 {
@@ -23,6 +24,8 @@ private:
     int d_total_pkts; // total number of packets received
     int d_scnum; // number of valid subcarriers
     int d_scdata; // number data subcarriers
+    int d_npt; // number of pilots per OFDM symbol
+    int d_cpt_idx[MAX_NUM_CPT]; // cpt indices
 
     float d_cpe_phi1, d_cpe_phi2; // CPE estimation slope
     float d_cpe_offset1, d_cpe_offset2; // CPE estimation offset
@@ -57,7 +60,7 @@ protected:
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    mimo_detect_impl(int fftsize, int nrx, int nss, int ndatasymbols, int logfreq, bool debug);
+    mimo_detect_impl(int rgmode, int nrx, int nss, int ndatasymbols, int logfreq, bool debug);
     ~mimo_detect_impl();
 
     int

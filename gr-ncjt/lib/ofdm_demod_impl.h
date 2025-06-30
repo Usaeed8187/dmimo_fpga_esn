@@ -24,14 +24,15 @@ private:
     int d_left_guard_scnum; // number of left guard subcarriers
     int d_center_null_scnum_pos_half; // number of center null subcarriers on the positive half subcarriers
     int d_symbol_offset;     // OFDM symbol offset
-    fft::fft_complex_fwd d_fft;
+
+    fft::fft_complex_fwd *d_fft;
 
 protected:
     int
     calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-    ofdm_demod_impl(int fftsize, int cplen, int symoffset);
+    ofdm_demod_impl(int rgmode, int cplen, int symoffset);
     ~ofdm_demod_impl();
 
     int

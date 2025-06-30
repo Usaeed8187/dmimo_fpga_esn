@@ -8,6 +8,7 @@
 #define INCLUDED_NCJT_STBC_ENCODE_IMPL_H
 
 #include <gnuradio/ncjt/stbc_encode.h>
+#include "rg_modes.h"
 
 namespace gr::ncjt
 {
@@ -22,6 +23,7 @@ private:
     int d_numsyms;  // total number of OFDM symbols
     const int d_ntx = 2;  // number transmitter is always 2
     int d_npt;  // number of tracking pilots per OFDM symbol
+    int d_cpt_idx[MAX_NUM_CPT]; // cpt indices
     int d_ueidx; // UE index
 
     float *d_cpt_pilot; // pilots for CPT tracking (mode 4 or 8)
@@ -36,7 +38,7 @@ protected:
     generate_cpt_pilots();
 
 public:
-    stbc_encode_impl(int fftsize, int ndatasyms, int npilotsyms, int ueidx, bool debug);
+    stbc_encode_impl(int rgmode, int ndatasyms, int npilotsyms, int ueidx, bool debug);
     ~stbc_encode_impl();
 
     int

@@ -4,13 +4,14 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.sic_detect(${fftsize}, ${nrx}, ${nss}, ${modtype}, ${ndatasymbols}, ${debug})
+  make: ncjt.sic_detect(${rgmode}, ${nrx}, ${nss}, ${modtype}, ${ndatasymbols}, ${debug})
 
 parameters:
-  - id: fftsize
-    label: FFT Size
+  - id: rgmode
+    label: RG Mode
     dtype: int
-    default: '64'
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
     hide: part
   - id: nrx
     label: Num Rx Antennas

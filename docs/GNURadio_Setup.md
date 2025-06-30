@@ -29,17 +29,17 @@ pip install packaging pygobject pyqt5 pyqtgraph mako pyopengl \
 ```
 
 ## Install GNU Radio
-Download the release version (3.10.11) of GNU Radio and
+Download the release version (3.10.12) of GNU Radio and
 extract the source files.
 ```
 cd ~/Download/
-wget https://github.com/gnuradio/gnuradio/archive/refs/tags/v3.10.11.0.tar.gz
-tar xf v3.10.11.0.tar.gz
+wget https://github.com/gnuradio/gnuradio/archive/refs/tags/v3.10.12.0.tar.gz
+tar xf v3.10.12.0.tar.gz
 ```
 Activate the virtual environment before compiling and installing GNU Radio.
 ```
 source ~/gnuradio/bin/activate
-cd gnuradio-3.10.11.0
+cd gnuradio-3.10.12.0
 mkdir build
 cd build
 cmake .. -Wno-dev

@@ -13,14 +13,14 @@ namespace gr::ncjt
 {
 
 ltf_chanest::sptr
-ltf_chanest::make(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
+ltf_chanest::make(int rgmode, int ntx, int nrx, int npreamblesyms, int ndatasyms,
                   bool csifb, bool removecs, int logfreq, bool debug)
 {
     return gnuradio::make_block_sptr<ltf_chanest_impl>(
-        fftsize, ntx, nrx, npreamblesyms, ndatasyms, csifb, removecs, logfreq, debug);
+        rgmode, ntx, nrx, npreamblesyms, ndatasyms, csifb, removecs, logfreq, debug);
 }
 
-ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreamblesyms, int ndatasyms,
+ltf_chanest_impl::ltf_chanest_impl(int rgmode, int ntx, int nrx, int npreamblesyms, int ndatasyms,
                                    bool csifb, bool removecs, int logfreq, bool debug)
     : gr::tagged_stream_block("ltf_chanest",
                               gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
@@ -29,22 +29,21 @@ ltf_chanest_impl::ltf_chanest_impl(int fftsize, int ntx, int nrx, int npreambles
       d_preamble_symbols(npreamblesyms), d_data_symbols(ndatasyms), d_csi_en(csifb), d_remove_cyclic_shift(removecs),
       d_total_frames(0), d_reset_frames(0), d_logfreq(logfreq), d_debug(debug)
 {
-    if (fftsize != 64 && fftsize != 256)
-        throw std::runtime_error("Unsupported OFDM FFT size");
-    d_fftsize = fftsize;
+    if (rgmode < 0 || rgmode >=8)
+        throw std::runtime_error("Unsupported RG mode");
 
-    if (d_fftsize == 64)
-    {
-        d_scnum = 56;
-        d_npt = 4;
+    d_fftsize = RG_FFT_SIZE[rgmode];
+    d_scnum = RG_NUM_VALID_SC[rgmode];
+    d_npt = RG_NUM_CPT[rgmode];
+    for (int k = 0; k < MAX_NUM_CPT; k++)
+        d_cpt_idx[k] = RG_CPT_INDX[rgmode][k];
+
+    if (rgmode < 2)
         NORM_LTF_SEQ = NORM_LTF_SEQ_64;
-    }
+    else if (rgmode < 4)
+        NORM_LTF_SEQ = NORM_LTF_SEQ_256A;
     else
-    {
-        d_scnum = 242;
-        d_npt = 8;
-        NORM_LTF_SEQ = NORM_LTF_SEQ_256;
-    }
+        NORM_LTF_SEQ = NORM_LTF_SEQ_256B;
 
     if (ntx < 1 || ntx > MAX_NSS)
         throw std::runtime_error("only support 1 to 8 Tx antennas");
@@ -363,10 +362,6 @@ ltf_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
                                     gr_vector_void_star &output_items,
                                     int noutsymcnt)
 {
-    const unsigned pilot_idx4[8] = {7, 21, 34, 48};
-    const unsigned pilot_idx8[8] = {6, 32, 74, 100, 141, 167, 209, 235};
-    auto pilot_idx = (d_fftsize == 64) ? pilot_idx4 : pilot_idx8;
-
     float cpe_est_mean = 0.0;
     for (int symidx = 0; symidx < d_data_symbols; symidx++)
     {
@@ -375,7 +370,7 @@ ltf_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
 
         for (int i = 0; i < d_npt; i++)  // loop for all pilots
         {
-            unsigned pidx = pilot_idx[i];
+            unsigned pidx = d_cpt_idx[i];
             for (int k = 0; k < d_nrx; k++)  // loop for all receiver antennas
             {
                 int pilot_offset = d_nrx * d_npt * symidx + k * d_npt + i;
@@ -433,7 +428,7 @@ ltf_chanest_impl::cpe_estimate_comp(gr_vector_const_void_star &input_items,
                 int pilot_offset = d_nrx * d_npt * symidx + m * d_npt + i;
                 d_est_pilots[pilot_offset] *= pilot_comp;
                 power_est += std::norm(d_est_pilots[pilot_offset]);
-                noise_est += std::norm(d_est_pilots[pilot_offset] - in[input_offset + pilot_idx[i]]);
+                noise_est += std::norm(d_est_pilots[pilot_offset] - in[input_offset + d_cpt_idx[i]]);
             }
         }
         d_sigpwr_sum += power_est / (d_npt * d_nrx);
@@ -607,7 +602,7 @@ const gr_vector_float ltf_chanest_impl::NORM_LTF_SEQ_64 = {
     1, 1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, -1,
     -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1, 1, 1, 1, 1, -1, -1};
 
-const gr_vector_float ltf_chanest_impl::NORM_LTF_SEQ_256 = {
+const gr_vector_float ltf_chanest_impl::NORM_LTF_SEQ_256A = {
     -1, -1, 1, -1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, 1,
     -1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, 1,
     -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1,
@@ -616,5 +611,12 @@ const gr_vector_float ltf_chanest_impl::NORM_LTF_SEQ_256 = {
     -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, 1,
     1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1,
     1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, -1, 1, 1};
+
+const gr_vector_float ltf_chanest_impl::NORM_LTF_SEQ_256B = {
+    -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1,
+    -1, -1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, -1, 1, -1, -1, -1, -1, -1, 1, 1, 1, -1,
+    -1, -1, 1, -1, 1, 1, 1, -1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, 1, -1, 1, -1, 1, 1, 1, -1, 1, 1,
+    1, -1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, 1, -1, -1, 1,
+    -1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 1, 1, 1};
 
 } /* namespace gr::ncjt */

@@ -4,13 +4,14 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.ltf_chanest(${fftsize}, ${ntx}, ${nrx}, ${npreamblesyms}, ${ndatasyms}, ${csi_fb}, ${removecs}, ${logfreq}, ${debug})
+  make: ncjt.ltf_chanest(${rgmode}, ${ntx}, ${nrx}, ${npreamblesyms}, ${ndatasyms}, ${csi_fb}, ${removecs}, ${logfreq}, ${debug})
 
 parameters:
-- id: fftsize
-  label: FFT Size
+- id: rgmode
+  label: RG Mode
   dtype: int
-  default: '64'
+  default: 0
+  options: [0, 1, 2, 3, 4, 5, 6, 7]
   hide: part
 - id: ntx
   label: Num Tx Antennas
@@ -74,7 +75,6 @@ outputs:
   optional: true
 
 asserts:
-  - ${ fftsize == 64 or fftsize == 256 }
   - ${ ntx <= 8 and nrx <= 8}
   - ${ npreamblesyms > 0 }
   - ${ ndatasyms > 0 }

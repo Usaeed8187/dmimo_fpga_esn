@@ -3,6 +3,10 @@
 clear
 addpath("./wlan", "./gnuradio/");
 
+% System params
+mimotype = "4t4s";
+cctype = 'LDPC';
+
 % data output folder
 datadir = '../data/su_mimo/';
 
@@ -11,13 +15,16 @@ datadir = '../data/su_mimo/';
 
 modtype = "QPSK";
 psdulen = 1038;
-su_mimo_sigen("4t4s", psdulen, modtype, 'LDPC', datadir);
+cfg = sys_config(mimotype, psdulen, modtype, cctype);
+su_mimo_sigen(cfg, mimotype, psdulen, modtype, datadir);
 
 modtype = "16QAM";
 psdulen = 2078;
-su_mimo_sigen("4t4s", psdulen, modtype, 'LDPC', datadir);
+cfg = sys_config(mimotype, psdulen, modtype, cctype);
+su_mimo_sigen(cfg, mimotype, psdulen, modtype, datadir);
 
 modtype = "64QAM";
 psdulen = 3118;
-su_mimo_sigen("4t4s", psdulen, modtype, 'LDPC', datadir);
+cfg = sys_config(mimotype, psdulen, modtype, cctype);
+su_mimo_sigen(cfg, mimotype, psdulen, modtype, datadir);
 

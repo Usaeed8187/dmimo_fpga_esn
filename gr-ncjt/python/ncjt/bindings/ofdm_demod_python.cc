@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(ofdm_demod.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(dc1ca69dbfb88f000563be73624ac6e3) */
+/* BINDTOOL_HEADER_FILE_HASH(9d1462377b438bf28c38a46a51bd7d91) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,7 +36,7 @@ void bind_ofdm_demod(py::module &m) {
   py::class_<ofdm_demod, gr::tagged_stream_block, gr::block, gr::basic_block,
              std::shared_ptr<ofdm_demod>>(m, "ofdm_demod", D(ofdm_demod))
 
-      .def(py::init(&ofdm_demod::make), py::arg("fftsize"), py::arg("cplen"),
+      .def(py::init(&ofdm_demod::make), py::arg("rgmode"), py::arg("cplen"),
            py::arg("symoffset") = 12, D(ofdm_demod, make))
 
       ;

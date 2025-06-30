@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(stbc_encode.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(9ce4763c0b9eb72e966bfffe0f408b05) */
+/* BINDTOOL_HEADER_FILE_HASH(896b701e2b5951a0bc456e551d0d9aa1) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,7 +36,7 @@ void bind_stbc_encode(py::module &m) {
   py::class_<stbc_encode, gr::tagged_stream_block, gr::block, gr::basic_block,
              std::shared_ptr<stbc_encode>>(m, "stbc_encode", D(stbc_encode))
 
-      .def(py::init(&stbc_encode::make), py::arg("fftsize"),
+      .def(py::init(&stbc_encode::make), py::arg("rgmode"),
            py::arg("ndatasyms"), py::arg("npilotsyms"), py::arg("ueidx"),
            py::arg("debug"), D(stbc_encode, make))
 

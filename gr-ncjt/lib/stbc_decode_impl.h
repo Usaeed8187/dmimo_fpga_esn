@@ -9,6 +9,7 @@
 
 #include <gnuradio/ncjt/stbc_decode.h>
 #include "cmatrix.h"
+#include "rg_modes.h"
 
 namespace gr::ncjt
 {
@@ -23,6 +24,8 @@ private:
     int d_ndatasyms;  // total number of data OFDM symbols)
     int d_npilotsyms; // number of pilot OFDM symbols
     int d_numsyms; // total number of OFDM symbols
+    int d_npt;  // number of tracking pilots per OFDM symbol
+    int d_cpt_idx[MAX_NUM_CPT]; // cpt indices
 
     float d_cpe_phi; // CPE estimation slope
     float d_cpe_offset; // CPE estimation offset
@@ -42,7 +45,7 @@ protected:
     void send_llr_message(void);
 
 public:
-    stbc_decode_impl(int fftsize, int ndatasyms, int npilotsyms, bool debug);
+    stbc_decode_impl(int rgmode, int ndatasyms, int npilotsyms, bool debug);
     ~stbc_decode_impl();
 
     int

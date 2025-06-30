@@ -4,13 +4,14 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.mc_stbc_decode(${fftsize}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${debug})
+  make: ncjt.mc_stbc_decode(${rgmode}, ${ndatasyms}, ${npilotsyms}, ${modtype}, ${debug})
 
 parameters:
-  - id: fftsize
-    label: FFT Size
+  - id: rgmode
+    label: RG Mode
     dtype: int
-    default: '64'
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
     hide: part
   - id: ndatasyms
     label: Data Symbols

@@ -14,14 +14,14 @@ namespace gr::ncjt
 {
 
 ul_precoding::sptr
-ul_precoding::make(int fftsize, int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
+ul_precoding::make(int rgmode, int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
                    bool eigenmode, bool wideband, bool loadcsi, const char *csifile, bool debug)
 {
-    return gnuradio::make_block_sptr<ul_precoding_impl>(fftsize, nss, ntx, ntx_gnb, numltfsyms, numdatasyms,
+    return gnuradio::make_block_sptr<ul_precoding_impl>(rgmode, nss, ntx, ntx_gnb, numltfsyms, numdatasyms,
                                                         eigenmode, wideband, loadcsi, csifile, debug);
 }
 
-ul_precoding_impl::ul_precoding_impl(int fftsize, int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
+ul_precoding_impl::ul_precoding_impl(int rgmode, int nss, int ntx, int ntx_gnb, int numltfsyms, int numdatasyms,
                                      bool eigenmode, bool wideband, bool loadcsi, const char *csifile, bool debug)
     : gr::tagged_stream_block(
     "ul_precoding",
@@ -29,10 +29,11 @@ ul_precoding_impl::ul_precoding_impl(int fftsize, int nss, int ntx, int ntx_gnb,
     gr::io_signature::make(ntx, ntx, sizeof(gr_complex)), "packet_len"),
       d_wideband(wideband), d_loadcsi(loadcsi), d_debug(debug)
 {
-    if (fftsize != 64 && fftsize != 256)
-        throw std::runtime_error("Unsupported OFDM FFT size");
-    d_fftsize = fftsize;
-    d_scnum = (fftsize == 64) ? 56 : 242;
+    if (rgmode < 0 || rgmode >=8)
+        throw std::runtime_error("Unsupported RG mode");
+
+    d_fftsize = RG_FFT_SIZE[rgmode];
+    d_scnum = RG_NUM_VALID_SC[rgmode];
 
     if (nss < 1 || nss > 8)
         throw std::runtime_error("only support 1 to 8 streams");

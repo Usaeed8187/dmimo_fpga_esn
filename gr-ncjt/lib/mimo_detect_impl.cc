@@ -13,30 +13,26 @@ namespace gr::ncjt
 {
 
 mimo_detect::sptr
-mimo_detect::make(int fftsize, int nrx, int nss, int ndatasymbols, int logfreq, bool debug)
+mimo_detect::make(int rgmode, int nrx, int nss, int ndatasymbols, int logfreq, bool debug)
 {
-    return gnuradio::make_block_sptr<mimo_detect_impl>(fftsize, nrx, nss, ndatasymbols, logfreq, debug);
+    return gnuradio::make_block_sptr<mimo_detect_impl>(rgmode, nrx, nss, ndatasymbols, logfreq, debug);
 }
 
-mimo_detect_impl::mimo_detect_impl(int fftsize, int nrx, int nss, int ndatasymbols, int logfreq, bool debug)
+mimo_detect_impl::mimo_detect_impl(int rgmode, int nrx, int nss, int ndatasymbols, int logfreq, bool debug)
     : gr::tagged_stream_block("mimo_detect",
                               gr::io_signature::make(nrx, nrx, sizeof(gr_complex)),
                               gr::io_signature::make(nss, nss, sizeof(gr_complex)),
                               "packet_len"),
       d_num_symbols(ndatasymbols), d_logfreq(logfreq), d_debug(debug)
 {
-    if (fftsize == 64)
-    {
-        d_scnum = 56;
-        d_scdata = 52;
-    }
-    else if (fftsize == 256)
-    {
-        d_scnum = 242;
-        d_scdata = 234;
-    }
-    else
-        throw std::runtime_error("Unsupported OFDM FFT size");
+    if (rgmode < 0 || rgmode >= 8)
+        throw std::runtime_error("Unsupported RG mode");
+
+    d_scnum = RG_NUM_VALID_SC[rgmode];
+    d_scdata = RG_NUM_DATA_SC[rgmode];
+    d_npt = RG_NUM_CPT[rgmode];
+    for (int k = 0; k < MAX_NUM_CPT; k++)
+        d_cpt_idx[k] = RG_CPT_INDX[rgmode][k];
 
     if (nrx < 1 || nrx > MAX_NSS)
         throw std::runtime_error("only support 1 to 8 Rx antennas");
@@ -147,11 +143,14 @@ mimo_detect_impl::work(int noutput_items, gr_vector_int &ninput_items,
         int sc_cnt = 0;
         for (int i = 0; i < d_scnum; i++)
         {
-            if ((d_scnum == 56) && (i == 7 || i == 21 || i == 34 || i == 48))
-                continue;
-
-            if ((d_scnum == 242)
-                && (i == 6 || i == 32 || i == 74 || i == 100 || i == 141 || i == 167 || i == 209 || i == 235))
+            bool is_cpt_idx = false;
+            for (int k = 0; k < d_npt; k++)
+                if (i == d_cpt_idx[k])
+                {
+                    is_cpt_idx = true;
+                    break;
+                }
+            if (is_cpt_idx)
                 continue;
 
             unsigned raddr = (cur_sym + d_nss) * d_scnum + i;

@@ -32,7 +32,7 @@ public:
      * creating new instances.
      */
     static sptr
-    make(int fftsize, int ndatasyms, int npilotsyms, int ueidx, bool debug);
+    make(int rgmode, int ndatasyms, int npilotsyms, int ueidx, bool debug);
 };
 
 } // namespace gr::ncjt

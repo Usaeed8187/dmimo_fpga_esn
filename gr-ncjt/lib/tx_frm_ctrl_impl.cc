@@ -123,7 +123,7 @@ tx_frm_ctrl_impl::process_rxtime_message(const pmt::pmt_t &msg)
     // txtime offset adjustment (UHD time offset and P2/P3 offset)
     d_txtime_adjustment = double(frame_start_pos) / double(d_samplerate);
 
-    // save previous frame start offset and frame counter
+    // save current frame start offset and frame counter
     d_prev_frame_start = frame_start_offset - frame_start_pos;
     d_prev_frame_cnt = d_cur_frame_cnt;
 
@@ -162,6 +162,8 @@ tx_frm_ctrl_impl::work(int noutput_items, gr_vector_int &ninput_items,
         throw std::runtime_error("output buffer size too small");
     }
 
+    // adjust frame counter (transmission time) for the first received frame,
+    // which will have packet timing different from the current free running frame counter
     if (!d_frame_cnt_adjusted && d_prev_frame_start > 0)
     {
         uint64_t num_tx_frames = d_cur_frame_cnt - d_prev_frame_cnt;
