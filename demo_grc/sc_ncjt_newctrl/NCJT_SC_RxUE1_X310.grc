@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: NCJT Demo (Rx UE2)
+    title: NCJT Demo (Rx UE1)
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -189,7 +189,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '15'
+    value: '18'
     widget: counter_slider
   states:
     bus_sink: false
@@ -202,7 +202,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 15.36e6
+    value: 20e6
   states:
     bus_sink: false
     bus_source: false
@@ -234,7 +234,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '14.5'
+    value: '16'
     widget: counter_slider
   states:
     bus_sink: false
@@ -1042,7 +1042,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 184.32e6
+    clock_rate: 200e6
     clock_source0: ''
     clock_source1: external
     clock_source2: ''
@@ -1319,7 +1319,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 184.32e6
+    clock_rate: 200e6
     clock_source0: ''
     clock_source1: external
     clock_source2: ''

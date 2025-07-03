@@ -202,7 +202,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 15.36e6
+    value: 20e6
   states:
     bus_sink: false
     bus_source: false
@@ -857,7 +857,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 184.32e6
+    clock_rate: 200e6
     clock_source0: ''
     clock_source1: mimo
     clock_source2: ''
@@ -1134,7 +1134,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 184.32e6
+    clock_rate: 200e6
     clock_source0: ''
     clock_source1: external
     clock_source2: ''
