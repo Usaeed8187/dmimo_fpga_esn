@@ -13,6 +13,7 @@ include(GrPlatform) #define LIB_SUFFIX
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(srsran_ldpc)
 list(APPEND ncjt_sources
+    rg_modes.cc
     hll/hll.cc
     burst_tx_impl.cc
     ofdm_mod_impl.cc

@@ -138,7 +138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 12.0]
+    coordinate: [280, 12.0]
     rotation: 0
     state: true
 - name: qam_order
@@ -202,7 +202,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 20e6
+    value: 15.36e6
   states:
     bus_sink: false
     bus_source: false
@@ -210,6 +210,18 @@ blocks:
     coordinate: [192, 12.0]
     rotation: 0
     state: enabled
+- name: tx_frame_length
+  id: variable
+  parameters:
+    comment: ''
+    value: (num_data_syms + 2) * (fft_size+cp_len)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1008, 76.0]
+    rotation: 0
+    state: true
 - name: tx_gain
   id: variable_qtgui_range
   parameters:
@@ -315,7 +327,6 @@ blocks:
     comment: ''
     csi_fb: 'True'
     debug: 'False'
-    fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -324,6 +335,7 @@ blocks:
     nrx: nss
     ntx: ntx
     removecs: 'False'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -358,13 +370,13 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '32768'
     ndatasymbols: num_data_syms
     nrx: nss
     nss: nss
+    rgmode: '0'
     showmaxllr: 'False'
   states:
     bus_sink: false
@@ -380,7 +392,6 @@ blocks:
     alias: ''
     comment: ''
     debug: 'True'
-    fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -391,6 +402,7 @@ blocks:
     ntx: '2'
     nue: '1'
     removecs: 'True'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -405,9 +417,9 @@ blocks:
     alias: ''
     comment: ''
     cplen: cp_len
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
+    rgmode: '0'
     symoffset: '12'
   states:
     bus_sink: false
@@ -423,9 +435,9 @@ blocks:
     alias: ''
     comment: ''
     cplen: cp_len
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
+    rgmode: '0'
     symoffset: '12'
   states:
     bus_sink: false
@@ -441,9 +453,9 @@ blocks:
     alias: ''
     comment: ''
     cplen: cp_len
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
+    rgmode: '0'
     symoffset: '12'
   states:
     bus_sink: false
@@ -459,9 +471,9 @@ blocks:
     alias: ''
     comment: ''
     cplen: cp_len
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
+    rgmode: '0'
     symoffset: '12'
   states:
     bus_sink: false
@@ -477,11 +489,10 @@ blocks:
     alias: ''
     comment: ''
     cplen: cp_len
-    debug: 'False'
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: nss
+    rgmode: '0'
     scaling: '0.5'
   states:
     bus_sink: false
@@ -497,11 +508,10 @@ blocks:
     alias: ''
     comment: ''
     cplen: cp_len
-    debug: 'False'
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: nss
+    rgmode: '0'
     scaling: '0.5'
   states:
     bus_sink: false
@@ -569,15 +579,22 @@ blocks:
     comment: ''
     dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms)
     debug: 'False'
+    hwdelayp2: '0'
+    hwdelayp3: '0'
     lltf2: 'True'
     maxcorrlen: '4000'
     maxoutbuf: '0'
     minoutbuf: '0'
     nchans: '2'
+    p1rx: 'True'
     p2framelen: (fft_size+cp_len)*(2+num_data_syms)
     p2preamblelen: (fft_size+cp_len)*3
-    p2rxue: 'True'
+    p2rx: 'True'
     p2start: (0.25/pkts_per_sec)
+    p3framelen: '0'
+    p3preamblelen: '0'
+    p3rx: 'False'
+    p3start: '0'
     pktspersec: pkts_per_sec
     preamblelen: (fft_size+cp_len)*3
     rxpwrthrd: 1e-3
@@ -597,11 +614,11 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -619,10 +636,10 @@ blocks:
     debug: 'False'
     delay: '0'
     filename: '"../../data/mu_mimo/2t2s/" + qam_type + "/preamble_noltfx.bin"'
+    frmdatalen: tx_frame_length
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
-    ndatasyms: num_data_syms+2
     ntx: '2'
     padding: '1000'
     pktspersec: pkts_per_sec
@@ -651,6 +668,7 @@ blocks:
     ntx: '2'
     ntx_gnb: '4'
     numltfsyms: '2'
+    rgmode: '0'
     wideband: 'True'
   states:
     bus_sink: false
@@ -1036,7 +1054,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 200e6
+    clock_rate: 184.32e6
     clock_source0: external
     clock_source1: external
     clock_source2: ''
@@ -1313,7 +1331,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 200e6
+    clock_rate: 184.32e6
     clock_source0: external
     clock_source1: external
     clock_source2: ''
@@ -1689,4 +1707,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: 3.10.12.0

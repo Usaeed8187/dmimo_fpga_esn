@@ -49,12 +49,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '64'
+    value: rg_fft_size[rg_mode]
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 12.0]
+    coordinate: [936, 76.0]
     rotation: 0
     state: enabled
 - name: frame_data_len
@@ -165,11 +165,35 @@ blocks:
     coordinate: [504, 12.0]
     rotation: 0
     state: enabled
+- name: rg_fft_size
+  id: variable
+  parameters:
+    comment: ''
+    value: '{0: 64, 1: 64, 2: 256, 3: 256, 4: 256, 5: 256, 6: 256, 7: 256}'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [776, 76.0]
+    rotation: 0
+    state: enabled
+- name: rg_mode
+  id: variable
+  parameters:
+    comment: ''
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 12.0]
+    rotation: 0
+    state: enabled
 - name: samp_rate
   id: variable
   parameters:
     comment: ''
-    value: 20e6
+    value: 15.36e6
   states:
     bus_sink: false
     bus_source: false
@@ -214,7 +238,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr0=192.168.30.2"'
+    value: '"addr0=192.168.40.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -241,7 +265,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [0, 228.0]
+    coordinate: [24, 228.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -260,7 +284,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 252.0]
+    coordinate: [208, 252.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0
@@ -270,17 +294,16 @@ blocks:
     alias: ''
     comment: ''
     cplen: cp_len
-    debug: 'False'
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: '2'
+    rgmode: rg_mode
     scaling: '0.5'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 212.0]
+    coordinate: [744, 212.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0
@@ -290,17 +313,16 @@ blocks:
     alias: ''
     comment: ''
     cplen: cp_len
-    debug: 'False'
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: '2'
+    rgmode: rg_mode
     scaling: '0.5'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 292.0]
+    coordinate: [744, 292.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0
@@ -314,7 +336,6 @@ blocks:
     ctrlmodtype: '2'
     datamodtype: qam_order
     debug: 'False'
-    fftsize: '64'
     framelen: frame_data_len
     ltfdata: ''
     maxoutbuf: '0'
@@ -325,12 +346,13 @@ blocks:
     npilotsyms: '0'
     nstrms: '1'
     numue: '1'
+    rgmode: rg_mode
     ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 236.0]
+    coordinate: [400, 236.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
@@ -340,17 +362,17 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    fftsize: fft_size
     maxoutbuf: '0'
     minoutbuf: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
+    rgmode: rg_mode
     ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 248.0]
+    coordinate: [568, 248.0]
     rotation: 0
     state: enabled
 - name: ncjt_tx_frm_ctrl_0
@@ -363,10 +385,10 @@ blocks:
     debug: 'False'
     delay: '0'
     filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/ncjt_preamble.bin"'
+    frmdatalen: num_data_syms * (fft_size + cp_len)
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
-    ndatasyms: num_data_syms
     ntx: '2'
     padding: '1000'
     pktspersec: pkts_per_sec
@@ -479,7 +501,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 200e6
+    clock_rate: 184.32e6
     clock_source0: ''
     clock_source1: external
     clock_source2: ''
@@ -652,7 +674,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1128, 156.0]
+    coordinate: [1152, 156.0]
     rotation: 0
     state: true
 
@@ -669,4 +691,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: 3.10.12.0

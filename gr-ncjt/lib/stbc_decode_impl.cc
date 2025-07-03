@@ -251,6 +251,27 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     // send LLR magnitude per subcarrier
     send_llr_message();
 
+	if (d_scnum == 56)
+	{
+		std::vector<float> SNRs(d_scnum - 4, 0.0f);
+		int j = 0;
+		for (int i = 0; i < d_scnum; i++)
+		{
+			if (i == 7 || i == 21 || i == 34 || i == 48)
+				continue;
+			SNRs[j] = h_eq_avg[i] / (noise_var * 2.0f);
+			j++;
+		}
+		add_item_tag(0, nitems_written(0), pmt::string_to_symbol("snr_sc_linear"),
+					 pmt::make_blob(SNRs.data(), SNRs.size() * sizeof(float)),
+					 pmt::string_to_symbol(name()));
+	}
+	else
+	{
+		// @TODO
+		throw std::runtime_error("Unsupported number of subcarriers");
+	}
+
     noutput_items = (d_scdata * d_numsyms);
     add_item_tag(0,
                  nitems_written(0),
