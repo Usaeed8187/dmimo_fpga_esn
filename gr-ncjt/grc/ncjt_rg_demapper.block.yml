@@ -12,7 +12,7 @@ parameters:
     dtype: int
     default: 2
     options: [2, 3]
-    option_labels: ['Phase 2 (normal CTRL)', 'Phase 3 (extended CTRL)']
+    option_labels: ['Phase 2', 'Phase 3']
   - id: nstrm
     label: Number of Streams
     dtype: int

@@ -34,15 +34,15 @@ parameters:
 inputs:
 
 outputs:
-- label: sel_mod_type
+- label: s_modtypes
   domain: message
   optional: true
   hide: ${ not mcs }
-- label: sel_code_rate
+- label: s_code_rate
   domain: message
   optional: true
   hide: ${ not mcs }
-- label: sel_snr
+- label: s_snr
   domain: message
   optional: true
   hide: ${ not noair }

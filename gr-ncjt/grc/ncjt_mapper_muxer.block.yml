@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.mapper_muxer(${nstrm}, ${modtype}, ${n_ofdm_syms}, ${sd_num}, ${use_polar}, ${code_rate}, ${deterministic_input}, ${debug})
+  make: ncjt.mapper_muxer(${nstrm}, ${phase1_modtype}, ${phase2_modtype}, ${phase3_modtype}, ${n_ofdm_syms}, ${sd_num}, ${use_polar}, ${code_rate}, ${deterministic_input}, ${debug})
 
 parameters:
   - id: nstrm
@@ -12,7 +12,19 @@ parameters:
     dtype: int
     default: 1
     options: [1, 2, 3, 4]
-  - id: modtype
+  - id: phase1_modtype
+    label: Bits per Symbol
+    dtype: int
+    default: 2
+    options: [2, 4, 6, 8]
+    option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
+  - id: phase2_modtype
+    label: Bits per Symbol
+    dtype: int
+    default: 2
+    options: [2, 4, 6, 8]
+    option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
+  - id: phase3_modtype
     label: Bits per Symbol
     dtype: int
     default: 2
@@ -59,10 +71,10 @@ inputs:
     vlen: 1
     optional: true
     hide: ${ deterministic_input }
-  - label: sel_mod_type
+  - label: s_modtypes
     domain: message
     optional: true
-  - label: sel_code_rate
+  - label: s_code_rate
     domain: message
     optional: true
 

@@ -46,7 +46,7 @@ inputs:
   - domain: stream
     dtype: complex
     vlen: 1
-  - label: sel_snr
+  - label: s_snr
     domain: message
     optional: true
 

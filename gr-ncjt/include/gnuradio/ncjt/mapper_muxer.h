@@ -45,7 +45,9 @@ namespace gr
        * \brief Creates a new instance of ncjt::mapper_muxer.
        */
       static sptr make(int nstrm,
-                       int modtype,
+                       int phase1_modtype,
+                       int phase2_modtype,
+                       int phase3_modtype,
                        int n_ofdm_syms,
                        int sd_num,
                        bool use_polar,

@@ -13,62 +13,67 @@
 #include "common.h"
 #include "ctrl.h"
 
-namespace gr
-{
-    namespace ncjt
-    {
+#include <set>
 
-        class mapper_muxer_impl : public mapper_muxer
-        {
-        private:
-            // Block parameters
-            int d_nstrm;        ///< Number of parallel streams
-            int d_modtype;      ///< Bits per symbol (2,4,6,8)
-            int d_n_ofdm_syms;  ///< Number of OFDM symbols per frame
-            int d_sd_num;       ///< Number of data subcarriers per OFDM symbol
-            bool d_use_polar;   ///< Polar encoding flag (for control)
-            int d_code_rate;    ///< Code rate index for data (0=no coding, 1..7 per table)
-            bool d_deterministic_input;
-            bool d_debug;       ///< Debug flag
+namespace gr {
+  namespace ncjt {
+    class mapper_muxer_impl : public mapper_muxer {
+    private:
+      // Block parameters
+      int d_nstrm; ///< Number of parallel streams
+      int d_phase1_modtype; ///< Bits per symbol (2,4,6,8)
+      int d_phase2_modtype;
+      int d_phase3_modtype;
+      int d_n_ofdm_syms; ///< Number of OFDM symbols per frame
+      int d_sd_num; ///< Number of data subcarriers per OFDM symbol
+      bool d_use_polar; ///< Polar encoding flag (for control)
+      int d_code_rate; ///< Code rate index for data (0=no coding, 1..7 per table)
+      bool d_deterministic_input;
+      bool d_debug; ///< Debug flag
 
-            int cc; // Debug counter
+      std::set<int> d_valid_mod_types = {2, 4, 6, 8};
 
-            uint16_t d_seqno; // increments by 1 each packet
+      int cc; // Debug counter
 
-            // QAM constellation references
-            const std::vector<gr_complex> *d_constellation_qpsk;
-            const std::vector<gr_complex> *d_constellation_16qam;
-            const std::vector<gr_complex> *d_constellation_64qam;
-            const std::vector<gr_complex> *d_constellation_256qam;
+      uint16_t d_seqno; // increments by 1 each packet
 
-            // LDPC encoder + rate matcher
-            std::unique_ptr<srsran::ldpc_encoder> d_ldpc_encoder;
-            std::unique_ptr<srsran::ldpc_rate_matcher> d_ldpc_matcher;
+      // QAM constellation references
+      const std::vector<gr_complex> *d_constellation_qpsk;
+      const std::vector<gr_complex> *d_constellation_16qam;
+      const std::vector<gr_complex> *d_constellation_64qam;
+      const std::vector<gr_complex> *d_constellation_256qam;
 
-            std::vector<uint8_t> d_bit_buffer;
+      // LDPC encoder + rate matcher
+      std::unique_ptr<srsran::ldpc_encoder> d_ldpc_encoder;
+      std::unique_ptr<srsran::ldpc_rate_matcher> d_ldpc_matcher;
 
-            std::vector<uint8_t> ldpc_encode(const std::vector<uint8_t> &message, int codeword_length);
+      std::vector<uint8_t> d_bit_buffer;
 
-        public:
-            mapper_muxer_impl(int nstrm,
-                              int modtype,
-                              int n_ofdm_syms,
-                              int sd_num,
-                              bool use_polar,
-                              int code_rate,
-                              bool deterministic_input,
-                              bool debug);
-            ~mapper_muxer_impl() override {}
+      std::vector<uint8_t> ldpc_encode(const std::vector<uint8_t> &message, int codeword_length);
 
-            void forecast(int noutput_items, gr_vector_int &ninput_items_required) override;
+    public:
+      mapper_muxer_impl(int nstrm,
+                        int phase1_modtype,
+                        int phase2_modtype,
+                        int phase3_modtype,
+                        int n_ofdm_syms,
+                        int sd_num,
+                        bool use_polar,
+                        int code_rate,
+                        bool deterministic_input,
+                        bool debug);
 
-            int general_work(int noutput_items,
-                             gr_vector_int &ninput_items,
-                             gr_vector_const_void_star &input_items,
-                             gr_vector_void_star &output_items) override;
-        };
+      ~mapper_muxer_impl() override {
+      }
 
-    } // namespace ncjt
+      void forecast(int noutput_items, gr_vector_int &ninput_items_required) override;
+
+      int general_work(int noutput_items,
+                       gr_vector_int &ninput_items,
+                       gr_vector_const_void_star &input_items,
+                       gr_vector_void_star &output_items) override;
+    };
+  } // namespace ncjt
 } // namespace gr
 
 #endif /* INCLUDED_NCJT_MAPPER_MUXER_IMPL_H */
