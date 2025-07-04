@@ -16,6 +16,4 @@
 
 static const char *__doc_gr_ncjt_mapper_muxer = R"doc()doc";
 
-static const char *__doc_gr_ncjt_mapper_muxer_mapper_muxer_0 = R"doc()doc";
-
 static const char *__doc_gr_ncjt_mapper_muxer_make = R"doc()doc";
