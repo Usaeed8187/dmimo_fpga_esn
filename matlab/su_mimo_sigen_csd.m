@@ -63,6 +63,10 @@ for k=1:cfg.Nt
 end
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/preamble.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*preamble(:, 1:2), ...
+    sprintf('%s/%s/%s/preamble_12.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*preamble(:, 3:4), ...
+    sprintf('%s/%s/%s/preamble_34.bin',datadir,mimotype,modtype));
 
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, encdata(:), "char");

@@ -1,10 +1,11 @@
-function ncjt_mc_sigen(cfg, mimotype, psdulen, modtype, datadir)
+function ncjt_mc_sigen_he(cfg, mimotype, psdulen, modtype, datadir)
 
 % Create data output folder
 [~, ~, ~] = mkdir(fullfile(datadir, mimotype, modtype)); % create output folder
 
 % Load 802.11 beacon signals
-b = load('beacon2x2.mat');
+b = load('beacon2x2he.mat');
+bx = load('heltfx.mat');
 
 % Set random substream
 stream = RandStream('mt19937ar','Seed',2201203);
@@ -20,18 +21,19 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 txdata1 = txdata;
 txdata2 = txdata;
 
-% Time-domain preamble signals (HT-SIG, HT-STF, HT-LTF)
-htltfx1 = cat(1, b.htltf, zeros(size(b.htltf)));
-htltfx2 = cat(1, zeros(size(b.htltf)), b.htltf);
-preamble1 = [b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; htltfx1];
-preamble2 = [b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; htltfx2];
-% preamble2 = [zeros(80*8, 2); htltfx2];
+% scaling for Nsc=140
+ltf_scaling = sqrt(242/cfg.Nsc);
+bx.heltfx = ltf_scaling * bx.heltfx;
+
+% Time-domain preamble signals (HE-SIG, HE-STF, HE-LTF)
+heltfx1 = cat(1, bx.heltfx, zeros(size(bx.heltfx)));
+heltfx2 = cat(1, zeros(size(bx.heltfx)), bx.heltfx);
+preamble1 = [b.lstf; b.lltf; b.lsig; b.hesiga; b.hestf; b.hestf; heltfx1];
+preamble2 = [b.lstf; b.lltf; b.lsig; b.hesiga; b.hestf; b.hestf; heltfx2];
 
 % Prepare transmitter signal for USRP
-txFrame1 = reshape([preamble1; txdata1], (cfg.Nfft+cfg.Ncp), [], 2);
-txFrame1 = reshape(txFrame1, [], 2);
-txFrame2 = reshape([preamble2; txdata2], (cfg.Nfft+cfg.Ncp), [], 2);
-txFrame2 = reshape(txFrame2, [], 2);
+txFrame1 = reshape([preamble1; txdata1], [], cfg.Nt);
+txFrame2 = reshape([preamble2; txdata2], [], cfg.Nt);
 
 % Convert Tx signals to range (-1,1)
 % scaling = 1.0/max(abs([real(txFrame(:)); imag(txFrame(:))]));
@@ -75,8 +77,8 @@ write_complex_binary(scaling*[preamble1, preamble2], ...
 
 % Save preamble with v2 lltf
 lx = load('lltfx2.mat','lltfx');
-v2preamble1 = [b.lstf; lx.lltfx; b.lsig; b.htsig; b.htstf; htltfx1];
-v2preamble2 = [b.lstf; lx.lltfx; b.lsig; b.htsig; b.htstf; htltfx2];
+v2preamble1 = [b.lstf; lx.lltfx; b.lsig; b.hesiga; b.hestf; b.hestf; heltfx1];
+v2preamble2 = [b.lstf; lx.lltfx; b.lsig; b.hesiga; b.hestf; b.hestf; heltfx2];
 write_complex_binary(scaling*v2preamble1, ...
     sprintf('%s/%s/%s/ncjt_v2preamble_ue1.bin',datadir,mimotype,modtype));
 write_complex_binary(scaling*v2preamble2, ...
@@ -85,10 +87,10 @@ write_complex_binary(scaling*[v2preamble1, v2preamble2], ...
     sprintf('%s/%s/%s/ncjt_v2preamble.bin',datadir,mimotype,modtype));
 
 % Save LTF for debugging
-write_complex_binary(scaling*htltfx1, ...
-    sprintf('%s/%s/%s/htltfx_ue1.bin',datadir,mimotype,modtype));
-write_complex_binary(scaling*htltfx2, ...
-    sprintf('%s/%s/%s/htltfx_ue2.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*heltfx1, ...
+    sprintf('%s/%s/%s/heltfx_ue1.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*heltfx2, ...
+    sprintf('%s/%s/%s/heltfx_ue2.bin',datadir,mimotype,modtype));
 
 % Save binary data
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');
