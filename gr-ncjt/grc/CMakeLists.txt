@@ -28,6 +28,7 @@ install(FILES
     ncjt_rx_sync.block.yml
     ncjt_gnb_sync.block.yml
     ncjt_tx_frm_ctrl.block.yml
+    ncjt_dual_tx_ctrl.block.yml
     ncjt_mapper_muxer.block.yml
     ncjt_noair.block.yml
     ncjt_demapper.block.yml

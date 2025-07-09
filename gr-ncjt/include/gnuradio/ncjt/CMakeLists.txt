@@ -31,6 +31,7 @@ install(FILES api.h
     rx_sync.h
     gnb_sync.h
     tx_frm_ctrl.h
+    dual_tx_ctrl.h
     mapper_muxer.h
     noair.h
     demapper.h

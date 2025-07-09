@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(tx_frm_ctrl.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(24e0d4e36ded7166d1d7e2874873d344) */
+/* BINDTOOL_HEADER_FILE(dual_tx_ctrl.h) */
+/* BINDTOOL_HEADER_FILE_HASH(9234e70987847f3650a437dd184f6ef9) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,22 +25,22 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/tx_frm_ctrl.h>
+#include <gnuradio/ncjt/dual_tx_ctrl.h>
 // pydoc.h is automatically generated in the build directory
-#include <tx_frm_ctrl_pydoc.h>
+#include <dual_tx_ctrl_pydoc.h>
 
-void bind_tx_frm_ctrl(py::module &m) {
+void bind_dual_tx_ctrl(py::module &m) {
 
-  using tx_frm_ctrl = ::gr::ncjt::tx_frm_ctrl;
+  using dual_tx_ctrl = ::gr::ncjt::dual_tx_ctrl;
 
-  py::class_<tx_frm_ctrl, gr::block, gr::basic_block,
-             std::shared_ptr<tx_frm_ctrl>>(m, "tx_frm_ctrl", D(tx_frm_ctrl))
+  py::class_<dual_tx_ctrl, gr::block, gr::basic_block,
+             std::shared_ptr<dual_tx_ctrl>>(m, "dual_tx_ctrl", D(dual_tx_ctrl))
 
-      .def(py::init(&tx_frm_ctrl::make), py::arg("ntx"),
-           py::arg("framedatalen"), py::arg("filename"), py::arg("samplerate"),
-           py::arg("pktspersec"), py::arg("starttime"), py::arg("padding"),
-           py::arg("autostart"), py::arg("delay"), py::arg("debug"),
-           D(tx_frm_ctrl, make))
+      .def(py::init(&dual_tx_ctrl::make), py::arg("ntx"), py::arg("samplerate"),
+           py::arg("pktspersec"), py::arg("framelen1"), py::arg("beaconfile1"),
+           py::arg("starttime1"), py::arg("framelen2"), py::arg("beaconfile2"),
+           py::arg("starttime2"), py::arg("padding"), py::arg("autostart"),
+           py::arg("debug"), D(dual_tx_ctrl, make))
 
       ;
 }

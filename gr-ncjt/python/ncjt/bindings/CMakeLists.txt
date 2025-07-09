@@ -45,6 +45,7 @@ list(APPEND ncjt_python_files
     rx_sync_python.cc
     gnb_sync_python.cc
     tx_frm_ctrl_python.cc
+    dual_tx_ctrl_python.cc
     mapper_muxer_python.cc
     noair_python.cc
     demapper_python.cc

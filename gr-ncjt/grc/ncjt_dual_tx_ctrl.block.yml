@@ -1,0 +1,90 @@
+id: ncjt_dual_tx_ctrl
+label: Dual Tx Ctrl
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.dual_tx_ctrl(${ntx}, ${samplerate}, ${pktspersec}, ${frmdatalen1}, ${beaconfile1}, ${starttime1}, ${frmdatalen2}, ${beaconfile2}, ${starttime2}, ${padding}, ${autostart}, ${debug})
+
+parameters:
+  - id: ntx
+    label: Number of Tx Antennas
+    dtype: int
+    default: '1'
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: samplerate
+    label: Sampling Freq.
+    dtype: real
+    default: '10e6'
+  - id: pktspersec
+    label: Packet Per Second
+    dtype: int
+    default: '8'
+  - id: frmdatalen1
+    label: Frame Data Length 1
+    dtype: int
+  - id: beaconfile1
+    label: Beacon Data 1
+    dtype: file_open
+    hide: part
+  - id: starttime1
+    label: Start Time 1
+    dtype: real
+    default: '2.0'
+    hide: part
+  - id: frmdatalen2
+    label: Frame Data Length 2
+    dtype: int
+  - id: beaconfile2
+    label: Beacon Data 2
+    dtype: file_open
+    hide: part
+  - id: starttime2
+    label: Start Time 2
+    dtype: real
+    default: '2.0'
+    hide: part
+  - id: padding
+    label: Padding
+    dtype: int
+    default: '500'
+    hide: part
+  - id: autostart
+    label: Auto Start
+    dtype: bool
+    default: 'True'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: txen
+    domain: message
+    optional: true
+  - label: rxtime
+    domain: message
+    optional: true
+  - label: txa
+    domain: stream
+    dtype: complex
+    multiplicity: ${ntx}
+  - label: txb
+    domain: stream
+    dtype: complex
+    multiplicity: ${ntx}
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    multiplicity: ${ntx}
+
+file_format: 1

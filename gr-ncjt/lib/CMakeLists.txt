@@ -40,6 +40,7 @@ list(APPEND ncjt_sources
     rx_sync_impl.cc
     gnb_sync_impl.cc
     tx_frm_ctrl_impl.cc
+    dual_tx_ctrl_impl.cc
     mapper_muxer_impl.cc
     ctrl.cc
     noair_impl.cc

@@ -7,8 +7,8 @@
 #ifndef INCLUDED_NCJT_TX_FRM_CTRL_H
 #define INCLUDED_NCJT_TX_FRM_CTRL_H
 
+#include <gnuradio/block.h>
 #include <gnuradio/ncjt/api.h>
-#include <gnuradio/tagged_stream_block.h>
 
 namespace gr::ncjt
 {
@@ -18,7 +18,7 @@ namespace gr::ncjt
  * \ingroup ncjt
  *
  */
-class NCJT_API tx_frm_ctrl : virtual public gr::tagged_stream_block
+class NCJT_API tx_frm_ctrl : virtual public gr::block
 {
 public:
     typedef std::shared_ptr<tx_frm_ctrl> sptr;
@@ -32,7 +32,7 @@ public:
      * creating new instances.
      */
     static sptr
-    make(int ntx, int frame_data_len, const char *filename, double samplerate, int pktspersec,
+    make(int ntx, int framedatalen, const char *filename, double samplerate, int pktspersec,
          double starttime, int padding, bool autostart, int delay, bool debug);
 };
 
