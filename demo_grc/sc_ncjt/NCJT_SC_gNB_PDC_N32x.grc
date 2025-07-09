@@ -437,7 +437,7 @@ blocks:
     comment: ''
     debug: 'False'
     llrsum: 'False'
-    majority: 'False'
+    majority: 'True'
     maxoutbuf: '0'
     minoutbuf: '65536'
     modtype1: qam_order
@@ -778,7 +778,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1576, 696.0]
+    coordinate: [1552, 696.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_demapper_0

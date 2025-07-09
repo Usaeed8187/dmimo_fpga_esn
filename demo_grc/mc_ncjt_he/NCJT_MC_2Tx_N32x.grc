@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: ncjt_mc_2tx_x310
+    id: ncjt_mc_2tx_n32x
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: NCJT MC 2Tx X310
+    title: NCJT MC 2Tx N32x
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '16'
+    value: '64'
   states:
     bus_sink: false
     bus_source: false
@@ -54,7 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 84.0]
+    coordinate: [952, 84.0]
     rotation: 0
     state: enabled
 - name: frame_data_len
@@ -78,7 +78,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 140.0]
+    coordinate: [528, 84.0]
     rotation: 0
     state: enabled
 - name: freq_comp_2
@@ -90,7 +90,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [832, 140.0]
+    coordinate: [624, 84.0]
     rotation: 0
     state: enabled
 - name: modulations
@@ -109,12 +109,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '40'
+    value: '14'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 84.0]
+    coordinate: [192, 84.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -138,7 +138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 84.0]
+    coordinate: [304, 84.0]
     rotation: 0
     state: enabled
 - name: qam_type
@@ -174,7 +174,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [728, 76.0]
+    coordinate: [728, 84.0]
     rotation: 0
     state: enabled
 - name: rg_fft_size
@@ -186,14 +186,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 84.0]
+    coordinate: [1032, 84.0]
     rotation: 0
     state: enabled
 - name: rg_mode
   id: variable
   parameters:
     comment: ''
-    value: '0'
+    value: '2'
   states:
     bus_sink: false
     bus_source: false
@@ -217,12 +217,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '52'
+    value: '234'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 84.0]
+    coordinate: [536, 12.0]
     rotation: 0
     state: enabled
 - name: tx_frame_len
@@ -248,8 +248,8 @@ blocks:
     rangeType: float
     start: '0'
     step: '0.5'
-    stop: '31.5'
-    value: '20'
+    stop: '60'
+    value: '45'
     widget: counter_slider
   states:
     bus_sink: false
@@ -262,7 +262,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr0=192.168.30.2, addr1=192.168.40.2"'
+    value: '"addr0=192.168.40.2, addr1=192.168.60.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -277,7 +277,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../../data/mc_ncjt/2t2s/" + qam_type + "/strm_data_s1.bin"'
+    file: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data_s1.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -299,7 +299,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../../data/mc_ncjt/2t2s/" + qam_type + "/strm_data_s2.bin"'
+    file: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data_s2.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -537,7 +537,7 @@ blocks:
     comment: ''
     debug: 'False'
     delay: '0'
-    filename: '"../../data/mc_ncjt/2t2s/" + qam_type + "/ncjt_preamble_ue1.bin"'
+    filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/ncjt_v2preamble_ue1.bin"'
     frmdatalen: tx_frame_len
     fs: samp_rate
     maxoutbuf: '0'
@@ -562,7 +562,7 @@ blocks:
     comment: ''
     debug: 'False'
     delay: '0'
-    filename: '"../../data/mc_ncjt/2t2s/" + qam_type + "/ncjt_preamble_ue2.bin"'
+    filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/ncjt_v2preamble_ue2.bin"'
     frmdatalen: tx_frame_len
     fs: samp_rate
     maxoutbuf: '0'
@@ -575,7 +575,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [984, 368.0]
+    coordinate: [984, 360.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -680,7 +680,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: ''
+    clock_source0: external
     clock_source1: external
     clock_source2: ''
     clock_source3: ''
@@ -839,7 +839,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: ''
+    time_source0: external
     time_source1: external
     time_source2: ''
     time_source3: ''
@@ -852,7 +852,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1208, 172.0]
+    coordinate: [1208, 164.0]
     rotation: 0
     state: true
 

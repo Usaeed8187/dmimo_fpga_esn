@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: ncjt_mc_2tx_x310
+    id: ncjt_mc_2tx_n32x
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: NCJT MC 2Tx X310
+    title: NCJT MC 2Tx N32x
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -248,8 +248,8 @@ blocks:
     rangeType: float
     start: '0'
     step: '0.5'
-    stop: '31.5'
-    value: '20'
+    stop: '60'
+    value: '45'
     widget: counter_slider
   states:
     bus_sink: false
@@ -262,7 +262,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr0=192.168.30.2, addr1=192.168.40.2"'
+    value: '"addr0=192.168.40.2, addr1=192.168.60.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -680,7 +680,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 200e6
-    clock_source0: ''
+    clock_source0: external
     clock_source1: external
     clock_source2: ''
     clock_source3: ''
@@ -839,7 +839,7 @@ blocks:
     stream_args: ''
     stream_chans: '[]'
     sync: sync
-    time_source0: ''
+    time_source0: external
     time_source1: external
     time_source2: ''
     time_source3: ''
@@ -852,7 +852,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1208, 172.0]
+    coordinate: [1208, 164.0]
     rotation: 0
     state: true
 

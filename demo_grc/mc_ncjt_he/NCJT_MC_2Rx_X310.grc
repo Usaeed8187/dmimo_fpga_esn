@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '16'
+    value: '64'
   states:
     bus_sink: false
     bus_source: false
@@ -54,7 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 76.0]
+    coordinate: [888, 76.0]
     rotation: 0
     state: enabled
 - name: frame_data_len
@@ -66,7 +66,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1200, 12.0]
+    coordinate: [1152, 12.0]
     rotation: 0
     state: enabled
 - name: modulations
@@ -78,14 +78,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 12.0]
+    coordinate: [984, 12.0]
     rotation: 0
     state: enabled
 - name: num_data_syms
   id: variable
   parameters:
     comment: ''
-    value: '40'
+    value: '14'
   states:
     bus_sink: false
     bus_source: false
@@ -126,7 +126,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 84.0]
+    coordinate: [416, 84.0]
     rotation: 0
     state: enabled
 - name: qam_type
@@ -138,7 +138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 12.0]
+    coordinate: [888, 12.0]
     rotation: 0
     state: enabled
 - name: rf_freq
@@ -150,7 +150,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 12.0]
+    coordinate: [664, 12.0]
     rotation: 0
     state: enabled
 - name: rg_fft_size
@@ -162,14 +162,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1016, 76.0]
+    coordinate: [968, 76.0]
     rotation: 0
     state: enabled
 - name: rg_mode
   id: variable
   parameters:
     comment: ''
-    value: '0'
+    value: '2'
   states:
     bus_sink: false
     bus_source: false
@@ -195,7 +195,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 12.0]
+    coordinate: [760, 12.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -214,7 +214,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '52'
+    value: '234'
   states:
     bus_sink: false
     bus_source: false
@@ -222,24 +222,6 @@ blocks:
     coordinate: [528, 12.0]
     rotation: 0
     state: enabled
-- name: blocks_file_sink_0
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: '"/tmp/data_frame_s1.bin"'
-    type: byte
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1296, 204.0]
-    rotation: 0
-    state: disabled
 - name: blocks_file_sink_0_0
   id: blocks_file_sink
   parameters:
@@ -257,7 +239,7 @@ blocks:
     bus_structure: null
     coordinate: [856, 196.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_file_sink_0_0_0
   id: blocks_file_sink
   parameters:
@@ -275,7 +257,7 @@ blocks:
     bus_structure: null
     coordinate: [856, 420.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_mc_stbc_decode_0
   id: ncjt_mc_stbc_decode
   parameters:
@@ -305,7 +287,7 @@ blocks:
     debug: 'True'
     logfreq: '50'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     mucpt: 'True'
     ndatasyms: num_data_syms
     npreamblesyms: num_ltf_syms
@@ -365,18 +347,18 @@ blocks:
     avgwindow: '10'
     comment: ''
     debug: 'True'
-    filename: '"../../data/mc_ncjt/2t2s/" + qam_type + "/tx_strm_data.bin"'
+    filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
     logpkterr: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    nstrms: '1'
+    nstrms: '2'
     shortterm: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1296, 304.0]
+    coordinate: [1296, 288.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_demapper_0
@@ -390,8 +372,8 @@ blocks:
     debug: 'False'
     framelen: frame_data_len
     maxoutbuf: '0'
-    mergestrm: 'True'
-    minoutbuf: '65536'
+    mergestrm: 'False'
+    minoutbuf: 65536*2
     nctrlsyms: '0'
     ndatasyms: num_data_syms
     npilotsyms: '0'
@@ -416,7 +398,7 @@ blocks:
     debug: 'False'
     hwdelayp2: '0'
     hwdelayp3: '0'
-    lltf2: 'False'
+    lltf2: 'True'
     maxcorrlen: '2000'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -431,7 +413,7 @@ blocks:
     p3rx: 'False'
     p3start: '0'
     pktspersec: pkts_per_sec
-    preamblelen: (fft_size+cp_len)*3
+    preamblelen: (fft_size+cp_len)
     rxpwrthrd: 1e-3
     samplerate: samp_rate
     xcorrthrd: '0.5'
@@ -1172,8 +1154,8 @@ connections:
 - [ncjt_ofdm_demod_0, '0', ncjt_mu_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_mu_chanest_0, '1']
 - [ncjt_pkt_err_0_0, '0', qtgui_time_sink_x_0, '0']
-- [ncjt_rg_demapper_0, '0', blocks_file_sink_0, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_pkt_err_0_0, '0']
+- [ncjt_rg_demapper_0, '1', ncjt_pkt_err_0_0, '1']
 - [ncjt_rx_sync_0_0, '0', ncjt_ofdm_demod_0, '0']
 - [ncjt_rx_sync_0_0, '1', ncjt_ofdm_demod_0_0, '0']
 - [uhd_usrp_source_0, '0', ncjt_rx_sync_0_0, '0']
