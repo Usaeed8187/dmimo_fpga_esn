@@ -69,12 +69,9 @@ namespace gr
 
     public:
       rg_demapper_impl(int phase,
+                       int rgmode,
                        int nstrm,
-                       int modtype,
-                       int n_ofdm_syms,
-                       int sd_num,
                        bool usecsi,
-                       int code_rate,
                        bool tag_snr,
                        bool debug);
       ~rg_demapper_impl() override {}

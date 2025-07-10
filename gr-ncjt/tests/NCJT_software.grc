@@ -459,7 +459,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1576, 400.0]
+    coordinate: [1576, 408.0]
     rotation: 0
     state: enabled
 - name: ncjt_err_stats_0
@@ -860,16 +860,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    code_rate: '0'
     comment: ''
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
-    n_ofdm_syms: num_ofdm_syms
     nstrm: num_streams
     phase: '2'
-    sd_num: num_subcarriers - 4
+    rgmode: '0'
     tag_snr: 'True'
     usecsi: 'True'
   states:
@@ -884,16 +881,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    code_rate: '0'
     comment: ''
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
-    n_ofdm_syms: num_ofdm_syms
     nstrm: num_streams
     phase: '3'
-    sd_num: num_subcarriers - 4
+    rgmode: '0'
     tag_snr: 'False'
     usecsi: 'True'
   states:
@@ -908,16 +902,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    code_rate: '0'
     comment: ''
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
-    n_ofdm_syms: num_ofdm_syms
     nstrm: num_streams
     phase: '3'
-    sd_num: num_subcarriers - 4
+    rgmode: '0'
     tag_snr: 'False'
     usecsi: 'True'
   states:
@@ -932,23 +923,20 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    code_rate: '0'
     comment: ''
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    modtype: qam_order
-    n_ofdm_syms: num_ofdm_syms
     nstrm: num_streams
     phase: '1'
-    sd_num: num_subcarriers - 4
+    rgmode: '0'
     tag_snr: 'True'
     usecsi: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1272, 308.0]
+    coordinate: [1272, 328.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0

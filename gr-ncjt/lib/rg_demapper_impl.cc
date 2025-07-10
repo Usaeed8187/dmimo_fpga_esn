@@ -14,6 +14,7 @@
 #include <iostream>
 #include <pmt/pmt.h>
 #include <stdexcept>
+#include "rg_modes.h"
 #include "common.h"
 
 namespace gr
@@ -25,17 +26,14 @@ namespace gr
     // Factory
     // ------------------------------------------------------------------------
     rg_demapper::sptr rg_demapper::make(int phase,
+                                        int rgmode,
                                         int nstrm,
-                                        int modtype,
-                                        int n_ofdm_syms,
-                                        int sd_num,
                                         bool usecsi,
-                                        int code_rate,
                                         bool tag_snr,
                                         bool debug)
     {
       return gnuradio::make_block_sptr<rg_demapper_impl>(
-          phase, nstrm, modtype, n_ofdm_syms, sd_num, usecsi, code_rate,
+          phase, rgmode, nstrm, usecsi, 
           tag_snr, debug);
     }
 
@@ -43,12 +41,9 @@ namespace gr
     // Constructor
     // ------------------------------------------------------------------------
     rg_demapper_impl::rg_demapper_impl(int phase,
+                                       int rgmode,
                                        int nstrm,
-                                       int modtype,
-                                       int n_ofdm_syms,
-                                       int sd_num,
                                        bool usecsi,
-                                       int code_rate,
                                        bool tag_snr,
                                        bool debug)
         : gr::tagged_stream_block("rg_demapper",
@@ -59,14 +54,6 @@ namespace gr
                                   "packet_len"),
           d_phase(phase),
           d_ctrl_ok(false),
-          d_code_rate(code_rate),
-          d_code_rate_phase1(code_rate),
-          d_code_rate_phase2(code_rate),
-          d_code_rate_phase3(code_rate),
-          d_modtype(modtype),
-          d_modtype_phase1(modtype),
-          d_modtype_phase2(modtype),
-          d_modtype_phase3(modtype),
           d_nstrm_param(nstrm),
           d_nstrm_phase1(nstrm),
           d_nstrm_phase2(nstrm),
@@ -77,8 +64,6 @@ namespace gr
           d_debug(debug),
           cc(0),
           d_usecsi(usecsi),
-          d_sd_num(sd_num),
-          d_n_ofdm_syms(n_ofdm_syms),
           d_ctrl_obj(d_debug),
           d_extended(0),
           d_raw_ctrl(0)
@@ -91,19 +76,24 @@ namespace gr
       {
         throw std::runtime_error("[rg_demapper] invalid nstrm_param (1..8).");
       }
+      if (rgmode < 0 || rgmode >= 8)
+          throw std::runtime_error("Unsupported RG mode");
+      else {
+        d_modtype = 2;
+        d_modtype_phase1 = 2;
+        d_modtype_phase2 = 2;
+        d_modtype_phase3 = 2;
+        //
+        d_code_rate = 0;
+        d_code_rate_phase1 = 0;
+        d_code_rate_phase2 = 0;
+        d_code_rate_phase3 = 0;
+        //
+        d_n_ofdm_syms = RG_NUM_OFDM_SYM[rgmode];
+        d_sd_num = RG_NUM_DATA_SC[rgmode];
+        d_fftsize = RG_FFT_SIZE[rgmode];
+      }
       modtype_bits_to_index(d_modtype);
-      if (sd_num == 52)
-      {
-        d_fftsize = 64;
-      }
-      else if (sd_num == 234)
-      {
-        d_fftsize = 256;
-      }
-      else
-      {
-        throw std::runtime_error("rg_demapper: sd_num must be 52 or 234");
-      }
 
       NCJT_LOG(d_debug, "(" << cc << ")] nstrm=" << d_nstrm_param
                 << ", modtype=" << d_modtype

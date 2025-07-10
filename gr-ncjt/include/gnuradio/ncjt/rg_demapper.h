@@ -46,12 +46,9 @@ namespace gr
        * \brief Creates a new instance of ncjt::rg_demapper.
        */
       static sptr make(int phase,
+                       int rgmode,
                        int nstrm,
-                       int modtype,
-                       int n_ofdm_syms,
-                       int sd_num,
                        bool usecsi,
-                       int code_rate,
                        bool tag_snr,
                        bool debug);
     };
