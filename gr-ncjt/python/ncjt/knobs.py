@@ -122,11 +122,23 @@ class knobs(gr.sync_block, QtWidgets.QWidget):
         p2 = get_modtype(self.mod_type_phase2)
         p3 = get_modtype(self.mod_type_phase3)
         ##
-        if p2 < p1:
-            p2 = p1
-            self.mod_type_phase2.blockSignals(True)
-            self.mod_type_phase2.setCurrentIndex(mtypes.index(p2))
-            self.mod_type_phase2.blockSignals(False)
+        # if p2 < p1:
+        #     p2 = p1
+        #     self.mod_type_phase2.blockSignals(True)
+        #     self.mod_type_phase2.setCurrentIndex(mtypes.index(p2))
+        #     self.mod_type_phase2.blockSignals(False)
+        # if p3 < p2:
+        #     p3 = p2
+        #     self.mod_type_phase3.blockSignals(True)
+        #     self.mod_type_phase3.setCurrentIndex(mtypes.index(p3))
+        #     self.mod_type_phase3.blockSignals(False)
+
+        # Ensure p1 and p3 are not less than p2
+        if p1 < p2:
+            p1 = p2
+            self.mod_type_phase1.blockSignals(True)
+            self.mod_type_phase1.setCurrentIndex(mtypes.index(p1))
+            self.mod_type_phase1.blockSignals(False)
         if p3 < p2:
             p3 = p2
             self.mod_type_phase3.blockSignals(True)

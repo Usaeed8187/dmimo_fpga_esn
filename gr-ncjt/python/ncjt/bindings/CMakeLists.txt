@@ -48,7 +48,7 @@ list(APPEND ncjt_python_files
     mapper_muxer_python.cc
     noair_python.cc
     demapper_python.cc
-    mapper_muxer_phase3_python.cc
+        remapper_muxer_python.cc
     pdc_python.cc
     skip_data_python.cc python_bindings.cc)
 

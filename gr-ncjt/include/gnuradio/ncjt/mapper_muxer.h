@@ -20,18 +20,7 @@ namespace gr
      * \brief The \p mapper_muxer block maps input bits into QAM symbols with control always enabled.
      *
      * \details
-     *  - Always inserts 64 control symbols per stream at the frame start.
-     *  - Then, remaining bits are mapped into the chosen QAM constellation.
-     *
-     * **Parameters**
-     *  - \p nstrm : Number of spatial streams.
-     *  - \p modtype : Number of bits per symbol (2=QPSK, 4=16QAM, 6=64QAM, 8=256QAM).
-     *  - \p n_ofdm_syms : Number of OFDM symbols per frame.
-     *  - \p sd_num : Number of data subcarriers (e.g., 52).
-     *  - \p use_polar : If \c true, uses polar encoding for control bits, otherwise uses repetition.
-     *  - \p code_rate : Code rate (0: Disable, 1: 1/4, ..., 7: 5/6).
-     *  - \p debug : If \c true, prints verbose debug info.
-     *
+     *  - To be completed with detailed description of the block's functionality.
      * **Input/Output**
      *  - **Input** : A stream of \c uint8_t bits.
      *  - **Output** : A stream of \c gr_complex QAM symbols.
@@ -44,12 +33,11 @@ namespace gr
       /*!
        * \brief Creates a new instance of ncjt::mapper_muxer.
        */
-      static sptr make(int nstrm,
+      static sptr make(int rgmode,
+                       int nstrm,
                        int phase1_modtype,
                        int phase2_modtype,
                        int phase3_modtype,
-                       int n_ofdm_syms,
-                       int sd_num,
                        bool use_polar,
                        int code_rate,
                        bool deterministic_input,

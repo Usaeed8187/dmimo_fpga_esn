@@ -47,6 +47,8 @@ namespace gr
 
       int d_last_nstrm;       // The most recently seen "rx_nstrm"
       int d_last_modtype;     // The most recently seen "rx_modtype"
+      int d_last_modtype_phase1; // The most recently seen "rx_modtype_phase1"
+      int d_last_modtype_phase2; // The most recently seen "rx_modtype_phase2"
       int d_last_modtype_phase3; // The most recently seen "rx_modtype_phase3"
       unsigned __int128 d_last_raw_ctrl; // The most recently seen "rx_raw_ctrl"
       int d_last_coding_rate; // The most recently seen "rx_coding_rate"

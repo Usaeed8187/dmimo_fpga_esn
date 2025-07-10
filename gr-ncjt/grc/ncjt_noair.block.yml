@@ -4,22 +4,14 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.noair(${n_ofdm_syms}, ${sc_num}, ${pilot_sc_ind}, ${frame_per_sec}, ${snr_db}, ${num_drop_init_packets}, ${debug})
+  make: ncjt.noair(${rgmode}, ${frame_per_sec}, ${snr_db}, ${num_drop_init_packets}, ${debug})
 
 parameters:
-  - id: n_ofdm_syms
-    label: Number of OFDM Symbols
+  - id: rgmode
+    label: RG Mode
     dtype: int
-    default: 40
-  - id: sc_num
-    label: Numer of Subcarriers
-    dtype: int
-    default: 56
-  - id: pilot_sc_ind
-    label: Pilot Subcarrier Indices
-    dtype: int_vector
-    default: [7, 21, 34, 48]
-    readonly: true
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
     hide: part
   - id: frame_per_sec
     label: Frame Rate

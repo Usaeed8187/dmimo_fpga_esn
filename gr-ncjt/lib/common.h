@@ -6,6 +6,14 @@
 #include <srsran/channel_coding_factories.h>
 #include <gnuradio/gr_complex.h>
 
+#define NCJT_LOG(EN, STREAM)                                  \
+  do {                                                        \
+    if (EN) {                                                 \
+      std::cout << __func__ <<  "] " << STREAM << std::endl;  \
+    }                                                         \
+  } while (0)
+
+
 namespace gr {
   namespace ncjt {
     /**

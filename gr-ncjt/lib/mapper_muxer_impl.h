@@ -52,12 +52,11 @@ namespace gr {
       std::vector<uint8_t> ldpc_encode(const std::vector<uint8_t> &message, int codeword_length);
 
     public:
-      mapper_muxer_impl(int nstrm,
+      mapper_muxer_impl(int rgmode,
+                        int nstrm,
                         int phase1_modtype,
                         int phase2_modtype,
                         int phase3_modtype,
-                        int n_ofdm_syms,
-                        int sd_num,
                         bool use_polar,
                         int code_rate,
                         bool deterministic_input,

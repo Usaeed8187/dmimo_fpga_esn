@@ -5,19 +5,20 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#ifndef INCLUDED_NCJT_MAPPER_MUXER_PHASE3_IMPL_H
-#define INCLUDED_NCJT_MAPPER_MUXER_PHASE3_IMPL_H
+#ifndef INCLUDED_NCJT_REMAPPER_MUXER_IMPL_H
+#define INCLUDED_NCJT_REMAPPER_MUXER_IMPL_H
 
-#include <gnuradio/ncjt/mapper_muxer_phase3.h>
+#include <gnuradio/ncjt/remapper_muxer.h>
 #include "qam_constellation.h"
 #include "ctrl.h"
 
 namespace gr {
 namespace ncjt {
 
-class mapper_muxer_phase3_impl : public mapper_muxer_phase3 {
+class remapper_muxer_impl : public remapper_muxer {
 private:
   // Block parameters
+  int d_phase;
   int d_nstrm;        ///< Number of parallel streams
   int d_modtype;      ///< Bits per symbol (2,4,6,8)
   int d_n_ofdm_syms;  ///< Number of OFDM symbols per frame
@@ -41,9 +42,9 @@ protected:
   int calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-  mapper_muxer_phase3_impl(int nstrm, int n_ofdm_syms,
-                           int sd_num, bool use_polar, bool debug);
-  ~mapper_muxer_phase3_impl();
+  remapper_muxer_impl(int phase, int nstrm, int n_ofdm_syms,
+                      int sd_num, bool use_polar, bool debug);
+  ~remapper_muxer_impl();
 
   // Where all the action really happens
   int work(int noutput_items, gr_vector_int &ninput_items,
@@ -54,4 +55,4 @@ public:
 } // namespace ncjt
 } // namespace gr
 
-#endif /* INCLUDED_NCJT_MAPPER_MUXER_PHASE3_IMPL_H */
+#endif /* INCLUDED_NCJT_REMAPPER_MUXER_IMPL_H */

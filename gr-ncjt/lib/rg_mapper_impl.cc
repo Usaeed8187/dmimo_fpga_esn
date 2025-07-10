@@ -15,16 +15,16 @@
 #include <cstring>   // for memcpy
 #include <cmath>     // for M_PI
 #include <stdexcept>
+#include "rg_modes.h"
+#include "common.h"
 
 // #define VERSION 2
 
 namespace gr::ncjt
 {
 
-  rg_mapper::sptr rg_mapper::make(int nstrm,
-                                  int n_ofdm_syms,
-                                  int sc_num,
-                                  const std::vector<int> &pilot_sc_ind,
+  rg_mapper::sptr rg_mapper::make(int rgmode,
+                                  int nstrm,
                                   bool addcs,
                                   bool debug,
                                   int numue,
@@ -34,29 +34,24 @@ namespace gr::ncjt
                                   const char *ltfdata)
   {
     return gnuradio::make_block_sptr<rg_mapper_impl>(
-        nstrm, n_ofdm_syms, sc_num, pilot_sc_ind, addcs, debug, numue, ueidx, mucpt, addltf, ltfdata);
+        rgmode, nstrm, addcs, debug, numue, ueidx, mucpt, addltf, ltfdata);
   }
 
-  rg_mapper_impl::rg_mapper_impl(int nstrm,
-                                       int n_ofdm_syms,
-                                       int sc_num,
-                                       const std::vector<int> &pilot_sc_ind,
-                                       bool addcs,
-                                       bool debug,
-                                       int numue,
-                                       int ueidx,
-                                       bool mucpt,
-                                       bool addltf,
-                                       const char *ltfdata)
+  rg_mapper_impl::rg_mapper_impl( int rgmode,
+                                  int nstrm,
+                                  bool addcs,
+                                  bool debug,
+                                  int numue,
+                                  int ueidx,
+                                  bool mucpt,
+                                  bool addltf,
+                                  const char *ltfdata)
       : gr::tagged_stream_block(
             "rg_mapper",
             gr::io_signature::make(1, 1, sizeof(gr_complex)),
             gr::io_signature::make(nstrm, nstrm, sizeof(gr_complex)),
             "packet_len"),
         d_nstrm(nstrm),
-        d_n_ofdm_syms(n_ofdm_syms),
-        d_sc_num(sc_num),
-        d_pilot_sc_ind(pilot_sc_ind),
         d_add_cyclic_shift(addcs),
         d_debug(debug),
         cc(0),
@@ -69,57 +64,40 @@ namespace gr::ncjt
         d_ltf_data(nullptr),
         d_cpt_pilot(nullptr)
   {
-    if (d_debug)
-    {
-      std::cout << "[CONSTRUCTOR rg_mapper_impl (nstrm=" << nstrm
-                << ", n_ofdm_syms=" << n_ofdm_syms
-                << ", sc_num=" << sc_num
-                << ", addcs=" << addcs
-                << ", debug=" << debug
-                << ", numue=" << numue
-                << ", ueidx=" << ueidx
-                << ", mucpt=" << mucpt
-                << ", addltf=" << addltf
-                << ")]" << std::endl;
+    NCJT_LOG(d_debug, 
+              "rgmode=" << rgmode
+              << ", nstrm=" << nstrm
+              << ", addcs=" << addcs
+              << ", debug=" << debug
+              << ", numue=" << numue
+              << ", ueidx=" << ueidx
+              << ", mucpt=" << mucpt
+              << ", addltf=" << addltf);
+
+    if (rgmode < 0 || rgmode >= 8)
+        throw std::runtime_error("Unsupported RG mode");
+    else {
+      d_n_ofdm_syms = RG_NUM_OFDM_SYM[rgmode];
+      d_sc_num = RG_NUM_VALID_SC[rgmode];
+      d_fftsize = RG_FFT_SIZE[rgmode];
+      d_npt = RG_NUM_CPT[rgmode];
+      for (int k = 0; k < d_npt; k++)
+      {
+        d_pilot_sc_ind.push_back(RG_CPT_INDX[rgmode][k]);
+      }
     }
     if (nstrm < 1 || nstrm > 4)
     {
       throw std::runtime_error("rg_mapper: Invalid number of streams");
     }
 
-    if (d_n_ofdm_syms < 1 || d_n_ofdm_syms > 200)
-      throw std::runtime_error("rg_mapper: Invalid number of data OFDM symbols");
-    // Decide FFT size
-    if (d_sc_num == 56)
-    {
-      d_fftsize = 64;
-      d_npt = 4;
-    }
-    else if (d_sc_num == 242)
-    {
-      d_fftsize = 256;
-      d_npt = 8;
-    }
-    else
-    {
-      throw std::runtime_error("rg_mapper: Unsupported number of subcarriers");
-    }
-
-    // Check pilot array length vs d_npt
-    if ((int)d_pilot_sc_ind.size() != d_npt)
-    {
-      throw std::runtime_error("rg_mapper: pilot_sc_ind.size() must match the expected # of pilot carriers!");
-    }
-
     // The total data symbols per stream
     d_data_syms_per_stream = (d_sc_num - (int)d_pilot_sc_ind.size()) * d_n_ofdm_syms;
     d_total_symbols_required = d_data_syms_per_stream;
     // We require exactly d_data_syms_per_stream input items for each call
-    if (d_debug)
-    {
-      std::cout << "[rg_mapper_impl] data_syms_per_stream=" << d_data_syms_per_stream
-                << ", total_symbols_required=" << d_total_symbols_required << std::endl;
-    }
+
+    NCJT_LOG(d_debug, "data_syms_per_stream=" << d_data_syms_per_stream
+              << ", total_symbols_required=" << d_total_symbols_required);
 
     // Prepare for LTF data if requested
     if (d_add_ltf && ltfdata)
@@ -139,12 +117,10 @@ namespace gr::ncjt
       if (d_ltfdata_len % d_sc_num != 0)
         throw std::runtime_error("rg_mapper: LTF data length for each stream must be multiple of sc_num");
       d_nltfsyms = d_ltfdata_len / d_sc_num;
-      if (d_debug)
-      {
-        std::cout << "[rg_mapper_impl] LTF data loaded successfully: "
-                  << d_ltfdata_len << " samples per stream => " << d_nltfsyms
-                  << " OFDM symbols for LTF." << std::endl;
-      }
+
+      NCJT_LOG(d_debug, "LTF data loaded successfully: "
+                << d_ltfdata_len << " samples per stream => " << d_nltfsyms
+                << " OFDM symbols for LTF.");
     }
     // Pre-compute cyclic phase shifts if d_add_cyclic_shift is used
     // We'll only define for up to 4 streams:
@@ -209,11 +185,8 @@ namespace gr::ncjt
                               gr_vector_void_star &output_items)
   {
     cc++;
-    if (d_debug)
-    {
-      std::cout << "\n[rg_mapper_impl::work(" << cc << ")] Called, noutput_items="
-                << noutput_items << ", ninput_items[0]=" << ninput_items[0] << std::endl;
-    }
+    NCJT_LOG(d_debug, " (" << cc << "): noutput_items=" << noutput_items
+              << ", ninput_items[0]=" << ninput_items[0]);
     // We expect exactly d_data_syms_per_stream input items for one chunk
     int in_count = ninput_items[0];
     if (in_count < d_data_syms_per_stream)
@@ -360,12 +333,9 @@ namespace gr::ncjt
     //   }
     // }
 
-    if (d_debug)
-    {
-      std::cout << "[rg_mapper_impl::work(" << cc
-                << ")] => produced " << total_out_count
-                << " items on each of " << d_nstrm << " output streams.\n";
-    }
+    NCJT_LOG(d_debug, "[rg_mapper_impl::work(" << cc
+              << ")] => produced " << total_out_count
+              << " items on each of " << d_nstrm << " output streams.");
     return total_out_count;
   }
 

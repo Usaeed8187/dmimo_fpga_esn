@@ -91,11 +91,7 @@ namespace gr
       {
         throw std::runtime_error("[rg_demapper] invalid nstrm_param (1..8).");
       }
-      if (d_modtype != 2 && d_modtype != 4 && d_modtype != 6 &&
-          d_modtype != 8)
-      {
-        throw std::runtime_error("[rg_demapper] invalid modtype (2,4,6,8).");
-      }
+      modtype_bits_to_index(d_modtype);
       if (sd_num == 52)
       {
         d_fftsize = 64;
@@ -109,14 +105,12 @@ namespace gr
         throw std::runtime_error("rg_demapper: sd_num must be 52 or 234");
       }
 
-      if (d_debug)
-      {
-        std::cout << "[CONSTRUCTOR rg_demapper_impl ("
-                  << "nstrm=" << nstrm << ", modtype=" << modtype
-                  << ", usecsi=" << usecsi
-                  << ", debug=" << debug << ", sd_num=" << sd_num
-                  << ", n_ofdm_syms=" << n_ofdm_syms << ")]" << std::endl;
-      }
+      NCJT_LOG(d_debug, "(" << cc << ")] nstrm=" << d_nstrm_param
+                << ", modtype=" << d_modtype
+                << ", usecsi=" << d_usecsi
+                << ", debug=" << d_debug
+                << ", sd_num=" << d_sd_num
+                << ", n_ofdm_syms=" << d_n_ofdm_syms);
 
       set_tag_propagation_policy(gr::block::TPP_DONT);
     }
@@ -130,12 +124,7 @@ namespace gr
       int min_in = ninput_items[0];
       for (int p = 0; p < d_nstrm_param; p++)
       {
-        if (d_debug)
-        {
-          std::cout << "###[rg_demapper_impl::calculate_output_stream_length("
-                    << cc << ")] ninput_items[" << p << "]=" << ninput_items[p]
-                    << std::endl;
-        }
+        NCJT_LOG(d_debug, "ninput_items[" << p << "]=" << ninput_items[p]);
         min_in = std::min(min_in, ninput_items[p]);
       }
 
@@ -154,13 +143,8 @@ namespace gr
       {
         total_data_syms = 0;
       }
-
-      if (d_debug)
-      {
-        std::cout << "###[rg_demapper_impl::calculate_output_stream_length("
-                  << cc << ")] min_in=" << min_in
-                  << ", total_data_syms=" << total_data_syms << std::endl;
-      }
+      NCJT_LOG(d_debug, "(" << cc << ")] min_in=" << min_in
+                << ", total_data_syms=" << total_data_syms);
       return total_data_syms;
     }
 
@@ -240,16 +224,13 @@ namespace gr
       cc++;
       int ctrl_syms_len = 64;
       int nports = d_usecsi ? 2 * d_nstrm_param : d_nstrm_param;
-      if (d_debug)
+
+      NCJT_LOG(d_debug, "\n[rg_demapper_impl::work(" << cc
+                << ")] Called, noutput_items=" << noutput_items);
+      for (int p = 0; p < nports; p++)
       {
-        std::cout << "\n[rg_demapper_impl::work(" << cc
-                  << ")] Called, noutput_items=" << noutput_items << std::endl;
-        for (int p = 0; p < nports; p++)
-        {
-          std::cout << "\t" << cc
-                    << ")] ninput_items[" << p << "]=" << ninput_items[p]
-                    << std::endl;
-        }
+        NCJT_LOG(d_debug, "\t(" << cc
+                  << ")] ninput_items[" << p << "]=" << ninput_items[p]);
       }
 
       int min_in = ninput_items[0];
@@ -271,11 +252,7 @@ namespace gr
       }
       if (min_in == 0)
       {
-        if (d_debug)
-        {
-          std::cout << " [rg_demapper_impl::work(" << cc
-                    << ")] No data, return 0" << std::endl;
-        }
+        NCJT_LOG(d_debug, "(" << cc << ")] No data, return 0");
         return 0; // no data
       }
 
@@ -299,13 +276,10 @@ namespace gr
           {
             ctrl_csi.resize(64, gr_complex(1.0f, 0.0f));
           }
-          if (d_debug)
-          {
-            std::cout << "--> [rg_demapper_impl::work(" << cc
-                      << ")] Demodulating control symbols on stream " << s
-                      << std::endl;
-          }
-          if (d_phase == 2)
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Demodulating control symbols on stream " << s);
+          if (d_phase == 1)
+            d_ctrl_ok = d_ctrl_obj.demodulate_and_unpack_qpsk(ctrl_syms, ctrl_csi);
+          else if (d_phase == 2)
             d_ctrl_ok = d_ctrl_obj.demodulate_and_unpack_qpsk(ctrl_syms, ctrl_csi);
           else if (d_phase == 3)
             d_ctrl_ok = d_ctrl_obj.demodulate_and_unpack_16qam(ctrl_syms, ctrl_csi);
@@ -361,13 +335,9 @@ namespace gr
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_coding_rate_phase2"), pmt::from_uint64(d_code_rate_phase2), d_name);
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_coding_rate_phase3"), pmt::from_uint64(d_code_rate_phase3), d_name);
 
-      if (d_debug)
-      {
-        std::cout << " [rg_demapper_impl::work(" << cc
-                  << ")] Add tags [rx_nstrm (" << d_nstrm_param << "), rx_modtype ("
-                  << d_modtype << "), rx_coding_rate (" << d_code_rate << ")]"
-                  << std::endl;
-      }
+      NCJT_LOG(d_debug, "(" << cc << ")] Add tags [rx_nstrm ("
+                << d_nstrm_param << "), rx_modtype (" << d_modtype
+                << "), rx_coding_rate (" << d_code_rate << ")]");
       int num_rbs = (int)std::floor(d_sd_num / RB_SIZE);
       if (d_tag_snr)
       {
@@ -420,9 +390,7 @@ namespace gr
         float recovered[num_rbs];
         // Get snr_bits LSB bits from the extended field
         uint64_t packed_bits = d_extended & ((1ULL << snr_bits) - 1);
-        if (d_debug)
-          std::cout << "[rg_demapper_impl] EXTENDED: " << std::hex << d_extended << std::dec
-                    << std::endl;
+        NCJT_LOG(d_debug, "(" << cc << ")] EXTENDED: " << std::hex << d_extended << std::dec);
         // De-quantisation
         dequantize_snrs(packed_bits, num_rbs, B0, Bd,
                         MIN_ABS, MAX_ABS,
@@ -454,10 +422,7 @@ namespace gr
       int available_syms = min_in - ctrl_syms_len;
       if (available_syms <= 0)
       {
-        if (d_debug)
-        {
-          std::cout << " [rg_demapper_impl::work(" << cc << ")] No data, return 0" << std::endl;
-        }
+        NCJT_LOG(d_debug, "(" << cc << ")] No data, return 0");
         return 0;
       }
 

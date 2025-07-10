@@ -59,10 +59,8 @@ namespace gr
           d_info_buf(nullptr),
           d_info_len(0)
     {
-      if (d_debug)
-      {
-        std::cout << "[demapper_impl] ctor, debug=" << d_debug << std::endl;
-      }
+      NCJT_LOG(d_debug, "d_output_raw=" << d_output_raw
+                << ", d_deterministic_input=" << d_deterministic_input);
 
       set_output_multiple(2016);
 
@@ -133,14 +131,13 @@ namespace gr
                                     gr_vector_void_star &output_items)
     {
       cc++;
-      if (d_debug)
-      {
-        std::cout << "\n[demapper_impl::general_work(" << cc << ")] "
-                  << "noutput_items=" << noutput_items << ", ninput_items=["
-                  << ninput_items[0] << "," << ninput_items[1] << "], "
-                  << "d_last_modtype=" << d_last_modtype
-                  << ", d_last_coding_rate=" << d_last_coding_rate << std::endl;
-      }
+
+      NCJT_LOG(d_debug, " (" << cc
+                << ")] noutput_items=" << noutput_items
+                << ", ninput_items[0]=" << ninput_items[0]
+                << ", ninput_items[1]=" << ninput_items[1]
+                << ", d_last_modtype=" << d_last_modtype
+                << ", d_last_coding_rate=" << d_last_coding_rate);
 
       if (ninput_items[0] != ninput_items[1])
       {
@@ -180,11 +177,8 @@ namespace gr
             "[demapper_impl] ERROR: No rx_ctrl_ok tag found in input stream");
       }
       d_last_ctrl_ok = pmt::to_bool(tags[0].value);
-      if (d_debug)
-      {
-        std::cout << " [demapper_impl::general_work(" << cc
-                  << ")] Found rx_ctrl_ok=" << d_last_ctrl_ok << std::endl;
-      }
+
+      NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_ctrl_ok=" << d_last_ctrl_ok);
 
       // Retrive the rest of the tags
       d_found_rx_checksum = false;
@@ -198,34 +192,27 @@ namespace gr
         if (key == "rx_modtype")
         {
           d_last_modtype = pmt::to_uint64(tg.value);
-          if (d_last_modtype != 2 && d_last_modtype != 4 && d_last_modtype != 6 && d_last_modtype != 8)
-          {
-            throw std::runtime_error(
-                "[demapper_impl] ERROR: Invalid rx_modtype=" +
-                std::to_string(d_last_modtype));
-          }
-          if (d_debug)
-          {
-            std::cout << " [demapper_impl::general_work(" << cc
-                      << ")] Found rx_modtype=" << d_last_modtype << std::endl;
-          }
+          modtype_bits_to_index(d_last_modtype);
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_modtype=" << d_last_modtype);
+                    
+        }
+        else if (key == "rx_modtype_phase1")
+        {
+          d_last_modtype_phase1 = pmt::to_uint64(tg.value);
+          modtype_bits_to_index(d_last_modtype_phase1);
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_modtype_phase1=" << d_last_modtype_phase1);
+        }
+        else if (key == "rx_modtype_phase2")
+        {
+          d_last_modtype_phase2 = pmt::to_uint64(tg.value);
+          modtype_bits_to_index(d_last_modtype_phase2);
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_modtype_phase2=" << d_last_modtype_phase2);
         }
         else if (key == "rx_modtype_phase3")
         {
           d_last_modtype_phase3 = pmt::to_uint64(tg.value);
-          if (d_last_modtype_phase3 != 2 && d_last_modtype_phase3 != 4 &&
-              d_last_modtype_phase3 != 6 && d_last_modtype_phase3 != 8)
-          {
-            throw std::runtime_error(
-                "[demapper_impl] ERROR: Invalid rx_modtype_phase3=" +
-                std::to_string(d_last_modtype_phase3));
-          }
-          if (d_debug)
-          {
-            std::cout << " [demapper_impl::general_work(" << cc
-                      << ")] Found rx_modtype_phase3=" << d_last_modtype_phase3
-                      << std::endl;
-          }
+          modtype_bits_to_index(d_last_modtype_phase3);
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_modtype_phase3=" << d_last_modtype_phase3);
         }
         else if (key == "rx_raw_ctrl")
         {
@@ -235,51 +222,28 @@ namespace gr
         else if (key == "rx_nstrm")
         {
           d_last_nstrm = pmt::to_uint64(tg.value);
-          if (d_debug)
-          {
-            std::cout << " [demapper_impl::general_work(" << cc
-                      << ")] Found rx_nstrm=" << d_last_nstrm << std::endl;
-          }
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_nstrm=" << d_last_nstrm);
         }
         else if (key == "rx_coding_rate")
         {
           d_last_coding_rate = pmt::to_uint64(tg.value);
-          if (d_debug)
-          {
-            std::cout << " [demapper_impl::general_work(" << cc
-                      << ")] Found rx_coding_rate=" << d_last_coding_rate
-                      << std::endl;
-          }
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_coding_rate=" << d_last_coding_rate);
         }
         else if (key == "rx_data_checksum")
         {
           d_found_rx_checksum = true;
           d_rx_data_checksum = pmt::to_uint64(tg.value);
-          if (d_debug)
-          {
-            std::cout << " [demapper_impl::general_work(" << cc
-                      << ")] Found rx_data_checksum=" << d_rx_data_checksum
-                      << std::endl;
-          }
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_data_checksum=" << d_rx_data_checksum);
         }
         else if (key == "rx_syms_per_stream")
         {
           d_last_syms_per_stream = pmt::to_uint64(tg.value);
-          if (d_debug)
-          {
-            std::cout << " [demapper_impl::general_work(" << cc
-                      << ")] Found rx_syms_per_stream="
-                      << d_last_syms_per_stream << std::endl;
-          }
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_syms_per_stream=" << d_last_syms_per_stream);
         }
         else if (key == "rx_seqno")
         {
           d_last_seq_no = pmt::to_uint64(tg.value);
-          if (d_debug)
-          {
-            std::cout << " [demapper_impl::general_work(" << cc
-                      << ")] Found rx_seqno=" << d_last_seq_no << std::endl;
-          }
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_seqno=" << d_last_seq_no);
         }
         else if (key == "snr_rbs_db")
         {
@@ -353,11 +317,9 @@ namespace gr
         {
           int in_bits_per_seg =
               base_in_bits_per_seg + (seg == num_segs - 1 ? remainder : 0);
-          if (d_debug)
-          {
-            std::cout << "\t\t >> Segment " << seg << " (start_idx=" << start_idx
-                      << ", in_bits_per_seg=" << in_bits_per_seg << std::endl;
-          }
+          NCJT_LOG(d_debug, "\t\t >> Segment " << seg
+                    << " (start_idx=" << start_idx
+                    << ", in_bits_per_seg=" << in_bits_per_seg << ")");
           auto d_bits = gr::ncjt::ldpc_decode(in_bits_per_seg,
                                               std::vector<srsran::log_likelihood_ratio>(
                                                   llrs.begin() + start_idx,
@@ -382,13 +344,10 @@ namespace gr
       {
         uint16_t computed_crc = gr::ncjt::compute_crc16(d_info_buf, d_info_len);
         bool crc_ok = (computed_crc == (uint16_t)d_rx_data_checksum);
-        if (d_debug)
-        {
-          std::cout << " [demapper_impl::general_work(" << cc
-                    << ")] Computed CRC16=0x" << std::hex << computed_crc
-                    << "  vs. 0x" << d_rx_data_checksum << std::dec
-                    << " => match=" << crc_ok << std::endl;
-        }
+        NCJT_LOG(d_debug, "\t(" << cc << ")] Computed CRC16=0x"
+                  << std::hex << computed_crc
+                  << "  vs. 0x" << d_rx_data_checksum << std::dec
+                  << " => match=" << crc_ok);
         auto d_name = pmt::string_to_symbol(this->name());
         for (int op = 0; op < 1 + int(d_output_raw); op++)
         {
@@ -405,6 +364,12 @@ namespace gr
                        d_name);
           add_item_tag(op, nitems_written(op), pmt::string_to_symbol("rx_modtype"),
                        pmt::from_uint64(d_last_modtype),
+                       d_name);
+          add_item_tag(op, nitems_written(op), pmt::string_to_symbol("rx_modtype_phase1"),
+                       pmt::from_uint64(d_last_modtype_phase1),
+                       d_name);
+          add_item_tag(op, nitems_written(op), pmt::string_to_symbol("rx_modtype_phase2"),
+                       pmt::from_uint64(d_last_modtype_phase2),
                        d_name);
           add_item_tag(op, nitems_written(op), pmt::string_to_symbol("rx_modtype_phase3"),
                        pmt::from_uint64(d_last_modtype_phase3),
@@ -528,12 +493,8 @@ namespace gr
         double uncoded_ber = (uncoded_compare_len > 0)
                                  ? double(uncoded_errors) / double(uncoded_compare_len)
                                  : 0.0;
-        if (d_debug)
-        {
-          std::cout << "[demapper_impl::general_work(" << cc
-                    << ")] => coded_ber=" << coded_ber
-                    << ", uncoded_ber=" << uncoded_ber << std::endl;
-        }
+        NCJT_LOG(d_debug, "\t(" << cc << ")] => coded_ber=" << coded_ber
+                  << ", uncoded_ber=" << uncoded_ber);
         // Add tags for coded and uncoded BER
         for (int op = 0; op < 1 + int(d_output_raw); op++)
         {

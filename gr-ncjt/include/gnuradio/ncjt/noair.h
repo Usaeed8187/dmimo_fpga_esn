@@ -48,9 +48,7 @@ namespace gr
        * \param snr_db         If > 0, adds AWGN at approximately this SNR (in dB). If <= 0, no noise is added.
        * \param debug          If true, prints debug information.
        */
-      static sptr make(int n_ofdm_syms,
-                       int sc_num,
-                       const std::vector<int> &pilot_sc_ind,
+      static sptr make(int rgmode,
                        float frame_per_sec,
                        float snr_db,
                        int num_drop_init_packets,

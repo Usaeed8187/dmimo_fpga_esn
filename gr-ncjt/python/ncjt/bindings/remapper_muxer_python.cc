@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(mapper_muxer_phase3.h) */
-/* BINDTOOL_HEADER_FILE_HASH(7702dd21bb476042a821744ab2499d38) */
+/* BINDTOOL_HEADER_FILE(remapper_muxer.h) */
+/* BINDTOOL_HEADER_FILE_HASH(69c1b6343fed28aaaa42f06bc5a4a065) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,21 +25,21 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/mapper_muxer_phase3.h>
+#include <gnuradio/ncjt/remapper_muxer.h>
 // pydoc.h is automatically generated in the build directory
-#include <mapper_muxer_phase3_pydoc.h>
+#include <remapper_muxer_pydoc.h>
 
-void bind_mapper_muxer_phase3(py::module &m) {
+void bind_remapper_muxer(py::module &m) {
 
-  using mapper_muxer_phase3 = ::gr::ncjt::mapper_muxer_phase3;
+  using remapper_muxer = gr::ncjt::remapper_muxer;
 
-  py::class_<mapper_muxer_phase3, gr::tagged_stream_block, gr::block,
-             gr::basic_block, std::shared_ptr<mapper_muxer_phase3>>(
-      m, "mapper_muxer_phase3", D(mapper_muxer_phase3))
+  py::class_<remapper_muxer, gr::block, gr::basic_block,
+             std::shared_ptr<remapper_muxer>>(m, "remapper_muxer",
+                                              D(remapper_muxer))
 
-      .def(py::init(&mapper_muxer_phase3::make), py::arg("nstrm"),
+      .def(py::init(&remapper_muxer::make), py::arg("phase"), py::arg("nstrm"),
            py::arg("n_ofdm_syms"), py::arg("sd_num"), py::arg("use_polar"),
-           py::arg("debug"), D(mapper_muxer_phase3, make))
+           py::arg("debug"), D(remapper_muxer, make))
 
       ;
 }

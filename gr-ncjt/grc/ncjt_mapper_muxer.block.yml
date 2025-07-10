@@ -4,9 +4,15 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.mapper_muxer(${nstrm}, ${phase1_modtype}, ${phase2_modtype}, ${phase3_modtype}, ${n_ofdm_syms}, ${sd_num}, ${use_polar}, ${code_rate}, ${deterministic_input}, ${debug})
+  make: ncjt.mapper_muxer(${rgmode}, ${nstrm}, ${phase1_modtype}, ${phase2_modtype}, ${phase3_modtype}, ${use_polar}, ${code_rate}, ${deterministic_input}, ${debug})
 
 parameters:
+  - id: rgmode
+    label: RG Mode
+    dtype: int
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    hide: part
   - id: nstrm
     label: Number of Streams
     dtype: int
@@ -30,15 +36,6 @@ parameters:
     default: 2
     options: [2, 4, 6, 8]
     option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
-  - id: n_ofdm_syms
-    label: Number of OFDM Symbols
-    dtype: int
-    default: 40
-  - id: sd_num
-    label: Number of Data Subcarriers
-    dtype: int
-    default: 52
-    readonly: true
   - id: use_polar
     label: Polar or Repetition Code
     dtype: bool

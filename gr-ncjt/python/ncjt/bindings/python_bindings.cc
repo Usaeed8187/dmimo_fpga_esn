@@ -45,7 +45,7 @@ namespace py = pybind11;
     void bind_mapper_muxer(py::module& m);
     void bind_noair(py::module& m);
     void bind_demapper(py::module& m);
-    void bind_mapper_muxer_phase3(py::module& m);
+    void bind_remapper_muxer(py::module& m);
     void bind_pdc(py::module& m);
     void bind_skip_data(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
@@ -99,7 +99,7 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_mapper_muxer(m);
     bind_noair(m);
     bind_demapper(m);
-    bind_mapper_muxer_phase3(m);
+    bind_remapper_muxer(m);
     bind_pdc(m);
     bind_skip_data(m);
     // ) END BINDING_FUNCTION_CALLS
