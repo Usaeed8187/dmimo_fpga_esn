@@ -5,7 +5,7 @@ flags: [ show_id, python ]
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.knobs(${mcs}, ${reset}, ${noair})
+  make: ncjt.knobs(${mcs}, ${phase1_modtype}, ${phase2_modtype}, ${phase3_modtype}, ${code_rate}, ${reset}, ${noair})
 
 parameters:
 - id: mcs
@@ -14,6 +14,34 @@ parameters:
   default: 'True'
   options: [ 'True', 'False' ]
   option_labels: [ Enable, Disable ]
+- id: phase1_modtype
+  label: Phase 1 Bits per Symbol
+  dtype: int
+  default: 2
+  options: [2, 4, 6, 8]
+  option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
+  hide: ${ 'all' if not mcs else 'none' }
+- id: phase2_modtype
+  label: Phase 2 Bits per Symbol
+  dtype: int
+  default: 2
+  options: [2, 4, 6, 8]
+  option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
+  hide: ${ 'all' if not mcs else 'none' }
+- id: phase3_modtype
+  label: Phase 3 Bits per Symbol
+  dtype: int
+  default: 2
+  options: [2, 4, 6, 8]
+  option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
+  hide: ${ 'all' if not mcs else 'none' }
+- id: code_rate
+  label: Code Rate
+  dtype: int
+  default: 0
+  options: [0, 1, 2, 3, 4, 5, 6, 7]
+  option_labels: [ 'Disable', '1/4', '1/3', '1/2', '2/3', '3/4', '4/5', '5/6' ]
+  hide: ${ 'all' if not mcs else 'none' }
 - id: reset
   label: Show Reset Stats control
   dtype: bool
@@ -61,6 +89,10 @@ templates:
         %>\
         ${win} = knobs(
             ${mcs},
+            ${phase1_modtype},
+            ${phase2_modtype},
+            ${phase3_modtype},
+            ${code_rate},
             ${reset},
             ${noair}
         )

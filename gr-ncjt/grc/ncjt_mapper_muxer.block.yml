@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.mapper_muxer(${rgmode}, ${nstrm}, ${phase1_modtype}, ${phase2_modtype}, ${phase3_modtype}, ${use_polar}, ${code_rate}, ${deterministic_input}, ${debug})
+  make: ncjt.mapper_muxer(${rgmode}, ${nstrm}, ${phase1_modtype}, ${phase2_modtype}, ${phase3_modtype}, ${code_rate}, ${deterministic_input}, ${debug})
 
 parameters:
   - id: rgmode
@@ -19,29 +19,23 @@ parameters:
     default: 1
     options: [1, 2, 3, 4]
   - id: phase1_modtype
-    label: Bits per Symbol
+    label: Phase 1 Bits per Symbol
     dtype: int
     default: 2
     options: [2, 4, 6, 8]
     option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
   - id: phase2_modtype
-    label: Bits per Symbol
+    label: Phase 2 Bits per Symbol
     dtype: int
     default: 2
     options: [2, 4, 6, 8]
     option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
   - id: phase3_modtype
-    label: Bits per Symbol
+    label: Phase 3 Bits per Symbol
     dtype: int
     default: 2
     options: [2, 4, 6, 8]
     option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
-  - id: use_polar
-    label: Polar or Repetition Code
-    dtype: bool
-    default: 'False'
-    options: [ 'True', 'False' ]
-    option_labels: [ Polar, Repetition ]
   - id: code_rate
     label: Code Rate
     dtype: int

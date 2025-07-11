@@ -37,24 +37,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '60'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [592, 168.0]
-    rotation: 0
-    state: enabled
-- name: code_rate
-  id: variable
-  parameters:
-    comment: ''
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [176, 168.0]
     rotation: 0
     state: enabled
 - name: ctrl_enabled
@@ -97,12 +85,60 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '5'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [408, 168.0]
+    rotation: 0
+    state: enabled
+- name: init_code_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [960, 104.0]
+    rotation: 0
+    state: enabled
+- name: init_phase1_bits_per_sym
+  id: variable
+  parameters:
+    comment: ''
+    value: '6'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1152, 16.0]
+    rotation: 0
+    state: enabled
+- name: init_phase2_bits_per_sym
+  id: variable
+  parameters:
+    comment: ''
+    value: '4'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1152, 88.0]
+    rotation: 0
+    state: enabled
+- name: init_phase3_bits_per_sym
+  id: variable
+  parameters:
+    comment: ''
+    value: '8'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1152, 160.0]
     rotation: 0
     state: enabled
 - name: modulations
@@ -114,7 +150,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 96.0]
+    coordinate: [952, 16.0]
     rotation: 0
     state: enabled
 - name: num_ofdm_syms
@@ -165,30 +201,6 @@ blocks:
     coordinate: [304, 16.0]
     rotation: 0
     state: true
-- name: qam_order
-  id: variable
-  parameters:
-    comment: ''
-    value: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [304, 96.0]
-    rotation: 0
-    state: enabled
-- name: qam_type
-  id: variable
-  parameters:
-    comment: ''
-    value: modulations[qam_order]
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [304, 168.0]
-    rotation: 0
-    state: enabled
 - name: rgmode
   id: variable
   parameters:
@@ -198,7 +210,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 48.0]
+    coordinate: [848, 16.0]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -282,6 +294,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1888, 472.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_1_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1376, 488.0]
     rotation: 0
     state: enabled
 - name: blocks_null_sink_1_1
@@ -370,7 +399,7 @@ blocks:
     bus_structure: null
     coordinate: [1888, 328.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_tag_debug_0_0
   id: blocks_tag_debug
   parameters:
@@ -401,6 +430,7 @@ blocks:
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -419,6 +449,7 @@ blocks:
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -437,6 +468,7 @@ blocks:
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -455,6 +487,7 @@ blocks:
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -612,11 +645,11 @@ blocks:
     logfreq: '5'
     row_height: '300'
     show_birate: 'True'
-    show_coded_ber: 'False'
+    show_coded_ber: 'True'
     show_num_copies: 'False'
     show_per: 'False'
     show_throughput: 'True'
-    show_uncoded_ber: 'False'
+    show_uncoded_ber: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -629,12 +662,16 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    code_rate: init_code_rate
     comment: ''
     gui_hint: (0, 0, 1, 1)
     maxoutbuf: '0'
     mcs: 'True'
     minoutbuf: '0'
     noair: 'True'
+    phase1_modtype: init_phase1_bits_per_sym
+    phase2_modtype: init_phase2_bits_per_sym
+    phase3_modtype: init_phase3_bits_per_sym
     reset: 'True'
   states:
     bus_sink: false
@@ -672,23 +709,23 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    code_rate: code_rate
+    code_rate: init_code_rate
     comment: ''
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrm: num_streams
-    phase1_modtype: '2'
-    phase2_modtype: '2'
-    phase3_modtype: '2'
+    phase1_modtype: init_phase1_bits_per_sym
+    phase2_modtype: init_phase2_bits_per_sym
+    phase3_modtype: init_phase3_bits_per_sym
     rgmode: rgmode
     use_polar: ctrl_polar_coding
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 396.0]
+    coordinate: [432, 284.0]
     rotation: 0
     state: enabled
 - name: ncjt_noair_0
@@ -1054,6 +1091,7 @@ connections:
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_0_1, reset]
 - [ncjt_knobs_0, s_code_rate, ncjt_mapper_muxer_0_0, s_code_rate]
 - [ncjt_knobs_0, s_modtypes, ncjt_mapper_muxer_0_0, s_modtypes]
+- [ncjt_knobs_0, s_snr, ncjt_noair_0_0, s_snr]
 - [ncjt_mapper_muxer_0, '0', ncjt_rg_mapper_0, '0']
 - [ncjt_mapper_muxer_0_0, '0', blocks_null_sink_0, '0']
 - [ncjt_mapper_muxer_0_0, '0', ncjt_rg_mapper_0_1, '0']
@@ -1084,6 +1122,7 @@ connections:
 - [ncjt_rg_demapper_0_0_0, '1', ncjt_pdc_0, '3']
 - [ncjt_rg_demapper_0_1, '0', blocks_tag_debug_0_0, '0']
 - [ncjt_rg_demapper_0_1, '0', ncjt_demapper_0_1, '0']
+- [ncjt_rg_demapper_0_1, '1', blocks_null_sink_1_0, '0']
 - [ncjt_rg_demapper_0_1, '1', ncjt_demapper_0_1, '1']
 - [ncjt_rg_mapper_0, '0', ncjt_noair_0, '0']
 - [ncjt_rg_mapper_0_0, '0', ncjt_noair_0_1, '0']

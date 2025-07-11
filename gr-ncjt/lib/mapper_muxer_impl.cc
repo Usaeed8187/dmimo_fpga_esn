@@ -23,13 +23,12 @@ namespace gr {
                                           int phase1_modtype,
                                           int phase2_modtype,
                                           int phase3_modtype,
-                                          bool use_polar,
                                           int code_rate,
                                           bool deterministic_input,
                                           bool debug) {
       return gnuradio::make_block_sptr<mapper_muxer_impl>(
         rgmode, nstrm, phase1_modtype, phase2_modtype, phase3_modtype,
-        use_polar, code_rate, deterministic_input, debug);
+        code_rate, deterministic_input, debug);
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -40,7 +39,6 @@ namespace gr {
                                          int phase1_modtype,
                                          int phase2_modtype,
                                          int phase3_modtype,
-                                         bool use_polar,
                                          int code_rate,
                                          bool deterministic_input,
                                          bool debug)
@@ -52,7 +50,6 @@ namespace gr {
         d_phase1_modtype(phase1_modtype),
         d_phase2_modtype(phase2_modtype),
         d_phase3_modtype(phase3_modtype),
-        d_use_polar(use_polar),
         d_code_rate(code_rate),
         d_deterministic_input(deterministic_input),
         d_debug(debug),
@@ -63,7 +60,6 @@ namespace gr {
             << ", d_phase1_modtype=" << d_phase1_modtype
             << ", d_phase2_modtype=" << d_phase2_modtype
             << ", d_phase3_modtype=" << d_phase3_modtype
-            << ", d_use_polar=" << d_use_polar
             << ", d_code_rate=" << d_code_rate
             << ", d_deterministic_input=" << d_deterministic_input);
 
@@ -274,6 +270,8 @@ namespace gr {
         for (int i = 0; i < in_bits_needed; i++) {
           raw_in_bits[i] = dist(gen) & 0x1;
         }
+        std::cout << "@@@" 
+                  << "raw_in_bits.size(): " << raw_in_bits.size() << std::endl;
         // END DETERMINISTIC
       } else {
         // If we are NOT in deterministic mode, we need to check if d_bit_buffer

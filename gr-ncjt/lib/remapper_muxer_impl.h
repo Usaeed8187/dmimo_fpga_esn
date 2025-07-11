@@ -19,6 +19,7 @@ class remapper_muxer_impl : public remapper_muxer {
 private:
   // Block parameters
   int d_phase;
+  bool d_reencode;  ///< Re-encode the input bits (if false, just remap)
   int d_nstrm;        ///< Number of parallel streams
   int d_modtype;      ///< Bits per symbol (2,4,6,8)
   int d_n_ofdm_syms;  ///< Number of OFDM symbols per frame
@@ -42,8 +43,7 @@ protected:
   int calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-  remapper_muxer_impl(int phase, int nstrm, int n_ofdm_syms,
-                      int sd_num, bool use_polar, bool debug);
+  remapper_muxer_impl(int phase, int rgmode, int nstrm, bool reencode, bool debug);
   ~remapper_muxer_impl();
 
   // Where all the action really happens

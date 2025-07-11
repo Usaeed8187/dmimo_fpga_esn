@@ -315,6 +315,7 @@ namespace gr
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_nstrm_phase2"), pmt::from_uint64(d_nstrm_phase2), d_name);
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_nstrm_phase3"), pmt::from_uint64(d_nstrm_phase3), d_name);
 
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_current_phase"), pmt::from_uint64(d_phase), d_name);
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_modtype"), pmt::from_uint64(d_modtype), d_name);
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_modtype_phase1"), pmt::from_uint64(d_modtype_phase1), d_name);
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_modtype_phase2"), pmt::from_uint64(d_modtype_phase2), d_name);

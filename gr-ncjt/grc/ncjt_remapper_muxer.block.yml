@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.remapper_muxer(${phase}, ${nstrm}, ${n_ofdm_syms}, ${sd_num}, ${use_polar}, ${debug})
+  make: ncjt.remapper_muxer(${phase}, ${rgmode}, ${nstrm}, ${reencode}, ${debug})
 
 parameters:
   - id: phase
@@ -13,26 +13,23 @@ parameters:
     default: 2
     options: [2, 3]
     option_labels: ['Phase 2', 'Phase 3']
+  - id: rgmode
+    label: RG Mode
+    dtype: int
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    hide: part
   - id: nstrm
     label: Number of Streams
     dtype: int
     default: 1
     options: [1, 2, 3, 4]
-  - id: n_ofdm_syms
-    label: Number of OFDM Symbols
-    dtype: int
-    default: 40
-  - id: sd_num
-    label: Number of Data Subcarriers
-    dtype: int
-    default: 52
-    readonly: true
-  - id: use_polar
-    label: Polar or Repetition Code
+  - id: reencode
+    label: Reencode
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
-    option_labels: [ Polar, Repetition ]
+    option_labels: [ Enable, Disable ]
   - id: debug
     label: Debug
     dtype: bool

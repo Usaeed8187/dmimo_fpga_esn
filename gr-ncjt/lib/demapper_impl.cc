@@ -15,6 +15,7 @@
 #include <iostream>
 #include <pmt/pmt.h>
 #include <stdexcept>
+#include "rg_modes.h"
 #include "common.h"
 #include <random>
 
@@ -25,17 +26,19 @@ namespace gr
     //////////////////////////////////////////////////////////////////////
     // Factory
     //////////////////////////////////////////////////////////////////////
-    demapper::sptr demapper::make(bool coded,
+    demapper::sptr demapper::make(int rgmode,
+                                  bool coded,
                                   bool deterministic_input,
                                   bool debug)
     {
-      return gnuradio::make_block_sptr<demapper_impl>(coded, deterministic_input, debug);
+      return gnuradio::make_block_sptr<demapper_impl>(rgmode, coded, deterministic_input, debug);
     }
 
     //////////////////////////////////////////////////////////////////////
     // Constructor
     //////////////////////////////////////////////////////////////////////
-    demapper_impl::demapper_impl(bool coded,
+    demapper_impl::demapper_impl(int rgmode,
+                                 bool coded,
                                  bool deterministic_input,
                                  bool debug)
         : gr::block("demapper",
@@ -45,6 +48,8 @@ namespace gr
           d_deterministic_input(deterministic_input),
           d_debug(debug),
           cc(0),
+          d_rgmode(rgmode),
+          d_current_phase(0),
           d_last_nstrm(1),
           d_last_modtype(2),
           d_last_coding_rate(0),
@@ -62,7 +67,11 @@ namespace gr
       NCJT_LOG(d_debug, "d_output_raw=" << d_output_raw
                 << ", d_deterministic_input=" << d_deterministic_input);
 
-      set_output_multiple(2016);
+      if (rgmode < 0 || rgmode >= 8)
+        throw std::runtime_error("Unsupported RG mode");
+      else {
+        set_output_multiple(RG_NUM_OFDM_SYM[rgmode] * RG_NUM_DATA_SC[rgmode] - 64);
+      }
 
       set_tag_propagation_policy(TPP_DONT);
 
@@ -195,6 +204,11 @@ namespace gr
           modtype_bits_to_index(d_last_modtype);
           NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_modtype=" << d_last_modtype);
                     
+        } 
+        else if (key == "rx_current_phase")
+        {
+          d_current_phase = pmt::to_uint64(tg.value);
+          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_current_phase=" << d_current_phase);
         }
         else if (key == "rx_modtype_phase1")
         {
@@ -267,6 +281,7 @@ namespace gr
       const gr_complex *in_csi = static_cast<const gr_complex *>(input_items[1]);
 
       d_coded_len = d_last_pkt_len * d_last_modtype; // total bits
+      int d_phase2_coded_len = d_last_nstrm * (RG_NUM_OFDM_SYM[d_rgmode] * RG_NUM_DATA_SC[d_rgmode] - 64) * d_last_modtype_phase2;
       d_coded_buf = (uint8_t *)malloc(d_coded_len);
 
       int syms_per_stream = d_last_pkt_len / d_last_nstrm;
@@ -296,17 +311,17 @@ namespace gr
       if (d_last_coding_rate > 0)
       {
         double R = code_rates[d_last_coding_rate];
-        int message_len_bits = int(std::floor(d_coded_len * R));
-        message_len_bits = message_len_bits + (d_last_modtype - (message_len_bits % d_last_modtype));
+        int message_len_bits = int(std::floor(d_phase2_coded_len * R));
+        message_len_bits = message_len_bits + (d_last_modtype_phase2 - (message_len_bits % d_last_modtype));
         //
-        std::vector<srsran::log_likelihood_ratio> llrs(d_coded_len);
-        for (int i = 0; i < d_coded_len; i++)
+        std::vector<srsran::log_likelihood_ratio> llrs(d_phase2_coded_len);
+        for (int i = 0; i < d_phase2_coded_len; i++)
         {
           llrs[i] = (d_coded_buf[i] == 0) ? +10 : -10;
         }
         //
         int seg_out_size = d_last_syms_per_stream;
-        int num_segs = d_coded_len / seg_out_size;
+        int num_segs = d_phase2_coded_len / seg_out_size;
         int base_in_bits_per_seg = message_len_bits / num_segs;
         int remainder = message_len_bits % num_segs;
         d_info_buf = (uint8_t *)malloc(message_len_bits);
@@ -334,7 +349,7 @@ namespace gr
       else
       {
         d_info_buf = d_coded_buf;
-        d_info_len = d_coded_len;
+        d_info_len = d_phase2_coded_len;
       }
 
       ///////////////////////////////////////////////////////////////////////
@@ -365,6 +380,9 @@ namespace gr
           add_item_tag(op, nitems_written(op), pmt::string_to_symbol("rx_modtype"),
                        pmt::from_uint64(d_last_modtype),
                        d_name);
+          add_item_tag(op, nitems_written(op), pmt::string_to_symbol("rx_current_phase"),
+                       pmt::from_uint64(d_current_phase),
+                       d_name);
           add_item_tag(op, nitems_written(op), pmt::string_to_symbol("rx_modtype_phase1"),
                        pmt::from_uint64(d_last_modtype_phase1),
                        d_name);
@@ -393,8 +411,6 @@ namespace gr
         }
       }
 
-      assert((d_info_len / d_last_modtype) <= noutput_items);
-
       add_item_tag(0, nitems_written(0), pmt::string_to_symbol("packet_len"),
                    pmt::from_long(d_info_len / d_last_modtype),
                    pmt::string_to_symbol(this->name()));
@@ -402,7 +418,7 @@ namespace gr
       if (d_output_raw)
       {
         add_item_tag(1, nitems_written(1), pmt::string_to_symbol("packet_len"),
-                     pmt::from_long(d_coded_len / d_last_modtype),
+                     pmt::from_long(d_phase2_coded_len / d_last_modtype_phase2),
                      pmt::string_to_symbol(this->name()));
       }
 
@@ -413,13 +429,14 @@ namespace gr
       {
         // Recalculate how many *info bits* the mapper used
         int frame_data_syms = d_last_pkt_len * d_last_nstrm;
-        int frame_data_bits_out = frame_data_syms * d_last_modtype;
+        // int frame_data_bits_out = frame_data_syms * d_last_modtype;
+        int frame_data_bits_phase2_out = frame_data_syms * d_last_modtype_phase2;
         double R = code_rates[d_last_coding_rate];
-        int in_bits_needed = frame_data_bits_out;
+        int in_bits_needed = frame_data_bits_phase2_out;
         if (d_last_coding_rate > 0)
         {
-          in_bits_needed = int(std::floor(frame_data_bits_out * R));
-          in_bits_needed = in_bits_needed + (d_last_modtype - (in_bits_needed % d_last_modtype));
+          in_bits_needed = int(std::floor(frame_data_bits_phase2_out * R));
+          in_bits_needed = in_bits_needed + (d_last_modtype_phase2 - (in_bits_needed % d_last_modtype_phase2));
         }
         // Generate the same PRNG bits used by mapper_muxer_impl
         std::mt19937 gen(d_last_seq_no);
@@ -454,10 +471,10 @@ namespace gr
         if (d_last_coding_rate > 0)
         {
           int seg_out_size = d_last_syms_per_stream;
-          int num_segs = frame_data_bits_out / seg_out_size;
+          int num_segs = frame_data_bits_phase2_out / seg_out_size;
           int base_in_bits_per_seg = in_bits_needed / num_segs;
           int remainder = in_bits_needed % num_segs;
-          reference_coded_bits.reserve(d_coded_len);
+          reference_coded_bits.reserve(d_phase2_coded_len);
           int start_idx = 0;
           for (int seg = 0; seg < num_segs; seg++)
           {
@@ -473,15 +490,20 @@ namespace gr
                                         seg_encoded.begin(), seg_encoded.end());
             start_idx += in_bits_per_seg;
           }
-          assert(reference_coded_bits.size() == (size_t)d_coded_len);
+          std::cout << "### "
+                    << "reference_bits.size(): " << reference_bits.size()
+                    << ", reference_coded_bits.size(): " << reference_coded_bits.size() 
+                    << ", d_phase2_coded_len: " << d_phase2_coded_len
+                    << ", d_coded_len: " << d_coded_len 
+                    << std::endl;
+          assert(reference_coded_bits.size() == (size_t)d_phase2_coded_len);
         }
         else
         {
           // no coding => coded bits = raw bits
           reference_coded_bits = reference_bits;
         }
-        int uncoded_compare_len =
-            std::min((int)reference_coded_bits.size(), d_coded_len);
+        int uncoded_compare_len = std::min((int)reference_coded_bits.size(), d_phase2_coded_len);
         int uncoded_errors = 0;
         for (int i = 0; i < uncoded_compare_len; i++)
         {

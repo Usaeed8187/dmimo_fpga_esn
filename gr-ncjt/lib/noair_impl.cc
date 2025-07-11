@@ -106,8 +106,8 @@ namespace gr
       std::random_device rd;
       d_rng.seed(rd());
 
-      message_port_register_in(pmt::intern("sel_snr"));
-      set_msg_handler(pmt::intern("sel_snr"), [this](pmt::pmt_t msg)
+      message_port_register_in(pmt::intern("s_snr"));
+      set_msg_handler(pmt::intern("s_snr"), [this](pmt::pmt_t msg)
                       {
                         if (pmt::is_number(msg))
                         {

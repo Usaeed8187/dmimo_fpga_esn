@@ -7,6 +7,7 @@
 
 #include "remapper_muxer_impl.h"
 #include <gnuradio/io_signature.h>
+#include "rg_modes.h"
 #include "common.h"
 
 namespace gr {
@@ -15,14 +16,12 @@ namespace gr {
     // Factory
     // ------------------------------------------------------------------------
     remapper_muxer::sptr
-    remapper_muxer::make(int phase, int nstrm, int n_ofdm_syms,
-                         int sd_num, bool use_polar, bool debug) {
+    remapper_muxer::make(int phase, int rgmode, int nstrm, bool reencode, bool debug) {
       return gnuradio::make_block_sptr<remapper_muxer_impl>(
         phase,
+        rgmode,
         nstrm,
-        n_ofdm_syms,
-        sd_num,
-        use_polar,
+        reencode,
         debug);
     }
 
@@ -30,10 +29,9 @@ namespace gr {
     // Constructor
     // ------------------------------------------------------------------------
     remapper_muxer_impl::remapper_muxer_impl(int phase,
+                                             int rgmode,
                                              int nstrm,
-                                             int n_ofdm_syms,
-                                             int sd_num,
-                                             bool use_polar,
+                                             bool reencode,
                                              bool debug)
       : gr::tagged_stream_block(
           "remapper_muxer",
@@ -43,17 +41,24 @@ namespace gr {
         d_phase(phase),
         d_nstrm(nstrm),
         d_modtype(-1),
-        d_n_ofdm_syms(n_ofdm_syms),
-        d_sd_num(sd_num),
         d_code_rate(-1),
+        d_reencode(reencode),
         d_debug(debug),
         d_seqno(0) {
 
       if (d_debug) {
-        std::cout << "[CONSTRUCTOR remapper_muxer_impl (nstrm=" << nstrm
-            << ", n_ofdm_syms=" << n_ofdm_syms << ", sd_num=" << sd_num
-            << ", use_polar=" << use_polar << ", debug=" << debug << ")]"
+        std::cout << "[CONSTRUCTOR remapper_muxer_impl (phase=" << d_phase
+            << ", rgmode=" << rgmode
+            << ", nstrm=" << d_nstrm
+            << ", debug=" << d_debug << ")]"
             << std::endl;
+      }
+
+      if (rgmode < 0 || rgmode >= 8)
+        throw std::runtime_error("Unsupported RG mode");
+      else {
+        d_n_ofdm_syms = RG_NUM_OFDM_SYM[rgmode];
+        d_sd_num = RG_NUM_DATA_SC[rgmode];
       }
 
       // Constellations
@@ -103,6 +108,8 @@ namespace gr {
           "[remapper_muxer_impl] ERROR: The rx_modtype_phase1 tag was not found in input stream");
 
       int phase1_modtype = pmt::to_uint64(tags[0].value);
+
+      std::cout << "[remapper_muxer_impl::work] phase1_modtype=" << phase1_modtype << std::endl; // TO BE REMOVED
 
       if (d_phase == 2) {
         get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_modtype_phase2"));

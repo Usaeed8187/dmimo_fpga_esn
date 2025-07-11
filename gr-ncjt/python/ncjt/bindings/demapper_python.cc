@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(demapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(9130a861ec687459a80deefb4c621936) */
+/* BINDTOOL_HEADER_FILE_HASH(f2c97ca7f1fa6e2e0ee164b07fbbf18f) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -31,12 +31,12 @@ namespace py = pybind11;
 
 void bind_demapper(py::module &m) {
 
-  using demapper = ::gr::ncjt::demapper;
+  using demapper = gr::ncjt::demapper;
 
   py::class_<demapper, gr::block, gr::basic_block, std::shared_ptr<demapper>>(
       m, "demapper", D(demapper))
 
-      .def(py::init(&demapper::make), py::arg("coded"),
+      .def(py::init(&demapper::make), py::arg("rgmode"), py::arg("coded"),
            py::arg("deterministic_input"), py::arg("debug"), D(demapper, make))
 
       ;

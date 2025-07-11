@@ -16,7 +16,7 @@ class knobs(gr.sync_block, QtWidgets.QWidget):
     """
     docstring for block knobs
     """
-    def __init__(self, mcs, reset, noair):
+    def __init__(self, mcs, phase1_modtype, phase2_modtype, phase3_modtype, code_rate, reset, noair):
         gr.sync_block.__init__(self,
             name="knobs",
             in_sig=[],
@@ -44,10 +44,12 @@ class knobs(gr.sync_block, QtWidgets.QWidget):
             self.mainLayout.addWidget(self.mod_type_phase3, row, 1)
             row += 1
             #
-            for mt_widget in [self.mod_type_phase1, self.mod_type_phase2, self.mod_type_phase3]:
+            modtype_to_ind = {2: 0, 4: 1, 6: 2, 8: 3}
+            for i, mt_widget in enumerate([self.mod_type_phase1, self.mod_type_phase2, self.mod_type_phase3]):
                 for mtype in ['QPSK', '16-QAM', '64-QAM', '256-QAM']:
                     mt_widget.addItem(mtype)
-                mt_widget.setCurrentIndex(0)
+                mt = [phase1_modtype, phase2_modtype, phase3_modtype][i]
+                mt_widget.setCurrentIndex(modtype_to_ind[mt])
                 mt_widget.currentIndexChanged.connect(self.onSelModTypeChange)
             # self.mod_type_phase1.addItem('QPSK')
             # self.mod_type_phase1.addItem('16-QAM')
@@ -66,15 +68,19 @@ class knobs(gr.sync_block, QtWidgets.QWidget):
             ###
             self.mainLayout.addWidget(Qt.QLabel('Code Rate:'), row, 0)
             self.code_rate = Qt.QComboBox()
-            self.code_rate.addItem('No LDPC Coding')
-            self.code_rate.addItem('1/4')
-            self.code_rate.addItem('1/3')
-            self.code_rate.addItem('1/2')
-            self.code_rate.addItem('2/3')
-            self.code_rate.addItem('3/4')
-            self.code_rate.addItem('4/5')
-            self.code_rate.addItem('5/6')
-            self.code_rate.setCurrentIndex(0)
+            code_rate_items = [
+                'No LDPC Coding',
+                '1/4',
+                '1/3',
+                '1/2',
+                '2/3',
+                '3/4',
+                '4/5',
+                '5/6'
+            ]
+            for item in code_rate_items:
+                self.code_rate.addItem(item)
+            self.code_rate.setCurrentIndex(code_rate)
             self.code_rate.currentIndexChanged.connect(self.onSelCodeRateChange)
             self.mainLayout.addWidget(self.code_rate, row, 1)
             self.message_port_register_out(pmt.intern('s_code_rate'))
@@ -183,11 +189,6 @@ class knobs(gr.sync_block, QtWidgets.QWidget):
     def onSNRChange(self):
         print(f'[knobs::onSNRChange] SNR: {self.snr.text()}')
         self.message_port_pub(pmt.intern("s_snr"), pmt.to_pmt(float(self.snr.text())))
-
-    def work(self, input_items, output_items):
-        print(f'[knobs::work] input_items: {input_items}, output_items: {output_items}')
-        return len(output_items[0])
-
 
 
     def work(self, input_items, output_items):

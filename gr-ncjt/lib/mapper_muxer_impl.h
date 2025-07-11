@@ -57,7 +57,6 @@ namespace gr {
                         int phase1_modtype,
                         int phase2_modtype,
                         int phase3_modtype,
-                        bool use_polar,
                         int code_rate,
                         bool deterministic_input,
                         bool debug);
