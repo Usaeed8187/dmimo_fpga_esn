@@ -412,8 +412,10 @@ namespace gr
       }
 
       add_item_tag(0, nitems_written(0), pmt::string_to_symbol("packet_len"),
-                   pmt::from_long(d_info_len / d_last_modtype),
+                   pmt::from_long(d_info_len / d_last_modtype_phase2),
                    pmt::string_to_symbol(this->name()));
+
+      assert(d_info_len % d_last_modtype_phase2 == 0);
 
       if (d_output_raw)
       {
@@ -421,6 +423,8 @@ namespace gr
                      pmt::from_long(d_phase2_coded_len / d_last_modtype_phase2),
                      pmt::string_to_symbol(this->name()));
       }
+
+      assert(d_phase2_coded_len % d_last_modtype_phase2 == 0);
 
       // ----------------------------------------------------------------
       // 5) If deterministic input => measure coded BER and uncoded BER
@@ -531,33 +535,35 @@ namespace gr
         }
       }
 
-      // Pack d_modtype bits into each byte (decoded)
-      int out_info_bytes = d_info_len / d_last_modtype;
+      // Pack d_last_modtype_phase2 bits into each byte (decoded)
+      int out_info_bytes = d_info_len / d_last_modtype_phase2;
       uint8_t *out_dec = static_cast<uint8_t *>(output_items[0]);
       for (int i = 0; i < out_info_bytes; i++)
       {
         uint8_t val = 0;
-        for (int b = 0; b < d_last_modtype; b++)
+        for (int b = 0; b < d_last_modtype_phase2; b++)
         {
-          val = (val << 1) | d_info_buf[i * d_last_modtype + b];
+          val = (val << 1) | d_info_buf[i * d_last_modtype_phase2 + b];
         }
         out_dec[i] = val;
       }
+      std::cout << "AAA " << out_info_bytes << std::endl;
       produce(0, out_info_bytes);
-      // Pack d_modtype bits into each byte (uncoded)
+      // Pack d_last_modtype_phase2 bits into each byte (uncoded)
       if (d_output_raw)
       {
         uint8_t *out_unc = static_cast<uint8_t *>(output_items[1]);
-        int out_coded_bytes = d_coded_len / d_last_modtype;
+        int out_coded_bytes = d_phase2_coded_len / d_last_modtype_phase2;
         for (int i = 0; i < out_coded_bytes; i++)
         {
           uint8_t val = 0;
-          for (int b = 0; b < d_last_modtype; b++)
+          for (int b = 0; b < d_last_modtype_phase2; b++)
           {
-            val = (val << 1) | d_coded_buf[i * d_last_modtype + b];
+            val = (val << 1) | d_coded_buf[i * d_last_modtype_phase2 + b];
           }
           out_unc[i] = val;
         }
+        std::cout << "BBB " << out_coded_bytes << std::endl;
         produce(1, out_coded_bytes);
       }
       if (d_last_coding_rate > 0)

@@ -59,7 +59,7 @@ parameters:
   dtype: gui_hint
   hide: part
 
-inputs:
+inputs: []
 
 outputs:
 - label: s_modtypes

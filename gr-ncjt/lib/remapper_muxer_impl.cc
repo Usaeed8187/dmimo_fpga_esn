@@ -91,7 +91,7 @@ namespace gr {
                                   gr_vector_const_void_star &input_items,
                                   gr_vector_void_star &output_items) {
       cc++;
-      if (d_debug) {
+      if (true) {
         std::cout << "[remapper_muxer_impl::work(" << cc
             << ")] Called, noutput_items=" << noutput_items
             << ", ninput_items[0]=" << ninput_items[0] << "" << std::endl;
@@ -106,140 +106,159 @@ namespace gr {
       if (!tags.size())
         throw std::runtime_error(
           "[remapper_muxer_impl] ERROR: The rx_modtype_phase1 tag was not found in input stream");
-
       int phase1_modtype = pmt::to_uint64(tags[0].value);
 
-      std::cout << "[remapper_muxer_impl::work] phase1_modtype=" << phase1_modtype << std::endl; // TO BE REMOVED
+      get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_modtype_phase2"));
+      if (!tags.size())
+        throw std::runtime_error(
+          "[remapper_muxer_impl] ERROR: The rx_modtype_phase2 tag was not found in input stream");
+      int phase2_modtype = pmt::to_uint64(tags[0].value);
 
+      get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_modtype_phase3"));
+      if (!tags.size())
+        throw std::runtime_error(
+          "[remapper_muxer_impl] ERROR: The rx_modtype_phase3 tag was not found in input stream");
+      int phase3_modtype = pmt::to_uint64(tags[0].value);
+      
+      // d_modtype = pmt::to_uint64(tags[0].value);
+
+      int d_modtype = -1;
       if (d_phase == 2) {
-        get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_modtype_phase2"));
-        if (!tags.size())
-          throw std::runtime_error(
-            "[remapper_muxer_impl] ERROR: The rx_modtype_phase2 tag was not found in input stream");
+        // Phase 2: use phase2_modtype
+        d_modtype = phase2_modtype;
       } else if (d_phase == 3) {
-        get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_modtype_phase3"));
-        if (!tags.size())
-          throw std::runtime_error(
-            "[remapper_muxer_impl] ERROR: The rx_modtype_phase3 tag was not found in input stream");
+        // Phase 3: use phase3_modtype
+        d_modtype = phase3_modtype;
+      } else {
+        throw std::runtime_error(
+          "[remapper_muxer_impl] ERROR: Invalid phase " + std::to_string(d_phase));
       }
-      d_modtype = pmt::to_uint64(tags[0].value);
 
       // How many data symbols per frame?
       int frame_data_syms = (d_nstrm * d_n_ofdm_syms * d_sd_num) - (d_nstrm * 64);
 
-      // The final number of bits to be mapped onto data symbols:
-      int frame_data_bits_out = frame_data_syms * d_modtype;
-
-      // Fill d_bit_buffer with zeros
-      d_bit_buffer.resize(frame_data_bits_out, 0);
-
-      // std::vector<gr::tag_t> tags_pack_len;
-      // get_tags_in_window(tags_pack_len, 0, 0, 1, pmt::string_to_symbol("packet_len"));
-      // int last_packet_len = pmt::to_long(tags_pack_len[0].value);
-
-      // std::cout << "^^ [remapper_muxer_impl::work] last_packet_len=" << last_packet_len
-      //           << " phase1_modtype=" << phase1_modtype
-      //           << " d_modtype=" << d_modtype << std::endl;
-
-      // Unpack bits from each input byte into d_modtype bits
-      int nbytes_in = frame_data_bits_out / d_modtype;
-      for (int i = 0; i < nbytes_in; i++) {
+      ///////
+      std::vector<uint8_t> raw_in_bits; // bits to feed into LDPC or direct
+      // Unpack bits from each input byte into phase2_modtype bits
+      int in_bits_needed = ninput_items[0] * phase2_modtype;
+      raw_in_bits.resize(in_bits_needed);
+      for (int i = 0; i < ninput_items[0]; i++) {
         uint8_t val = static_cast<const uint8_t *>(input_items[0])[i];
-        for (int b = 0; b < d_modtype; b++) {
-          int shift = (d_modtype - 1) - b;
-          d_bit_buffer[i * d_modtype + b] = (val >> shift) & 0x1;
+        for (int b = 0; b < phase2_modtype; b++) {
+          int shift = (phase2_modtype - 1) - b;
+          raw_in_bits[i * phase2_modtype + b] = (val >> shift) & 0x1;
         }
       }
+      ///////
 
-      get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_raw_ctrl"));
-      if (!tags.size())
-        throw std::runtime_error("[remapper_muxer_impl] ERROR: No rx_raw_ctrl tag found in input stream");
-      const unsigned __int128 *raw_ctrl = reinterpret_cast<const unsigned __int128 *>(pmt::blob_data(tags[0].value));
 
-      CTRL ctrl(d_debug);
-      ctrl.set_raw(*raw_ctrl);
 
-      // Write SNRs (dB) for each RB into extended field
+      return 0;
+      // // The final number of bits to be mapped onto data symbols:
+      // int frame_data_bits_out = frame_data_syms * d_modtype;
 
-      get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("snr_rbs_db"));
-      std::vector<float> snr_values = pmt::f32vector_elements(tags[0].value);
-      size_t num_snr_elements = snr_values.size();
+      // // Fill d_bit_buffer with zeros
+      // d_bit_buffer.resize(frame_data_bits_out, 0);
 
-      uint64_t packed = quantize_snrs(snr_values.data(), num_snr_elements,
-                                      B0, Bd,
-                                      MIN_ABS, MAX_ABS,
-                                      MIN_DIFF, MAX_DIFF);
-      // std::cout << "[remapper_muxer_impl] EXTENDED: " << std::hex << packed << std::dec << std::endl;
-      ctrl.set_extended(packed);
+      // // Unpack bits from each input byte into phase2_modtype bits
+      // int nbytes_in = frame_data_syms;
+      // for (int i = 0; i < nbytes_in; i++) {
+      //   uint8_t val = static_cast<const uint8_t *>(input_items[0])[i];
+      //   for (int b = 0; b < phase2_modtype; b++) {
+      //     int shift = (phase2_modtype - 1) - b;
+      //     d_bit_buffer[i * phase2_modtype + b] = (val >> shift) & 0x1;
+      //   }
+      // }
 
-      ctrl.set_seq_number(d_seqno); // Do not remove!
+      // get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_raw_ctrl"));
+      // if (!tags.size())
+      //   throw std::runtime_error("[remapper_muxer_impl] ERROR: No rx_raw_ctrl tag found in input stream");
+      // const unsigned __int128 *raw_ctrl = reinterpret_cast<const unsigned __int128 *>(pmt::blob_data(tags[0].value));
 
-      // ctrl.set_data_checksum(data_crc16);
-      std::vector<gr_complex> ctrl_syms = ctrl.pack_and_modulate_16qam();
+      // CTRL ctrl(d_debug);
+      // ctrl.set_raw(*raw_ctrl);
 
-      // Place those 64 QPSK symbols, repeated per stream
-      for (int i = 0; i < d_nstrm; i++) {
-        for (int j = 0; j < 64; j++) {
-          out0[j * d_nstrm + i] = ctrl_syms[j];
-        }
-      }
+      // // Write SNRs (dB) for each RB into extended field
 
-      // Data portion offset in the output (in symbols)
-      int data_sym_offset = d_nstrm * 64;
+      // get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("snr_rbs_db"));
+      // std::vector<float> snr_values = pmt::f32vector_elements(tags[0].value);
+      // size_t num_snr_elements = snr_values.size();
 
-      // The number of "OFDM symbol periods" in the data portion
-      int num_periods = frame_data_syms / d_nstrm;
+      // uint64_t packed = quantize_snrs(snr_values.data(), num_snr_elements,
+      //                                 B0, Bd,
+      //                                 MIN_ABS, MAX_ABS,
+      //                                 MIN_DIFF, MAX_DIFF);
+      // // std::cout << "[remapper_muxer_impl] EXTENDED: " << std::hex << packed << std::dec << std::endl;
+      // ctrl.set_extended(packed);
 
-      std::vector<uint8_t> used_bits(d_bit_buffer.begin(),
-                                     d_bit_buffer.begin() + frame_data_bits_out);
+      // ctrl.set_seq_number(d_seqno); // Do not remove!
 
-      assert(used_bits.size() == (size_t)frame_data_bits_out);
+      // // ctrl.set_data_checksum(data_crc16);
+      // std::vector<gr_complex> ctrl_syms = ctrl.pack_and_modulate_16qam();
 
-      // Map used_bits -> QAM symbols
-      for (int k = 0; k < num_periods; k++) {
-        int period_offset = k * d_nstrm * d_modtype;
-        for (int s = 0; s < d_nstrm; s++) {
-          int val = 0;
-          // gather bits for this symbol
-          for (int j = 0; j < d_modtype; j++) {
-            int bit_index = period_offset + s + j * d_nstrm;
-            val |= (used_bits[bit_index] << j);
-          }
-          // map val to a constellation point
-          gr_complex sym;
-          switch (d_modtype) {
-            case 2:
-              sym = (*d_constellation_qpsk)[val];
-              break;
-            case 4:
-              sym = (*d_constellation_16qam)[val];
-              break;
-            case 6:
-              sym = (*d_constellation_64qam)[val];
-              break;
-            case 8:
-              sym = (*d_constellation_256qam)[val];
-              break;
-            default:
-              throw std::runtime_error("Invalid modulation type");
-          }
-          // place symbol into output in interleaved fashion
-          out0[data_sym_offset + k * d_nstrm + s] = sym;
-        }
-      }
+      // // Place those 64 QPSK symbols, repeated per stream
+      // for (int i = 0; i < d_nstrm; i++) {
+      //   for (int j = 0; j < 64; j++) {
+      //     out0[j * d_nstrm + i] = ctrl_syms[j];
+      //   }
+      // }
 
-      int total_syms_out = d_nstrm * d_n_ofdm_syms * d_sd_num;
-      add_item_tag(0, nitems_written(0), pmt::string_to_symbol("packet_len"),
-                   pmt::from_long(total_syms_out));
-      add_item_tag(0, nitems_written(0), pmt::string_to_symbol("seqno"),
-                   pmt::from_long(d_seqno));
+      // // Data portion offset in the output (in symbols)
+      // int data_sym_offset = d_nstrm * 64;
 
-      d_bit_buffer.clear();
+      // // The number of "OFDM symbol periods" in the data portion
+      // int num_periods = frame_data_syms / d_nstrm;
 
-      // Bump sequence number (to be overridden by tags if valid control packet)
-      d_seqno++;
+      // std::vector<uint8_t> used_bits(d_bit_buffer.begin(),
+      //                                d_bit_buffer.begin() + frame_data_bits_out);
 
-      return total_syms_out;
+      // assert(used_bits.size() == (size_t)frame_data_bits_out);
+
+      // // Map used_bits -> QAM symbols
+      // for (int k = 0; k < num_periods; k++) {
+      //   int period_offset = k * d_nstrm * d_modtype;
+      //   for (int s = 0; s < d_nstrm; s++) {
+      //     int val = 0;
+      //     // gather bits for this symbol
+      //     for (int j = 0; j < d_modtype; j++) {
+      //       int bit_index = period_offset + s + j * d_nstrm;
+      //       val |= (used_bits[bit_index] << j);
+      //     }
+      //     // map val to a constellation point
+      //     gr_complex sym;
+      //     switch (d_modtype) {
+      //       case 2:
+      //         sym = (*d_constellation_qpsk)[val];
+      //         break;
+      //       case 4:
+      //         sym = (*d_constellation_16qam)[val];
+      //         break;
+      //       case 6:
+      //         sym = (*d_constellation_64qam)[val];
+      //         break;
+      //       case 8:
+      //         sym = (*d_constellation_256qam)[val];
+      //         break;
+      //       default:
+      //         throw std::runtime_error("Invalid modulation type");
+      //     }
+      //     // place symbol into output in interleaved fashion
+      //     out0[data_sym_offset + k * d_nstrm + s] = sym;
+      //   }
+      // }
+
+      // int total_syms_out = d_nstrm * d_n_ofdm_syms * d_sd_num;
+      // add_item_tag(0, nitems_written(0), pmt::string_to_symbol("packet_len"),
+      //              pmt::from_long(total_syms_out));
+      // add_item_tag(0, nitems_written(0), pmt::string_to_symbol("seqno"),
+      //              pmt::from_long(d_seqno));
+
+      // d_bit_buffer.clear();
+
+      // // Bump sequence number (to be overridden by tags if valid control packet)
+      // d_seqno++;
+
+      // return total_syms_out;
     }
   } /* namespace ncjt */
 } /* namespace gr */

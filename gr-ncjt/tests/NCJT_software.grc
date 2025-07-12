@@ -380,7 +380,7 @@ blocks:
     bus_structure: null
     coordinate: [2392, 416.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_tag_debug_0
   id: blocks_tag_debug
   parameters:
@@ -389,7 +389,7 @@ blocks:
     comment: ''
     display: 'True'
     filter: '""'
-    name: ''
+    name: 2coded
     num_inputs: '1'
     type: byte
     vlen: '1'
@@ -397,7 +397,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1888, 328.0]
+    coordinate: [1872, 544.0]
     rotation: 0
     state: enabled
 - name: blocks_tag_debug_0_0
@@ -417,6 +417,25 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1504, 528.0]
+    rotation: 0
+    state: disabled
+- name: blocks_tag_debug_0_1
+  id: blocks_tag_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    display: 'True'
+    filter: '"packet_len"'
+    name: 1info
+    num_inputs: '1'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1904, 272.0]
     rotation: 0
     state: disabled
 - name: ncjt_demapper_0
@@ -476,12 +495,12 @@ blocks:
     coordinate: [1416, 1480.0]
     rotation: 180
     state: disabled
-- name: ncjt_demapper_0_1
+- name: ncjt_demapper_1
   id: ncjt_demapper
   parameters:
     affinity: ''
     alias: ''
-    coded: 'True'
+    coded: 'False'
     comment: ''
     debug: 'False'
     deterministic_input: deterministic
@@ -492,7 +511,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1576, 408.0]
+    coordinate: [1552, 408.0]
     rotation: 0
     state: enabled
 - name: ncjt_err_stats_0
@@ -696,7 +715,6 @@ blocks:
     phase2_modtype: '2'
     phase3_modtype: '2'
     rgmode: '0'
-    use_polar: ctrl_polar_coding
   states:
     bus_sink: false
     bus_source: false
@@ -720,7 +738,6 @@ blocks:
     phase2_modtype: init_phase2_bits_per_sym
     phase3_modtype: init_phase3_bits_per_sym
     rgmode: rgmode
-    use_polar: ctrl_polar_coding
   states:
     bus_sink: false
     bus_source: false
@@ -838,11 +855,10 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    n_ofdm_syms: num_ofdm_syms
     nstrm: num_streams
     phase: '2'
-    sd_num: num_subcarriers - 4
-    use_polar: ctrl_polar_coding
+    reencode: 'False'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -859,11 +875,10 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    n_ofdm_syms: num_ofdm_syms
     nstrm: num_streams
     phase: '2'
-    sd_num: num_subcarriers - 4
-    use_polar: ctrl_polar_coding
+    reencode: 'False'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -880,18 +895,17 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    n_ofdm_syms: num_ofdm_syms
     nstrm: num_streams
     phase: '2'
-    sd_num: num_subcarriers - 4
-    use_polar: ctrl_polar_coding
+    reencode: 'False'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2072, 384.0]
+    coordinate: [2040, 392.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_rg_demapper_0
   id: ncjt_rg_demapper
   parameters:
@@ -1080,10 +1094,10 @@ connections:
 - [ncjt_demapper_0_0, '0', ncjt_err_stats_0_0, '0']
 - [ncjt_demapper_0_0_0, '0', blocks_null_sink_1_1, '0']
 - [ncjt_demapper_0_0_0, '0', ncjt_err_stats_0_0_1, '0']
-- [ncjt_demapper_0_1, '0', blocks_tag_debug_0, '0']
-- [ncjt_demapper_0_1, '0', ncjt_err_stats_0_1, '0']
-- [ncjt_demapper_0_1, '1', blocks_null_sink_1, '0']
-- [ncjt_demapper_0_1, '1', ncjt_remapper_muxer_0_0_0, '0']
+- [ncjt_demapper_1, '0', blocks_null_sink_1, '0']
+- [ncjt_demapper_1, '0', blocks_tag_debug_0, '0']
+- [ncjt_demapper_1, '0', ncjt_err_stats_0_1, '0']
+- [ncjt_demapper_1, '0', ncjt_remapper_muxer_0_0_0, '0']
 - [ncjt_knobs_0, reset, ncjt_err_stats_0, reset]
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_0, reset]
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_0_0, reset]
@@ -1121,9 +1135,9 @@ connections:
 - [ncjt_rg_demapper_0_0_0, '1', ncjt_demapper_0_0_0, '1']
 - [ncjt_rg_demapper_0_0_0, '1', ncjt_pdc_0, '3']
 - [ncjt_rg_demapper_0_1, '0', blocks_tag_debug_0_0, '0']
-- [ncjt_rg_demapper_0_1, '0', ncjt_demapper_0_1, '0']
+- [ncjt_rg_demapper_0_1, '0', ncjt_demapper_1, '0']
 - [ncjt_rg_demapper_0_1, '1', blocks_null_sink_1_0, '0']
-- [ncjt_rg_demapper_0_1, '1', ncjt_demapper_0_1, '1']
+- [ncjt_rg_demapper_0_1, '1', ncjt_demapper_1, '1']
 - [ncjt_rg_mapper_0, '0', ncjt_noair_0, '0']
 - [ncjt_rg_mapper_0_0, '0', ncjt_noair_0_1, '0']
 - [ncjt_rg_mapper_0_0_0, '0', ncjt_noair_0_1_0, '0']

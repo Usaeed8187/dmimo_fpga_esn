@@ -77,10 +77,6 @@ namespace gr {
         throw std::runtime_error("mapper_muxer: invalid modtype (2,4,6,8).");
       if (!d_valid_mod_types.count(d_phase3_modtype))
         throw std::runtime_error("mapper_muxer: invalid modtype (2,4,6,8).");
-      // if (d_phase2_modtype < d_phase1_modtype)
-      //   throw std::runtime_error("mapper_muxer: phase2_modtype must be >= phase1_modtype.");
-      // if (d_phase3_modtype < d_phase2_modtype)
-      //   throw std::runtime_error("mapper_muxer: phase3_modtype must be >= phase2_modtype.");
       if (d_phase1_modtype < d_phase2_modtype)
         throw std::runtime_error("mapper_muxer: phase1_modtype must be >= phase2_modtype.");
       if (d_phase3_modtype < d_phase2_modtype)
@@ -270,8 +266,6 @@ namespace gr {
         for (int i = 0; i < in_bits_needed; i++) {
           raw_in_bits[i] = dist(gen) & 0x1;
         }
-        std::cout << "@@@" 
-                  << "raw_in_bits.size(): " << raw_in_bits.size() << std::endl;
         // END DETERMINISTIC
       } else {
         // If we are NOT in deterministic mode, we need to check if d_bit_buffer
@@ -380,6 +374,9 @@ namespace gr {
       while ((int)used_bits.size() < frame_data_bits_out_capacity) {
         used_bits.push_back(dist_padding(gen_padding) & 0x1);
       }
+
+      std::cout << "[MAPPER_MUXER] info_bits=" << in_bits_needed
+                << ", coded_bits=" << used_bits.size() << std::endl;
 
       assert(used_bits.size() == (size_t)frame_data_bits_out_capacity);
 
