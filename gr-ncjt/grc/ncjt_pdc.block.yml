@@ -4,9 +4,15 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.pdc(${majority_enabled}, ${num_copies}, ${expire_ms}, ${num_threads}, ${deterministic_input}, ${debug})
+  make: ncjt.pdc(${rgmode}, ${majority_enabled}, ${num_copies}, ${expire_ms}, ${num_threads}, ${deterministic_input}, ${debug})
 
 parameters:
+- id: rgmode
+  label: RG Mode
+  dtype: int
+  default: 0
+  options: [0, 1, 2, 3, 4, 5, 6, 7]
+  hide: part
 - id: majority_enabled
   label: Majority Voting
   dtype: bool

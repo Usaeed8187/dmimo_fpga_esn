@@ -85,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '5'
+    value: '20'
   states:
     bus_sink: false
     bus_source: false
@@ -205,7 +205,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '0'
+    value: '3'
   states:
     bus_sink: false
     bus_source: false
@@ -313,6 +313,74 @@ blocks:
     coordinate: [1424, 296.0]
     rotation: 0
     state: enabled
+- name: blocks_null_sink_0_1_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2008, 504.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_0_1_1_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [264, 1352.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_0_1_1_0_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1040, 1352.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_0_1_1_0_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1280, 1232.0]
+    rotation: 180
+    state: enabled
 - name: blocks_null_sink_1_0
   id: blocks_null_sink
   parameters:
@@ -330,74 +398,6 @@ blocks:
     coordinate: [1376, 488.0]
     rotation: 0
     state: enabled
-- name: blocks_null_sink_1_1
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: byte
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1416, 1432.0]
-    rotation: 0
-    state: disabled
-- name: blocks_null_sink_2
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1400, 1576.0]
-    rotation: 0
-    state: disabled
-- name: blocks_null_sink_3
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1584, 1736.0]
-    rotation: 0
-    state: disabled
-- name: blocks_null_sink_4
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2392, 416.0]
-    rotation: 0
-    state: disabled
 - name: blocks_tag_debug_0
   id: blocks_tag_debug
   parameters:
@@ -414,7 +414,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1872, 544.0]
+    coordinate: [1800, 600.0]
     rotation: 0
     state: disabled
 - name: blocks_tag_debug_0_0
@@ -460,20 +460,20 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    coded: 'True'
+    coded: 'False'
     comment: ''
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
-    rgmode: '0'
+    rgmode: rgmode
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2232, 984.0]
+    coordinate: [904, 1224.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_demapper_0_0
   id: ncjt_demapper
   parameters:
@@ -485,14 +485,14 @@ blocks:
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
-    rgmode: '0'
+    rgmode: rgmode
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1624, 2032.0]
+    coordinate: [1136, 2080.0]
     rotation: 180
-    state: disabled
+    state: enabled
 - name: ncjt_demapper_0_0_0
   id: ncjt_demapper
   parameters:
@@ -504,14 +504,14 @@ blocks:
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
-    rgmode: '0'
+    rgmode: rgmode
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1416, 1480.0]
+    coordinate: [1064, 1592.0]
     rotation: 180
-    state: disabled
+    state: enabled
 - name: ncjt_demapper_1
   id: ncjt_demapper
   parameters:
@@ -523,7 +523,7 @@ blocks:
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
-    rgmode: '0'
+    rgmode: rgmode
   states:
     bus_sink: false
     bus_source: false
@@ -536,7 +536,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    caption: ''
+    caption: Phase 2 Rx (RX UE)
     cols: '3'
     comment: ''
     dark: 'True'
@@ -555,7 +555,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2224, 748.0]
+    coordinate: [904, 980.0]
     rotation: 180
     state: disabled
 - name: ncjt_err_stats_0_0
@@ -563,7 +563,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    caption: ''
+    caption: Phase 3 Rx (RX UE 2)
     cols: '3'
     comment: ''
     dark: 'True'
@@ -582,9 +582,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1280, 1956.0]
+    coordinate: [816, 2052.0]
     rotation: 180
-    state: disabled
+    state: enabled
 - name: ncjt_err_stats_0_0_0
   id: ncjt_err_stats
   parameters:
@@ -609,7 +609,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [912, 1660.0]
+    coordinate: [208, 1580.0]
     rotation: 180
     state: disabled
 - name: ncjt_err_stats_0_0_0_0
@@ -636,7 +636,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [912, 1892.0]
+    coordinate: [208, 1892.0]
     rotation: 180
     state: disabled
 - name: ncjt_err_stats_0_0_1
@@ -644,7 +644,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    caption: ''
+    caption: Phase 3 Rx (RX UE 1)
     cols: '3'
     comment: ''
     dark: 'True'
@@ -663,15 +663,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 1412.0]
+    coordinate: [792, 1388.0]
     rotation: 180
-    state: disabled
+    state: enabled
 - name: ncjt_err_stats_0_1
   id: ncjt_err_stats
   parameters:
     affinity: ''
     alias: ''
-    caption: ''
+    caption: Phase 1 Rx (TX UE)
     cols: '3'
     comment: ''
     dark: 'True'
@@ -690,7 +690,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1576, 164.0]
+    coordinate: [1528, 156.0]
     rotation: 180
     state: enabled
 - name: ncjt_knobs_0
@@ -716,29 +716,6 @@ blocks:
     coordinate: [32, 448.0]
     rotation: 0
     state: enabled
-- name: ncjt_mapper_muxer_0
-  id: ncjt_mapper_muxer
-  parameters:
-    affinity: ''
-    alias: ''
-    code_rate: code_rate
-    comment: ''
-    debug: 'False'
-    deterministic_input: deterministic
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    nstrm: num_streams
-    phase1_modtype: '2'
-    phase2_modtype: '2'
-    phase3_modtype: '2'
-    rgmode: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [912, 900.0]
-    rotation: 0
-    state: disabled
 - name: ncjt_mapper_muxer_0_0
   id: ncjt_mapper_muxer
   parameters:
@@ -773,15 +750,15 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_drop_init_packets: '0'
-    rgmode: '0'
+    rgmode: rgmode
     snr_db: SNR
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1664, 960.0]
+    coordinate: [384, 1208.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_noair_0_0
   id: ncjt_noair
   parameters:
@@ -793,13 +770,13 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_drop_init_packets: '0'
-    rgmode: '0'
+    rgmode: rgmode
     snr_db: SNR
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 360.0]
+    coordinate: [952, 368.0]
     rotation: 0
     state: enabled
 - name: ncjt_noair_0_1
@@ -819,9 +796,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2688.0, 1400]
+    coordinate: [1760.0, 1352]
     rotation: 270
-    state: disabled
+    state: enabled
 - name: ncjt_noair_0_1_0
   id: ncjt_noair
   parameters:
@@ -839,9 +816,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2536.0, 1400]
+    coordinate: [1568.0, 1344]
     rotation: 270
-    state: disabled
+    state: enabled
 - name: ncjt_pdc_0
   id: ncjt_pdc
   parameters:
@@ -856,52 +833,13 @@ blocks:
     minoutbuf: '0'
     num_copies: '2'
     num_threads: '0'
+    rgmode: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1352, 1784.0]
+    coordinate: [568, 1752.0]
     rotation: 180
-    state: disabled
-- name: ncjt_remapper_muxer_0
-  id: ncjt_remapper_muxer
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    debug: 'False'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    nstrm: num_streams
-    phase: '2'
-    reencode: 'False'
-    rgmode: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2672.0, 864]
-    rotation: 270
-    state: disabled
-- name: ncjt_remapper_muxer_0_0
-  id: ncjt_remapper_muxer
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    debug: 'False'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    nstrm: num_streams
-    phase: '2'
-    reencode: 'False'
-    rgmode: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2520.0, 864]
-    rotation: 270
     state: disabled
 - name: ncjt_remapper_muxer_0_0_0
   id: ncjt_remapper_muxer
@@ -913,16 +851,50 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrm: num_streams
-    phase: '2'
-    reencode: 'False'
-    rgmode: '0'
+    rgmode: rgmode
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2040, 392.0]
+    coordinate: [1864, 392.0]
     rotation: 0
-    state: disabled
+    state: enabled
+- name: ncjt_remapper_muxer_1
+  id: ncjt_remapper_muxer
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nstrm: '1'
+    rgmode: rgmode
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1216, 1152.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_remapper_muxer_1_0
+  id: ncjt_remapper_muxer
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nstrm: '1'
+    rgmode: rgmode
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1216, 1288.0]
+    rotation: 0
+    state: enabled
 - name: ncjt_rg_demapper_0
   id: ncjt_rg_demapper
   parameters:
@@ -934,16 +906,16 @@ blocks:
     minoutbuf: '0'
     nstrm: num_streams
     phase: '2'
-    rgmode: '0'
+    rgmode: rgmode
     tag_snr: 'True'
     usecsi: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1960, 940.0]
+    coordinate: [672, 1216.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_rg_demapper_0_0
   id: ncjt_rg_demapper
   parameters:
@@ -955,16 +927,16 @@ blocks:
     minoutbuf: '0'
     nstrm: num_streams
     phase: '3'
-    rgmode: '0'
+    rgmode: rgmode
     tag_snr: 'False'
     usecsi: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1728, 1772.0]
+    coordinate: [1440, 1920.0]
     rotation: 180
-    state: disabled
+    state: enabled
 - name: ncjt_rg_demapper_0_0_0
   id: ncjt_rg_demapper
   parameters:
@@ -976,16 +948,16 @@ blocks:
     minoutbuf: '0'
     nstrm: num_streams
     phase: '3'
-    rgmode: '0'
+    rgmode: rgmode
     tag_snr: 'False'
     usecsi: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1712, 1580.0]
+    coordinate: [1432, 1584.0]
     rotation: 180
-    state: disabled
+    state: enabled
 - name: ncjt_rg_demapper_0_1
   id: ncjt_rg_demapper
   parameters:
@@ -997,7 +969,7 @@ blocks:
     minoutbuf: '0'
     nstrm: num_streams
     phase: '1'
-    rgmode: '0'
+    rgmode: rgmode
     tag_snr: 'True'
     usecsi: 'True'
   states:
@@ -1022,15 +994,15 @@ blocks:
     mucpt: 'False'
     nstrm: num_streams
     numue: '1'
-    rgmode: '0'
+    rgmode: rgmode
     ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1432, 944.0]
+    coordinate: [88, 1200.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_rg_mapper_0_0
   id: ncjt_rg_mapper
   parameters:
@@ -1046,15 +1018,15 @@ blocks:
     mucpt: 'True'
     nstrm: num_streams
     numue: '2'
-    rgmode: '0'
+    rgmode: rgmode
     ueidx: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2680.0, 1136]
+    coordinate: [1752.0, 944]
     rotation: 270
-    state: disabled
+    state: enabled
 - name: ncjt_rg_mapper_0_0_0
   id: ncjt_rg_mapper
   parameters:
@@ -1070,15 +1042,15 @@ blocks:
     mucpt: 'True'
     nstrm: num_streams
     numue: '2'
-    rgmode: '0'
+    rgmode: rgmode
     ueidx: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2528.0, 1128]
+    coordinate: [1560.0, 1112]
     rotation: 270
-    state: disabled
+    state: enabled
 - name: ncjt_rg_mapper_0_1
   id: ncjt_rg_mapper
   parameters:
@@ -1094,7 +1066,7 @@ blocks:
     mucpt: 'False'
     nstrm: num_streams
     numue: '1'
-    rgmode: '0'
+    rgmode: rgmode
     ueidx: '-1'
   states:
     bus_sink: false
@@ -1105,11 +1077,11 @@ blocks:
     state: enabled
 
 connections:
+- [ncjt_demapper_0, '0', blocks_null_sink_0_1_1_0_0, '0']
 - [ncjt_demapper_0, '0', ncjt_err_stats_0, '0']
-- [ncjt_demapper_0, '1', ncjt_remapper_muxer_0, '0']
-- [ncjt_demapper_0, '1', ncjt_remapper_muxer_0_0, '0']
+- [ncjt_demapper_0, '0', ncjt_remapper_muxer_1, '0']
+- [ncjt_demapper_0, '0', ncjt_remapper_muxer_1_0, '0']
 - [ncjt_demapper_0_0, '0', ncjt_err_stats_0_0, '0']
-- [ncjt_demapper_0_0_0, '0', blocks_null_sink_1_1, '0']
 - [ncjt_demapper_0_0_0, '0', ncjt_err_stats_0_0_1, '0']
 - [ncjt_demapper_1, '0', blocks_tag_debug_0, '0']
 - [ncjt_demapper_1, '0', ncjt_err_stats_0_1, '0']
@@ -1121,8 +1093,10 @@ connections:
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_0_1, reset]
 - [ncjt_knobs_0, s_code_rate, ncjt_mapper_muxer_0_0, s_code_rate]
 - [ncjt_knobs_0, s_modtypes, ncjt_mapper_muxer_0_0, s_modtypes]
+- [ncjt_knobs_0, s_snr, ncjt_noair_0, s_snr]
 - [ncjt_knobs_0, s_snr, ncjt_noair_0_0, s_snr]
-- [ncjt_mapper_muxer_0, '0', ncjt_rg_mapper_0, '0']
+- [ncjt_knobs_0, s_snr, ncjt_noair_0_1, s_snr]
+- [ncjt_knobs_0, s_snr, ncjt_noair_0_1_0, s_snr]
 - [ncjt_mapper_muxer_0_0, '0', ncjt_rg_mapper_0_1, '0']
 - [ncjt_noair_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_noair_0, '1', ncjt_rg_demapper_0, '1']
@@ -1136,19 +1110,19 @@ connections:
 - [ncjt_noair_0_1_0, '1', ncjt_rg_demapper_0_0_0, '1']
 - [ncjt_pdc_0, '0', ncjt_err_stats_0_0_0, '0']
 - [ncjt_pdc_0, '1', ncjt_err_stats_0_0_0_0, '0']
-- [ncjt_remapper_muxer_0, '0', ncjt_rg_mapper_0_0, '0']
-- [ncjt_remapper_muxer_0_0, '0', ncjt_rg_mapper_0_0_0, '0']
-- [ncjt_remapper_muxer_0_0_0, '0', blocks_null_sink_4, '0']
+- [ncjt_remapper_muxer_0_0_0, '0', blocks_null_sink_0_1_1, '0']
+- [ncjt_remapper_muxer_0_0_0, '0', ncjt_rg_mapper_0, '0']
+- [ncjt_remapper_muxer_1, '0', blocks_null_sink_0_1_1_0_1, '0']
+- [ncjt_remapper_muxer_1, '0', ncjt_rg_mapper_0_0, '0']
+- [ncjt_remapper_muxer_1_0, '0', ncjt_rg_mapper_0_0_0, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_demapper_0, '0']
 - [ncjt_rg_demapper_0, '1', ncjt_demapper_0, '1']
 - [ncjt_rg_demapper_0_0, '0', ncjt_demapper_0_0, '0']
 - [ncjt_rg_demapper_0_0, '0', ncjt_pdc_0, '0']
 - [ncjt_rg_demapper_0_0, '1', ncjt_demapper_0_0, '1']
 - [ncjt_rg_demapper_0_0, '1', ncjt_pdc_0, '2']
-- [ncjt_rg_demapper_0_0_0, '0', blocks_null_sink_2, '0']
 - [ncjt_rg_demapper_0_0_0, '0', ncjt_demapper_0_0_0, '0']
 - [ncjt_rg_demapper_0_0_0, '0', ncjt_pdc_0, '1']
-- [ncjt_rg_demapper_0_0_0, '1', blocks_null_sink_3, '0']
 - [ncjt_rg_demapper_0_0_0, '1', ncjt_demapper_0_0_0, '1']
 - [ncjt_rg_demapper_0_0_0, '1', ncjt_pdc_0, '3']
 - [ncjt_rg_demapper_0_1, '0', blocks_null_sink_0_1_0, '0']
@@ -1156,6 +1130,7 @@ connections:
 - [ncjt_rg_demapper_0_1, '0', ncjt_demapper_1, '0']
 - [ncjt_rg_demapper_0_1, '1', blocks_null_sink_1_0, '0']
 - [ncjt_rg_demapper_0_1, '1', ncjt_demapper_1, '1']
+- [ncjt_rg_mapper_0, '0', blocks_null_sink_0_1_1_0, '0']
 - [ncjt_rg_mapper_0, '0', ncjt_noair_0, '0']
 - [ncjt_rg_mapper_0_0, '0', ncjt_noair_0_1, '0']
 - [ncjt_rg_mapper_0_0_0, '0', ncjt_noair_0_1_0, '0']

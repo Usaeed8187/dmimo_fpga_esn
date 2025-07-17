@@ -24,6 +24,7 @@ namespace gr
     private:
       // We leave everything mostly unchanged, but add support for FFT=64 or 256
       int d_phase;
+      int d_rgmode; // RG mode (0-7)
       bool d_ctrl_ok; // whether control was successfully decoded
       int d_code_rate;
       int d_code_rate_phase1;

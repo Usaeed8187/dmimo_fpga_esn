@@ -12,26 +12,29 @@
 #include "qam_constellation.h"
 #include <random>
 #include "srsran/srsvec/bit.h"
+#include <gnuradio/ncjt/rg_modes.h>
 
 namespace gr
 {
   namespace ncjt
   {
 
-    pdc::sptr pdc::make(bool majority_enabled,
+    pdc::sptr pdc::make(int rgmode,
+                        bool majority_enabled,
                         int num_copies,
                         int expire_ms,
                         int num_threads,
                         bool deterministic_input,
                         bool debug)
     {
-      return gnuradio::make_block_sptr<pdc_impl>(majority_enabled, num_copies, expire_ms, num_threads, deterministic_input, debug);
+      return gnuradio::make_block_sptr<pdc_impl>(rgmode, majority_enabled, num_copies, expire_ms, num_threads, deterministic_input, debug);
     }
 
     /*
      * The private constructor
      */
-    pdc_impl::pdc_impl(bool majority_enabled,
+    pdc_impl::pdc_impl(int rgmode,
+                       bool majority_enabled,
                        int num_copies,
                        int expire_ms,
                        int num_threads,
@@ -40,6 +43,7 @@ namespace gr
         : gr::block("pdc",
                     gr::io_signature::make(num_copies * 2, num_copies * 2, sizeof(gr_complex)),
                     gr::io_signature::make(1, 2, sizeof(uint8_t))),
+          d_rgmode(rgmode),
           d_num_copies(num_copies),
           d_num_threads(num_threads),
           d_hll_enabled(true),
@@ -49,6 +53,13 @@ namespace gr
           d_debug(debug),
           d_no_inp_cnt(0)
     {
+      if (rgmode < 0 || rgmode >= 8)
+        throw std::runtime_error("Unsupported RG mode");
+      else {
+        d_num_packet_syms = (RG_NUM_OFDM_SYM[rgmode] * RG_NUM_DATA_SC[rgmode] - 6);
+        set_min_noutput_items(d_num_packet_syms * 8);
+      }
+
       for (int mtype = 2; mtype <= 8; mtype += 2)
       {
         std::vector<gr_complex> constellation;
@@ -108,7 +119,6 @@ namespace gr
         }
       }
 
-      set_min_noutput_items(2016 * 10);
       set_tag_propagation_policy(TPP_DONT);
     }
 
@@ -116,8 +126,7 @@ namespace gr
     {
     }
 
-    void pdc_impl::forecast(int noutput_items,
-                            gr_vector_int &ninput_items_required)
+    void pdc_impl::forecast(int noutput_items, gr_vector_int &ninput_items_required)
     {
       for (size_t i = 0; i < ninput_items_required.size(); i++)
       {
@@ -198,15 +207,15 @@ namespace gr
       uint64_t _tt = 0;
       for (size_t qam_inp = 0; qam_inp < static_cast<size_t>(d_num_copies); qam_inp++)
       {
-        if (ninput_items[qam_inp] >= 2016 && ninput_items[qam_inp + d_num_copies] >= 2016)
+        if (ninput_items[qam_inp] >= d_num_packet_syms && ninput_items[qam_inp + d_num_copies] >= d_num_packet_syms)
         {
           // tag: packet_len
           get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("packet_len"));
           _packet_len_syms = pmt::to_uint64(tags2[0].value);
-          if (_packet_len_syms != 2016)
+          if (_packet_len_syms != d_num_packet_syms)
           {
             throw std::runtime_error(
-                "[pdc_impl] ERROR: Only one stream of 2016 symbols is supported for now!");
+                "[pdc_impl] ERROR: Only one stream is supported for now!");
           }
           // tag: rx_ctrl_ok
           get_tags_in_window(tags1, qam_inp, 0, 1, pmt::string_to_symbol("rx_ctrl_ok"));
@@ -476,14 +485,14 @@ namespace gr
             auto &pkt = it->second;
             //
             std::vector<float> snr_sc_linear(sd_num, -10.0f);
-            int num_rbs = (int)std::floor(sd_num / RB_SIZE);
+            int num_rbs = (int)std::floor(sd_num / RB_SIZE[d_rgmode]);
             rb_snrs_dict = pmt::dict_add(rb_snrs_dict,
                                          pmt::from_long(copy_id),
                                          pmt::init_f32vector(num_rbs, pkt.snr_rbs_db));
             for (int rb = 0; rb < num_rbs; rb++)
             {
-              int start = rb * RB_SIZE;
-              int end = (rb != num_rbs - 1) ? start + RB_SIZE : sd_num;
+              int start = rb * RB_SIZE[d_rgmode];
+              int end = (rb != num_rbs - 1) ? start + RB_SIZE[d_rgmode] : sd_num;
               float snr_linear = pow(10.0f, pkt.snr_rbs_db[rb] / 10.0f);
               for (int j = start; j < end; j++)
               {

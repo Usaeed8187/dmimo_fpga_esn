@@ -253,6 +253,7 @@ namespace gr {
       if (d_code_rate > 0) {
         double R = code_rates[d_code_rate];
         in_bits_needed = int(std::floor(frame_data_bits_phase2_out * R));
+
         in_bits_needed = in_bits_needed + (d_phase2_modtype - (in_bits_needed % d_phase2_modtype));
 
         NCJT_LOG(d_debug, "(" << cc << ") "

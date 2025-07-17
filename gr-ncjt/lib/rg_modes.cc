@@ -21,6 +21,7 @@ NCJT_API int RG_NUM_DATA_SC[NUM_RG_MODES] = {
     52, 52, 234, 234, 132, 132, 132, 132
 };
 
+
 // guard subcarriers on each side
 NCJT_API int RG_NUM_GUARD_SC[NUM_RG_MODES] = {
     4, 4, 6, 6, 57, 57, 57, 57
@@ -56,4 +57,19 @@ NCJT_API int RG_NUM_DMRS_SYM[NUM_RG_MODES] = {
 // number of CSI-RS symbols per subframe/slot
 NCJT_API int RG_NUM_CSIRS_SYM[NUM_RG_MODES] = {
     0, 0, 0, 0, 0, 0, 0, 1
+};
+
+// For differential quantization of SNRs
+NCJT_API int RB_SIZE[NUM_RG_MODES] = {
+    13, 13, 23, 23, 16, 16, 16, 16
+};
+
+// bits for the first SNR
+NCJT_API int RB_B0[NUM_RG_MODES] = {
+    16, 16, 10, 10, 15, 15, 15, 15
+};
+
+// bits for each subsequent SNR
+NCJT_API int RB_Bd[NUM_RG_MODES] = {
+    16, 16, 6, 6, 7, 7, 7, 7
 };

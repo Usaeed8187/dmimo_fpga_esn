@@ -23,6 +23,8 @@ namespace gr
     class pdc_impl : public pdc
     {
     private:
+      int d_rgmode;          // RG mode (0-7)
+      int d_num_packet_syms;
       int d_num_copies;        // Number of copies
       int d_num_threads;       // Number of threads
       bool d_hll_enabled;      // HLL flag
@@ -61,7 +63,8 @@ namespace gr
       std::unordered_map<int, std::unordered_map<int, HardLogLikelihoodVanilla *>> d_hlls;
 
     public:
-      pdc_impl(bool majority_enabled,
+      pdc_impl(int rgmode,
+               bool majority_enabled,
                int num_copies,
                int expire_ms,
                int num_threads,

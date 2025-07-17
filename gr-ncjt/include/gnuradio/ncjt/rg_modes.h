@@ -23,4 +23,8 @@ extern NCJT_API int RG_NUM_OFDM_SYM[NUM_RG_MODES];   // number of OFDM symbols p
 extern NCJT_API int RG_NUM_DMRS_SYM[NUM_RG_MODES];   // number of DMRS symbols per subframe/slot
 extern NCJT_API int RG_NUM_CSIRS_SYM[NUM_RG_MODES];  // number of CSI-RS symbols per subframe/slot
 
+extern NCJT_API int RB_SIZE[NUM_RG_MODES];           // number of subcarriers in a resource block
+extern NCJT_API int RB_B0[NUM_RG_MODES];             // bits for the first SNR
+extern NCJT_API int RB_Bd[NUM_RG_MODES];             // bits for each subsequent SNR
+
 #endif //GR_NCJT_INCLUDE_GNURADIO_NCJT_RG_MODES_H

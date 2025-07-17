@@ -92,15 +92,15 @@ namespace gr {
     // SNR Quantization and De-quantization
     ///////////////////////////////////////////////////////////////////////
 
-    const int RB_SIZE = 13; // Number of subcarriers in a resource block
+    // const int RB_SIZE = 13; // Number of subcarriers in a resource block
 
-    const int B0 = 8; // 8 bits for the first SNR
-    const int Bd = 5; // 5 bits for each subsequent SNR
+    // const int B0 = 8; // 8 bits for the first SNR
+    // const int Bd = 5; // 5 bits for each subsequent SNR
     // Ranges for the absolute value and the differential
-    const float MIN_ABS = -1.0f;
+    const float MIN_ABS = -5.0f;
     const float MAX_ABS = 40.0f;
-    const float MIN_DIFF = -6.0f; // use tighter range for differences
-    const float MAX_DIFF = 6.0f;
+    const float MIN_DIFF = -7.0f; // use tighter range for differences
+    const float MAX_DIFF = 7.0f;
 
     uint64_t quantize_snrs(const float *snr_values,
                            std::size_t num_snr_elements,

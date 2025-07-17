@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(remapper_muxer.h) */
-/* BINDTOOL_HEADER_FILE_HASH(757ad1d10f8301b6a03888ecf3dcb3f3) */
+/* BINDTOOL_HEADER_FILE_HASH(857834466db60b48fd8edaa280444a9d) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,9 +37,8 @@ void bind_remapper_muxer(py::module &m) {
              std::shared_ptr<remapper_muxer>>(m, "remapper_muxer",
                                               D(remapper_muxer))
 
-      .def(py::init(&remapper_muxer::make), py::arg("phase"), py::arg("rgmode"),
-           py::arg("nstrm"), py::arg("reencode"), py::arg("debug"),
-           D(remapper_muxer, make))
+      .def(py::init(&remapper_muxer::make), py::arg("rgmode"), py::arg("nstrm"),
+           py::arg("debug"), D(remapper_muxer, make))
 
       ;
 }

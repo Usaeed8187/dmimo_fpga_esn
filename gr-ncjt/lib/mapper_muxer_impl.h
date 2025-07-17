@@ -49,8 +49,6 @@ namespace gr {
 
       std::vector<uint8_t> d_bit_buffer;
 
-      std::vector<uint8_t> ldpc_encode(const std::vector<uint8_t> &message, int codeword_length);
-
     public:
       mapper_muxer_impl(int rgmode,
                         int nstrm,

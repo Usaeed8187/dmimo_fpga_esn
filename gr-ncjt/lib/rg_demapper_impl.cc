@@ -53,6 +53,7 @@ namespace gr
                                   gr::io_signature::make(2, 2, sizeof(gr_complex)),
                                   "packet_len"),
           d_phase(phase),
+          d_rgmode(rgmode),
           d_ctrl_ok(false),
           d_nstrm_param(nstrm),
           d_nstrm_phase1(nstrm),
@@ -313,7 +314,7 @@ namespace gr
                 << "\n\t\trx_nstrm(" << d_nstrm_param << "), rx_nstrm_phase1(" << d_nstrm_phase1 << "), rx_nstrm_phase2(" << d_nstrm_phase2 << "), rx_nstrm_phase3(" << d_nstrm_phase3 << "), "
                 << "\n\t\trx_current_phase(" << d_phase << "), rx_modtype(" << d_modtype << "), rx_modtype_phase1(" << d_modtype_phase1 << "), rx_modtype_phase2(" << d_modtype_phase2 << "), rx_modtype_phase3(" << d_modtype_phase3 << "), "
                 << "\n\t\trx_coding_rate(" << d_code_rate << "), rx_coding_rate_phase1(" << d_code_rate_phase1 << "), rx_coding_rate_phase2(" << d_code_rate_phase2 << "), rx_coding_rate_phase3(" << d_code_rate_phase3 << ")");
-      int num_rbs = (int)std::floor(d_sd_num / RB_SIZE);
+      int num_rbs = (int)std::floor(d_sd_num / RB_SIZE[d_rgmode]);
       if (d_tag_snr)
       {
         NCJT_LOG(d_debug, "(" << cc << ") Processing SNRs tag (snr_sc_linear) since tag_snr is set");
@@ -333,8 +334,8 @@ namespace gr
           std::vector<float> snr_rbs(num_rbs);
           for (int rb = 0; rb < num_rbs; rb++)
           {
-            int start = rb * RB_SIZE;
-            int end = (rb != num_rbs - 1) ? start + RB_SIZE : d_sd_num;
+            int start = rb * RB_SIZE[d_rgmode];
+            int end = (rb != num_rbs - 1) ? start + RB_SIZE[d_rgmode] : d_sd_num;
             float snr_sum = 0.0f;
             for (int j = start; j < end; j++)
             {
@@ -347,7 +348,7 @@ namespace gr
               oss << "\tRB_SNR[" << rb << "] = " << snr_avg_db << " dB (";
               for (int j = start; j < end; j++)
               {
-                oss << "SC[" << j << "] = " << snr_values[j];
+                oss << snr_values[j];
                 if (j < end - 1)
                   oss << ", ";
               }
@@ -365,13 +366,14 @@ namespace gr
       else
       {
         NCJT_LOG(d_debug, "(" << cc << ") Processing SNRs from CTRL since tag_snr is not set");
-        int snr_bits = B0 + Bd * (num_rbs - 1);
+        int snr_bits = RB_B0[d_rgmode] + RB_Bd[d_rgmode] * (num_rbs - 1);
         float recovered[num_rbs];
         // Get snr_bits LSB bits from the extended field
         uint64_t packed_bits = d_extended & ((1ULL << snr_bits) - 1);
         NCJT_LOG(d_debug, "(" << cc << ")] EXTENDED: " << std::hex << d_extended << std::dec);
         // De-quantisation
-        dequantize_snrs(packed_bits, num_rbs, B0, Bd,
+        dequantize_snrs(packed_bits, num_rbs, 
+                        RB_B0[d_rgmode], RB_Bd[d_rgmode],
                         MIN_ABS, MAX_ABS,
                         MIN_DIFF, MAX_DIFF,
                         recovered);
