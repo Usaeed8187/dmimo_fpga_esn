@@ -15,7 +15,7 @@
 #include <cstring>   // for memcpy
 #include <cmath>     // for M_PI
 #include <stdexcept>
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 #include "common.h"
 
 // #define VERSION 2
@@ -185,18 +185,17 @@ namespace gr::ncjt
                               gr_vector_void_star &output_items)
   {
     cc++;
-    NCJT_LOG(d_debug, " (" << cc << "): noutput_items=" << noutput_items
-              << ", ninput_items[0]=" << ninput_items[0]);
+    NCJT_LOG(d_debug, "(" << cc << ")"
+              << "\n\t noutput_items=" << noutput_items
+              << "\n\t ninput_items[0]=" << ninput_items[0]);
     // We expect exactly d_data_syms_per_stream input items for one chunk
     int in_count = ninput_items[0];
     if (in_count < d_data_syms_per_stream)
     {
       // Not enough for a full frame => produce nothing
-      if (d_debug)
-      {
-        std::cerr << " [rg_mapper_impl::work(" << cc << ")] Not enough input for a frame: "
-                  << in_count << " < " << d_data_syms_per_stream << std::endl;
-      }
+      NCJT_LOG(d_debug, "(" << cc << ")"
+                << " Not enough input for a frame: "
+                << in_count << " < " << d_data_syms_per_stream);
       return 0;
     }
 
@@ -421,7 +420,8 @@ namespace gr::ncjt
     FILE *fp = std::fopen(filename, "rb");
     if (!fp)
     {
-      std::cerr << "[rg_mapper_impl::read_ltf_data] Failed to open " << filename << "\n";
+      NCJT_LOG(d_debug, "(" << cc << ")"
+                << " Failed to open LTF data file: " << filename);
       return 0ULL;
     }
     std::fseek(fp, 0, SEEK_END);
@@ -446,7 +446,8 @@ namespace gr::ncjt
 
     if (nr != nitems)
     {
-      std::cerr << "[rg_mapper_impl::read_ltf_data] Incomplete file read.\n";
+      NCJT_LOG(d_debug, "(" << cc << ")"
+                << " Incomplete file read.");
       volk_free(d_ltf_data);
       d_ltf_data = nullptr;
       return 0ULL;

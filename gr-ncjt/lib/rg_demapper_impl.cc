@@ -14,7 +14,7 @@
 #include <iostream>
 #include <pmt/pmt.h>
 #include <stdexcept>
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 #include "common.h"
 
 namespace gr
@@ -64,7 +64,7 @@ namespace gr
           d_debug(debug),
           cc(0),
           d_usecsi(usecsi),
-          d_ctrl_obj(d_debug),
+          d_ctrl_obj(false), // TODO: pass debug flag
           d_extended(0),
           d_raw_ctrl(0)
     {
@@ -77,7 +77,7 @@ namespace gr
         throw std::runtime_error("[rg_demapper] invalid nstrm_param (1..8).");
       }
       if (rgmode < 0 || rgmode >= 8)
-          throw std::runtime_error("Unsupported RG mode");
+          throw std::runtime_error("[rg_demapper] Unsupported RG mode");
       else {
         d_modtype = 2;
         d_modtype_phase1 = 2;
@@ -95,12 +95,13 @@ namespace gr
       }
       modtype_bits_to_index(d_modtype);
 
-      NCJT_LOG(d_debug, "(" << cc << ")] nstrm=" << d_nstrm_param
-                << ", modtype=" << d_modtype
-                << ", usecsi=" << d_usecsi
-                << ", debug=" << d_debug
-                << ", sd_num=" << d_sd_num
-                << ", n_ofdm_syms=" << d_n_ofdm_syms);
+      NCJT_LOG(d_debug,
+                "\n\tnstrm=" << d_nstrm_param
+                << "\n\tmodtype=" << d_modtype
+                << "\n\tusecsi=" << d_usecsi
+                << "\n\tdebug=" << d_debug
+                << "\n\tsd_num=" << d_sd_num
+                << "\n\tn_ofdm_syms=" << d_n_ofdm_syms);
 
       set_tag_propagation_policy(gr::block::TPP_DONT);
     }
@@ -162,29 +163,11 @@ namespace gr
       }
     }
 
-    int rg_demapper_impl::convert_modtype(int modtype)
-    {
-      switch (modtype)
-      {
-      case 0:
-        return 2; // QPSK
-      case 1:
-        return 4; // 16QAM
-      case 2:
-        return 6; // 64QAM
-      case 3:
-        return 8; // 256QAM
-      default:
-        throw std::runtime_error(
-            "[rg_demapper] ERROR: Invalid modulation type");
-      }
-    }
-
     void rg_demapper_impl::update_modtype()
     {
-      d_modtype_phase1 = convert_modtype(d_ctrl_obj.get_mod_type_phase1());
-      d_modtype_phase2 = convert_modtype(d_ctrl_obj.get_mod_type_phase2());
-      d_modtype_phase3 = convert_modtype(d_ctrl_obj.get_mod_type_phase3());
+      d_modtype_phase1 = modtype_index_to_bits(d_ctrl_obj.get_mod_type_phase1());
+      d_modtype_phase2 = modtype_index_to_bits(d_ctrl_obj.get_mod_type_phase2());
+      d_modtype_phase3 = modtype_index_to_bits(d_ctrl_obj.get_mod_type_phase3());
       switch (d_phase)
       {
       case 1:
@@ -215,13 +198,10 @@ namespace gr
       int ctrl_syms_len = 64;
       int nports = d_usecsi ? 2 * d_nstrm_param : d_nstrm_param;
 
-      NCJT_LOG(d_debug, "\n[rg_demapper_impl::work(" << cc
-                << ")] Called, noutput_items=" << noutput_items);
-      for (int p = 0; p < nports; p++)
-      {
-        NCJT_LOG(d_debug, "\t(" << cc
-                  << ")] ninput_items[" << p << "]=" << ninput_items[p]);
-      }
+      NCJT_LOG(d_debug, "(" << cc << ")"
+                << "\n\tnoutput_items=" << noutput_items
+                << "\n\tninput_items.size()=" << ninput_items.size()
+                << "\n\tninput_items[0]=" << ninput_items[0]);
 
       int min_in = ninput_items[0];
       for (int p = 0; p < nports; p++)
@@ -236,13 +216,12 @@ namespace gr
       {
         if (ninput_items[p] != min_in)
         {
-          throw std::runtime_error(
-              "[rg_demapper] ERROR: input ports must have same length");
+          throw std::runtime_error("[rg_demapper] ERROR: input ports must have same length");
         }
       }
       if (min_in == 0)
       {
-        NCJT_LOG(d_debug, "(" << cc << ")] No data, return 0");
+        NCJT_LOG(d_debug, "(" << cc << ") No data, return 0");
         return 0; // no data
       }
 
@@ -278,11 +257,11 @@ namespace gr
                 "[rg_demapper] ERROR: Invalid phase (currently supports phase 2 with normal CTRL and phase 3 with extended CTRL)");
           if (!d_ctrl_ok)
           {
-            std::cerr << "[rg_demapper_impl::work(" << cc
-                      << ")] Failed to demodulate control symbols on stream " << s
-                      << std::endl;
+            NCJT_LOG(d_debug, "(" << cc << ") Failed to demodulate control symbols on stream " << s);
             continue;
           }
+
+          NCJT_LOG(d_debug, "(" << cc << ") Successfully demodulated control symbols on stream " << s);
 
           update_seqno();
           // nstrm is not obtained from CTRL for now. Current design of upstream block does not allow this. @TODO
@@ -326,16 +305,19 @@ namespace gr
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_coding_rate_phase2"), pmt::from_uint64(d_code_rate_phase2), d_name);
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_coding_rate_phase3"), pmt::from_uint64(d_code_rate_phase3), d_name);
 
-      NCJT_LOG(d_debug, "(" << cc << ")] Add tags [rx_nstrm ("
-                << d_nstrm_param << "), rx_modtype (" << d_modtype
-                << "), rx_coding_rate (" << d_code_rate << ")]");
+      NCJT_LOG(d_debug, "(" << cc << ")"
+                << "\n\t Added tags: " 
+                << "\n\t\trx_ctrl_ok(" << d_ctrl_ok << "), rx_seqno(" << d_seqno << "), rx_data_checksum, "
+                << "\n\t\trx_syms_per_stream(" << (d_n_ofdm_syms * d_sd_num - 64) << "), n_ofdm_syms(" << d_n_ofdm_syms << "), sd_num(" << d_sd_num << "), ctrl_syms_len(" << ctrl_syms_len << "), "
+                << "\n\t\trx_extended(" << d_extended << "), rx_raw_ctrl, "
+                << "\n\t\trx_nstrm(" << d_nstrm_param << "), rx_nstrm_phase1(" << d_nstrm_phase1 << "), rx_nstrm_phase2(" << d_nstrm_phase2 << "), rx_nstrm_phase3(" << d_nstrm_phase3 << "), "
+                << "\n\t\trx_current_phase(" << d_phase << "), rx_modtype(" << d_modtype << "), rx_modtype_phase1(" << d_modtype_phase1 << "), rx_modtype_phase2(" << d_modtype_phase2 << "), rx_modtype_phase3(" << d_modtype_phase3 << "), "
+                << "\n\t\trx_coding_rate(" << d_code_rate << "), rx_coding_rate_phase1(" << d_code_rate_phase1 << "), rx_coding_rate_phase2(" << d_code_rate_phase2 << "), rx_coding_rate_phase3(" << d_code_rate_phase3 << ")");
       int num_rbs = (int)std::floor(d_sd_num / RB_SIZE);
       if (d_tag_snr)
       {
+        NCJT_LOG(d_debug, "(" << cc << ") Processing SNRs tag (snr_sc_linear) since tag_snr is set");
         std::ostringstream oss;
-
-        std::vector<gr::tag_t> qsnr_tags;
-        get_tags_in_window(qsnr_tags, 0, 0, 1, pmt::string_to_symbol("quantized_snr"));
 
         std::vector<gr::tag_t> tags;
         get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("snr_sc_linear"));
@@ -356,19 +338,24 @@ namespace gr
             float snr_sum = 0.0f;
             for (int j = start; j < end; j++)
             {
-              if (d_debug)
-                oss << "\t\tSNR[" << j << "] = " << snr_values[j] << "\n";
               snr_sum += snr_values[j];
             }
             float snr_avg = snr_sum / (end - start);
             float snr_avg_db = 10 * std::log10(snr_avg);
             snr_rbs[rb] = snr_avg_db;
-            if (d_debug)
-              oss << "\tRB_SNR[" << rb << "] = " << snr_avg_db << "\n";
+            if (d_debug) {
+              oss << "\tRB_SNR[" << rb << "] = " << snr_avg_db << " dB (";
+              for (int j = start; j < end; j++)
+              {
+                oss << "SC[" << j << "] = " << snr_values[j];
+                if (j < end - 1)
+                  oss << ", ";
+              }
+              oss << ")\n";
+            }
           }
           add_item_tag(0, d_wrt, pmt::string_to_symbol("snr_rbs_db"), pmt::init_f32vector(snr_rbs.size(), snr_rbs.data()), d_name);
-          if (d_debug)
-            std::cout << oss.str();
+          NCJT_LOG(d_debug, "(" << cc << ")\n" << oss.str());
         }
         else
         {
@@ -377,6 +364,7 @@ namespace gr
       }
       else
       {
+        NCJT_LOG(d_debug, "(" << cc << ") Processing SNRs from CTRL since tag_snr is not set");
         int snr_bits = B0 + Bd * (num_rbs - 1);
         float recovered[num_rbs];
         // Get snr_bits LSB bits from the extended field
@@ -413,7 +401,7 @@ namespace gr
       int available_syms = min_in - ctrl_syms_len;
       if (available_syms <= 0)
       {
-        NCJT_LOG(d_debug, "(" << cc << ")] No data, return 0");
+        NCJT_LOG(d_debug, "(" << cc << ") No data, return 0");
         return 0;
       }
 
@@ -441,6 +429,8 @@ namespace gr
       {
         add_item_tag(p, nitems_written(p), pmt::string_to_symbol("packet_len"), pmt::from_long(out_syms), d_name);
       }
+
+      NCJT_LOG(d_debug, "(" << cc << ") Output symbols: " << out_syms);
 
       return out_syms;
     }

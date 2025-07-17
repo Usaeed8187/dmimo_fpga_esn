@@ -60,7 +60,6 @@ namespace gr
 
       void update_seqno();
       void update_coding_rate();
-      int convert_modtype(int modtype);
       void update_modtype();
       void update_data_checksum();
 

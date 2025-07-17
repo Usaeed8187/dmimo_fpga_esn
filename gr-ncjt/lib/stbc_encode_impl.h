@@ -8,7 +8,7 @@
 #define INCLUDED_NCJT_STBC_ENCODE_IMPL_H
 
 #include <gnuradio/ncjt/stbc_encode.h>
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 
 namespace gr::ncjt
 {

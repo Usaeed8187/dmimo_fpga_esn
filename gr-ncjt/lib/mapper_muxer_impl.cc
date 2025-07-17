@@ -11,7 +11,7 @@
 #include <pmt/pmt.h> // PMT tags
 #include <stdexcept>
 #include <random>
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 
 namespace gr {
   namespace ncjt {
@@ -205,8 +205,10 @@ namespace gr {
                                         gr_vector_void_star &output_items) {
       cc++;
 
-      NCJT_LOG(d_debug, "Called, noutput_items=" << noutput_items
-                        << ", ninput_items[0]=" << ninput_items[0]);
+      NCJT_LOG(d_debug, "(" << cc << ") -------- "
+            << "\n\tCalled, noutput_items=" << noutput_items
+            << (d_deterministic_input ? " (deterministic input)" : " (non-deterministic input)")
+            << ", d_seqno=" << d_seqno);
 
       // Output port 0: complex symbols
       gr_complex *out0 = static_cast<gr_complex *>(output_items[0]);
@@ -241,6 +243,11 @@ namespace gr {
       int frame_data_bits_out_capacity = frame_data_syms * d_phase1_modtype;
       int frame_data_bits_phase2_out = frame_data_syms * d_phase2_modtype;
 
+      NCJT_LOG(d_debug, "(" << cc << ") "
+            << "\n\tframe_data_syms=" << frame_data_syms
+            << "\n\tframe_data_bits_out_capacity=" << frame_data_bits_out_capacity
+            << "\n\tframe_data_bits_phase2_out=" << frame_data_bits_phase2_out);
+
       // If code rate is nonzero, we need to calculate the number of info bits.
       int in_bits_needed = frame_data_bits_phase2_out; // default if no coding
       if (d_code_rate > 0) {
@@ -248,8 +255,10 @@ namespace gr {
         in_bits_needed = int(std::floor(frame_data_bits_phase2_out * R));
         in_bits_needed = in_bits_needed + (d_phase2_modtype - (in_bits_needed % d_phase2_modtype));
 
-        NCJT_LOG(d_debug, "in_bits_needed=" << in_bits_needed
-                  << "in_bits_needed%modtype=" << in_bits_needed % d_phase2_modtype);
+        NCJT_LOG(d_debug, "(" << cc << ") "
+                  << "\n\tR=" << R
+                  << "\n\t# of coded bits without padding (per p2mod): " << frame_data_bits_phase2_out
+                  << "\n\t# of info bits needed: " << in_bits_needed);
       }
 
       //--------------------------------------------------------------------
@@ -291,7 +300,7 @@ namespace gr {
       int data_modtype_ind_phase2 = modtype_bits_to_index(d_phase2_modtype);
       int data_modtype_ind_phase3 = modtype_bits_to_index(d_phase3_modtype);
 
-      CTRL ctrl(d_debug);
+      CTRL ctrl(false); // TODO: Use d_debug
       ctrl.set_seq_number(d_seqno);
       //
       ctrl.set_nstrm_phase1(d_nstrm);
@@ -342,12 +351,14 @@ namespace gr {
         int base_in_bits_per_seg = in_bits_needed / num_segs;
         int remainder = in_bits_needed % num_segs;
         NCJT_LOG(d_debug,
-            " (" << cc << ") Segmented processing: "
-            << "in_bits_needed=" << in_bits_needed
-            << ", seg_out_size=" << seg_out_size
-            << ", num_segs=" << num_segs
-            << ", base_in_bits_per_seg=" << base_in_bits_per_seg
-            << ", remainder=" << remainder
+            " (" << cc << ")"
+            << "\n\t Segmented processing: "
+            << "\n\t in_bits_needed=" << in_bits_needed
+            << "\n\t frame_data_bits_phase2_out=" << frame_data_bits_phase2_out
+            << "\n\t seg_out_size=" << seg_out_size
+            << "\n\t num_segs=" << num_segs
+            << "\n\t base_in_bits_per_seg=" << base_in_bits_per_seg
+            << "\n\t remainder=" << remainder
         );
 
         int start_idx = 0;
@@ -368,6 +379,8 @@ namespace gr {
         }
       }
 
+      NCJT_LOG(d_debug, "Length before padding: "
+            << used_bits.size());
       // Padding: Fill the remaining frame_data_bits_out_capacity with random bits
       std::mt19937 gen_padding(d_seqno+11); // different seed for padding
       std::uniform_int_distribution<int> dist_padding(0, 1);
@@ -375,8 +388,9 @@ namespace gr {
         used_bits.push_back(dist_padding(gen_padding) & 0x1);
       }
 
-      std::cout << "[MAPPER_MUXER] info_bits=" << in_bits_needed
-                << ", coded_bits=" << used_bits.size() << std::endl;
+      NCJT_LOG(d_debug, "Length after padding: "
+            << used_bits.size()
+            << " (padded with "<< (used_bits.size() - frame_data_bits_phase2_out) << " random bits)");
 
       assert(used_bits.size() == (size_t)frame_data_bits_out_capacity);
 
@@ -421,13 +435,13 @@ namespace gr {
       add_item_tag(0, nitems_written(0), pmt::string_to_symbol("seqno"),
                    pmt::from_long(d_seqno), pmt::string_to_symbol(this->name()));
 
-      NCJT_LOG(d_debug, "code_rate="
+      NCJT_LOG(d_debug, "(" << cc << ") Summary:"
+            << "\n\tcode_rate="
             << code_rates[d_code_rate]
-            << ", in_bits_needed=" << in_bits_needed
-            << " => " << frame_data_bits_phase2_out
-            << " coded bits, producing " << frame_data_bits_out_capacity
-            << " coded bits + padding, producing " << total_syms_out
-            << " QAM symbols.");
+            << "\n\t" << in_bits_needed << " <~ input bits"
+            << "\n\t" << frame_data_bits_phase2_out << " <~ frame coded bits (phase 2)"
+            << "\n\t" << frame_data_bits_out_capacity << " <~ frame coded bits (phase 1)"
+            << "\n\t" << total_syms_out << " <~ total symbols produced");
 
       // If we used real input bits (non-deterministic), remove them from buffer
       if (!d_deterministic_input) {

@@ -15,7 +15,7 @@
 #include <iostream>
 #include <pmt/pmt.h>
 #include <stdexcept>
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 #include "common.h"
 #include <random>
 
@@ -142,7 +142,7 @@ namespace gr
       cc++;
 
       NCJT_LOG(d_debug, " (" << cc
-                << ")] noutput_items=" << noutput_items
+                << ") noutput_items=" << noutput_items
                 << ", ninput_items[0]=" << ninput_items[0]
                 << ", ninput_items[1]=" << ninput_items[1]
                 << ", d_last_modtype=" << d_last_modtype
@@ -187,7 +187,7 @@ namespace gr
       }
       d_last_ctrl_ok = pmt::to_bool(tags[0].value);
 
-      NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_ctrl_ok=" << d_last_ctrl_ok);
+      NCJT_LOG(d_debug, "Found rx_ctrl_ok=" << d_last_ctrl_ok);
 
       // Retrive the rest of the tags
       d_found_rx_checksum = false;
@@ -202,31 +202,31 @@ namespace gr
         {
           d_last_modtype = pmt::to_uint64(tg.value);
           modtype_bits_to_index(d_last_modtype);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_modtype=" << d_last_modtype);
+          NCJT_LOG(d_debug, "Found rx_modtype=" << d_last_modtype);
                     
         } 
         else if (key == "rx_current_phase")
         {
           d_current_phase = pmt::to_uint64(tg.value);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_current_phase=" << d_current_phase);
+          NCJT_LOG(d_debug, "Found rx_current_phase=" << d_current_phase);
         }
         else if (key == "rx_modtype_phase1")
         {
           d_last_modtype_phase1 = pmt::to_uint64(tg.value);
           modtype_bits_to_index(d_last_modtype_phase1);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_modtype_phase1=" << d_last_modtype_phase1);
+          NCJT_LOG(d_debug, "Found rx_modtype_phase1=" << d_last_modtype_phase1);
         }
         else if (key == "rx_modtype_phase2")
         {
           d_last_modtype_phase2 = pmt::to_uint64(tg.value);
           modtype_bits_to_index(d_last_modtype_phase2);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_modtype_phase2=" << d_last_modtype_phase2);
+          NCJT_LOG(d_debug, "Found rx_modtype_phase2=" << d_last_modtype_phase2);
         }
         else if (key == "rx_modtype_phase3")
         {
           d_last_modtype_phase3 = pmt::to_uint64(tg.value);
           modtype_bits_to_index(d_last_modtype_phase3);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_modtype_phase3=" << d_last_modtype_phase3);
+          NCJT_LOG(d_debug, "Found rx_modtype_phase3=" << d_last_modtype_phase3);
         }
         else if (key == "rx_raw_ctrl")
         {
@@ -236,28 +236,28 @@ namespace gr
         else if (key == "rx_nstrm")
         {
           d_last_nstrm = pmt::to_uint64(tg.value);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_nstrm=" << d_last_nstrm);
+          NCJT_LOG(d_debug, "Found rx_nstrm=" << d_last_nstrm);
         }
         else if (key == "rx_coding_rate")
         {
           d_last_coding_rate = pmt::to_uint64(tg.value);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_coding_rate=" << d_last_coding_rate);
+          NCJT_LOG(d_debug, "Found rx_coding_rate=" << d_last_coding_rate);
         }
         else if (key == "rx_data_checksum")
         {
           d_found_rx_checksum = true;
           d_rx_data_checksum = pmt::to_uint64(tg.value);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_data_checksum=" << d_rx_data_checksum);
+          NCJT_LOG(d_debug, "Found rx_data_checksum=" << d_rx_data_checksum);
         }
         else if (key == "rx_syms_per_stream")
         {
           d_last_syms_per_stream = pmt::to_uint64(tg.value);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_syms_per_stream=" << d_last_syms_per_stream);
+          NCJT_LOG(d_debug, "Found rx_syms_per_stream=" << d_last_syms_per_stream);
         }
         else if (key == "rx_seqno")
         {
           d_last_seq_no = pmt::to_uint64(tg.value);
-          NCJT_LOG(d_debug, "\t(" << cc << ")] Found rx_seqno=" << d_last_seq_no);
+          NCJT_LOG(d_debug, "Found rx_seqno=" << d_last_seq_no);
         }
         else if (key == "snr_rbs_db")
         {
@@ -266,6 +266,7 @@ namespace gr
           d_snr_rbs_db.clear();
           d_snr_rbs_db.resize(num_snr_elements);
           std::memcpy(d_snr_rbs_db.data(), snr_values.data(), num_snr_elements * sizeof(float));
+          NCJT_LOG(d_debug, "Found snr_rbs_db with " << num_snr_elements << " elements");
         }
       }
       consume_each(min_inp);
@@ -359,7 +360,7 @@ namespace gr
       {
         uint16_t computed_crc = gr::ncjt::compute_crc16(d_info_buf, d_info_len);
         bool crc_ok = (computed_crc == (uint16_t)d_rx_data_checksum);
-        NCJT_LOG(d_debug, "\t(" << cc << ")] Computed CRC16=0x"
+        NCJT_LOG(d_debug, "Computed CRC16=0x"
                   << std::hex << computed_crc
                   << "  vs. 0x" << d_rx_data_checksum << std::dec
                   << " => match=" << crc_ok);
@@ -378,7 +379,7 @@ namespace gr
                        pmt::from_uint64(d_last_seq_no),
                        d_name);
           add_item_tag(op, nitems_written(op), pmt::string_to_symbol("rx_modtype"),
-                       pmt::from_uint64(d_last_modtype),
+                       pmt::from_uint64(d_last_modtype_phase2), // Note we use phase2 modtype here
                        d_name);
           add_item_tag(op, nitems_written(op), pmt::string_to_symbol("rx_current_phase"),
                        pmt::from_uint64(d_current_phase),
@@ -408,6 +409,19 @@ namespace gr
           add_item_tag(op, nitems_written(op), pmt::string_to_symbol("snr_rbs_db"),
                        pmt::init_f32vector(d_snr_rbs_db.size(), d_snr_rbs_db.data()),
                        d_name);
+          NCJT_LOG(d_debug, "(" << cc << ")"
+                << "\n\t Added tags: " 
+                << "\n\t\trx_data_crc(" << crc_ok << "), rx_ctrl_ok(" << d_last_ctrl_ok << ")"
+                << "\n\t\trx_seqno(" << d_last_seq_no << ")"
+                << "\n\t\trx_modtype(" << d_last_modtype << ")"
+                << "\n\t\trx_current_phase(" << d_current_phase << ")"
+                << ", rx_modtype_phase1(" << d_last_modtype_phase1 << ")"
+                << ", rx_modtype_phase2(" << d_last_modtype_phase2 << ")"
+                << ", rx_modtype_phase3(" << d_last_modtype_phase3 << ")"
+                << "\n\t\trx_raw_ctrl, rx_nstrm(" << d_last_nstrm << ")"
+                << ", rx_coding_rate(" << d_last_coding_rate << ")"
+                << ", rx_data_checksum, snr_rbs_db(" << d_snr_rbs_db.size() << " elements)");
+
         }
       }
 
@@ -494,12 +508,6 @@ namespace gr
                                         seg_encoded.begin(), seg_encoded.end());
             start_idx += in_bits_per_seg;
           }
-          std::cout << "### "
-                    << "reference_bits.size(): " << reference_bits.size()
-                    << ", reference_coded_bits.size(): " << reference_coded_bits.size() 
-                    << ", d_phase2_coded_len: " << d_phase2_coded_len
-                    << ", d_coded_len: " << d_coded_len 
-                    << std::endl;
           assert(reference_coded_bits.size() == (size_t)d_phase2_coded_len);
         }
         else
@@ -519,7 +527,7 @@ namespace gr
         double uncoded_ber = (uncoded_compare_len > 0)
                                  ? double(uncoded_errors) / double(uncoded_compare_len)
                                  : 0.0;
-        NCJT_LOG(d_debug, "\t(" << cc << ")] => coded_ber=" << coded_ber
+        NCJT_LOG(d_debug, "\t(" << cc << ") => coded_ber=" << coded_ber
                   << ", uncoded_ber=" << uncoded_ber);
         // Add tags for coded and uncoded BER
         for (int op = 0; op < 1 + int(d_output_raw); op++)
@@ -547,7 +555,9 @@ namespace gr
         }
         out_dec[i] = val;
       }
-      std::cout << "AAA " << out_info_bytes << std::endl;
+      NCJT_LOG(d_debug, "Produced " << out_info_bytes
+                << " " << d_last_modtype << "-bit packed decoded info bytes"
+                << ", d_info_len=" << d_info_len << ")");
       produce(0, out_info_bytes);
       // Pack d_last_modtype_phase2 bits into each byte (uncoded)
       if (d_output_raw)

@@ -22,7 +22,7 @@
 #include <thread>   // for sleep_for
 #include <chrono>   // for steady_clock
 #include <cmath>    // for pow, sqrt, etc.
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 #include "common.h"
 
 namespace gr

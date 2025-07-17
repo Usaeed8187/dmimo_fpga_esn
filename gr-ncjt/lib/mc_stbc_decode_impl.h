@@ -9,7 +9,7 @@
 
 #include <gnuradio/ncjt/mc_stbc_decode.h>
 #include "cmatrix.h"
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 
 namespace gr::ncjt
 {

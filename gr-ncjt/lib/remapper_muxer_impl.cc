@@ -7,7 +7,7 @@
 
 #include "remapper_muxer_impl.h"
 #include <gnuradio/io_signature.h>
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 #include "common.h"
 
 namespace gr {

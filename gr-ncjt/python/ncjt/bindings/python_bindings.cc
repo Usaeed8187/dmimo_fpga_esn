@@ -48,6 +48,7 @@ namespace py = pybind11;
     void bind_remapper_muxer(py::module& m);
     void bind_pdc(py::module& m);
     void bind_skip_data(py::module& m);
+    void bind_rg_modes(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 // We need this hack because import_array() returns NULL
@@ -102,5 +103,6 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_remapper_muxer(m);
     bind_pdc(m);
     bind_skip_data(m);
+    bind_rg_modes(m);
     // ) END BINDING_FUNCTION_CALLS
 }

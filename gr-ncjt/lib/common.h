@@ -6,13 +6,35 @@
 #include <srsran/channel_coding_factories.h>
 #include <gnuradio/gr_complex.h>
 
-#define NCJT_LOG(EN, STREAM)                                  \
-  do {                                                        \
-    if (EN) {                                                 \
-      std::cout << __func__ <<  "] " << STREAM << std::endl;  \
-    }                                                         \
-  } while (0)
+#if defined(_MSC_VER)
+#  define NCJT_FQN   __FUNCSIG__
+#else
+#  define NCJT_FQN   __PRETTY_FUNCTION__
+#endif
 
+// helper that removes "return‑type " prefix and "(...)" suffix
+inline std::string _ncjt_pretty_strip(const char* pretty)
+{
+    std::string fn(pretty);
+
+    // 1) kill the argument list  (…)   → “…::foo”
+    auto pos_paren = fn.find('(');
+    if (pos_paren != std::string::npos) fn.erase(pos_paren);
+
+    // 2) drop the return type up to the last space  “void …::foo” → “…::foo”
+    auto pos_space = fn.rfind(' ');
+    if (pos_space != std::string::npos) fn.erase(0, pos_space + 1);
+
+    return fn;
+}
+
+#define NCJT_LOG(EN, STREAM)                                                    \
+    do {                                                                        \
+        if (EN) {                                                               \
+            std::cout << "[" << _ncjt_pretty_strip(NCJT_FQN) << "] "            \
+                      << STREAM << std::endl;                                   \
+        }                                                                       \
+    } while (0)
 
 namespace gr {
   namespace ncjt {
