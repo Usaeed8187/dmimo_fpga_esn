@@ -302,6 +302,11 @@ namespace gr
           for (int b = 0; b < d_last_modtype; b++)
           {
             d_coded_buf[out_sym_offset + b * d_last_nstrm + strm] = bits[b];
+            if (d_last_seq_no == 0 && di == 0)
+            {
+              std::cout << "Demapped symbol " << sym_idx
+                        << " to bits: " << (int)bits[b] << std::endl;
+            }
           }
         }
       }
@@ -313,7 +318,8 @@ namespace gr
       {
         double R = code_rates[d_last_coding_rate];
         int message_len_bits = int(std::floor(d_phase2_coded_len * R));
-        message_len_bits = message_len_bits + (d_last_modtype_phase2 - (message_len_bits % d_last_modtype));
+        int rem = message_len_bits % d_last_modtype_phase2;
+        message_len_bits += d_last_modtype_phase2 - rem;
         //
         std::vector<srsran::log_likelihood_ratio> llrs(d_phase2_coded_len);
         for (int i = 0; i < d_phase2_coded_len; i++)
@@ -454,7 +460,8 @@ namespace gr
         if (d_last_coding_rate > 0)
         {
           in_bits_needed = int(std::floor(frame_data_bits_phase2_out * R));
-          in_bits_needed = in_bits_needed + (d_last_modtype_phase2 - (in_bits_needed % d_last_modtype_phase2));
+          int rem = in_bits_needed % d_last_modtype_phase2;
+          in_bits_needed += d_last_modtype_phase2 - rem;
         }
         // Generate the same PRNG bits used by mapper_muxer_impl
         std::mt19937 gen(d_last_seq_no);

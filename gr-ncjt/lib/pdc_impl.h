@@ -42,6 +42,8 @@ namespace gr
         int64_t seqno;
         uint64_t packet_len;       // packet length tag
         int64_t modtype;           // modulation type tag
+        int64_t p2modtype;       // phase2 modulation type tag
+        int64_t p3modtype;       // phase3 modulation type tag
         int64_t rx_coding_rate;    // receiver coding rate tag
         uint64_t rx_data_checksum; // data checksum tag
         float *snr_rbs_db;         // SNR values per RB in dB

@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <gnuradio/ncjt/rg_modes.h>
 #include "common.h"
+#include <limits>
 
 namespace gr
 {
@@ -33,8 +34,7 @@ namespace gr
                                         bool debug)
     {
       return gnuradio::make_block_sptr<rg_demapper_impl>(
-          phase, rgmode, nstrm, usecsi, 
-          tag_snr, debug);
+          phase, rgmode, nstrm, usecsi, tag_snr, debug);
     }
 
     // ------------------------------------------------------------------------
@@ -97,12 +97,11 @@ namespace gr
       modtype_bits_to_index(d_modtype);
 
       NCJT_LOG(d_debug,
-                "\n\tnstrm=" << d_nstrm_param
-                << "\n\tmodtype=" << d_modtype
+                "\n\tphase=" << d_phase
+                << "\n\trgmode=" << d_rgmode
+                << "\n\tnstrm_param=" << d_nstrm_param
                 << "\n\tusecsi=" << d_usecsi
-                << "\n\tdebug=" << d_debug
-                << "\n\tsd_num=" << d_sd_num
-                << "\n\tn_ofdm_syms=" << d_n_ofdm_syms);
+                << "\n\ttag_snr=" << d_tag_snr);
 
       set_tag_propagation_policy(gr::block::TPP_DONT);
     }
@@ -366,10 +365,22 @@ namespace gr
       else
       {
         NCJT_LOG(d_debug, "(" << cc << ") Processing SNRs from CTRL since tag_snr is not set");
+
+        // int snr_bits = RB_B0[d_rgmode] + RB_Bd[d_rgmode] * (num_rbs - 1);
+        // float recovered[num_rbs];
+        // Get snr_bits LSB bits from the extended field
+        // uint64_t packed_bits = d_extended & ((1ULL << snr_bits) - 1);
+
+
         int snr_bits = RB_B0[d_rgmode] + RB_Bd[d_rgmode] * (num_rbs - 1);
         float recovered[num_rbs];
-        // Get snr_bits LSB bits from the extended field
-        uint64_t packed_bits = d_extended & ((1ULL << snr_bits) - 1);
+
+        uint64_t mask =
+            (snr_bits >= 64) ? std::numeric_limits<uint64_t>::max()
+                             : ((1ULL << snr_bits) - 1ULL);
+
+        uint64_t packed_bits = d_extended & mask;
+
         NCJT_LOG(d_debug, "(" << cc << ")] EXTENDED: " << std::hex << d_extended << std::dec);
         // De-quantisation
         dequantize_snrs(packed_bits, num_rbs, 

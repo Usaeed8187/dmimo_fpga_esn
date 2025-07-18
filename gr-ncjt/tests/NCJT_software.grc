@@ -85,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '5'
   states:
     bus_sink: false
     bus_source: false
@@ -121,7 +121,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '4'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
@@ -205,7 +205,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '3'
+    value: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -244,6 +244,24 @@ blocks:
     bus_structure: null
     coordinate: [32.0, 288]
     rotation: 270
+    state: disabled
+- name: blocks_head_0
+  id: blocks_head
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: '2080'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [560, 264.0]
+    rotation: 0
     state: disabled
 - name: blocks_null_sink_0
   id: blocks_null_sink
@@ -329,7 +347,7 @@ blocks:
     bus_structure: null
     coordinate: [2008, 504.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_null_sink_0_1_1_0
   id: blocks_null_sink
   parameters:
@@ -346,7 +364,7 @@ blocks:
     bus_structure: null
     coordinate: [264, 1352.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_null_sink_0_1_1_0_0
   id: blocks_null_sink
   parameters:
@@ -364,6 +382,40 @@ blocks:
     coordinate: [1040, 1352.0]
     rotation: 0
     state: enabled
+- name: blocks_null_sink_0_1_1_0_0_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [536, 1688.0]
+    rotation: 0
+    state: disabled
+- name: blocks_null_sink_0_1_1_0_0_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 1960.0]
+    rotation: 0
+    state: disabled
 - name: blocks_null_sink_0_1_1_0_1
   id: blocks_null_sink
   parameters:
@@ -380,7 +432,7 @@ blocks:
     bus_structure: null
     coordinate: [1280, 1232.0]
     rotation: 180
-    state: enabled
+    state: disabled
 - name: blocks_null_sink_1_0
   id: blocks_null_sink
   parameters:
@@ -471,7 +523,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 1224.0]
+    coordinate: [904, 1232.0]
     rotation: 0
     state: enabled
 - name: ncjt_demapper_0_0
@@ -572,11 +624,11 @@ blocks:
     gui_hint: ''
     logfreq: '5'
     row_height: '300'
-    show_birate: 'False'
+    show_birate: 'True'
     show_coded_ber: 'False'
     show_num_copies: 'False'
     show_per: 'False'
-    show_throughput: 'False'
+    show_throughput: 'True'
     show_uncoded_ber: 'False'
   states:
     bus_sink: false
@@ -590,7 +642,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    caption: ''
+    caption: PDC HLL
     cols: '3'
     comment: ''
     dark: 'True'
@@ -599,11 +651,11 @@ blocks:
     gui_hint: ''
     logfreq: '5'
     row_height: '300'
-    show_birate: 'False'
+    show_birate: 'True'
     show_coded_ber: 'False'
     show_num_copies: 'False'
     show_per: 'False'
-    show_throughput: 'False'
+    show_throughput: 'True'
     show_uncoded_ber: 'False'
   states:
     bus_sink: false
@@ -611,13 +663,13 @@ blocks:
     bus_structure: null
     coordinate: [208, 1580.0]
     rotation: 180
-    state: disabled
+    state: enabled
 - name: ncjt_err_stats_0_0_0_0
   id: ncjt_err_stats
   parameters:
     affinity: ''
     alias: ''
-    caption: ''
+    caption: PDC MAJORITY
     cols: '3'
     comment: ''
     dark: 'True'
@@ -626,11 +678,11 @@ blocks:
     gui_hint: ''
     logfreq: '5'
     row_height: '300'
-    show_birate: 'False'
+    show_birate: 'True'
     show_coded_ber: 'False'
     show_num_copies: 'False'
     show_per: 'False'
-    show_throughput: 'False'
+    show_throughput: 'True'
     show_uncoded_ber: 'False'
   states:
     bus_sink: false
@@ -638,7 +690,7 @@ blocks:
     bus_structure: null
     coordinate: [208, 1892.0]
     rotation: 180
-    state: disabled
+    state: enabled
 - name: ncjt_err_stats_0_0_1
   id: ncjt_err_stats
   parameters:
@@ -653,11 +705,11 @@ blocks:
     gui_hint: ''
     logfreq: '5'
     row_height: '300'
-    show_birate: 'False'
+    show_birate: 'True'
     show_coded_ber: 'False'
     show_num_copies: 'False'
     show_per: 'False'
-    show_throughput: 'False'
+    show_throughput: 'True'
     show_uncoded_ber: 'False'
   states:
     bus_sink: false
@@ -690,7 +742,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1528, 156.0]
+    coordinate: [1520, 132.0]
     rotation: 180
     state: enabled
 - name: ncjt_knobs_0
@@ -736,7 +788,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 284.0]
+    coordinate: [352, 284.0]
     rotation: 0
     state: enabled
 - name: ncjt_noair_0
@@ -790,7 +842,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_drop_init_packets: '10'
-    rgmode: '0'
+    rgmode: rgmode
     snr_db: SNR
   states:
     bus_sink: false
@@ -810,7 +862,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_drop_init_packets: '1'
-    rgmode: '0'
+    rgmode: rgmode
     snr_db: SNR
   states:
     bus_sink: false
@@ -831,16 +883,16 @@ blocks:
     majority_enabled: 'True'
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_copies: '2'
+    num_copies: '3'
     num_threads: '0'
-    rgmode: '0'
+    rgmode: rgmode
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [568, 1752.0]
     rotation: 180
-    state: disabled
+    state: enabled
 - name: ncjt_remapper_muxer_0_0_0
   id: ncjt_remapper_muxer
   parameters:
@@ -865,7 +917,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    debug: 'True'
+    debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrm: '1'
@@ -1077,6 +1129,7 @@ blocks:
     state: enabled
 
 connections:
+- [blocks_head_0, '0', ncjt_rg_mapper_0_1, '0']
 - [ncjt_demapper_0, '0', blocks_null_sink_0_1_1_0_0, '0']
 - [ncjt_demapper_0, '0', ncjt_err_stats_0, '0']
 - [ncjt_demapper_0, '0', ncjt_remapper_muxer_1, '0']
@@ -1097,6 +1150,7 @@ connections:
 - [ncjt_knobs_0, s_snr, ncjt_noair_0_0, s_snr]
 - [ncjt_knobs_0, s_snr, ncjt_noair_0_1, s_snr]
 - [ncjt_knobs_0, s_snr, ncjt_noair_0_1_0, s_snr]
+- [ncjt_mapper_muxer_0_0, '0', blocks_head_0, '0']
 - [ncjt_mapper_muxer_0_0, '0', ncjt_rg_mapper_0_1, '0']
 - [ncjt_noair_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_noair_0, '1', ncjt_rg_demapper_0, '1']
@@ -1108,7 +1162,9 @@ connections:
 - [ncjt_noair_0_1, '1', ncjt_rg_demapper_0_0, '1']
 - [ncjt_noair_0_1_0, '0', ncjt_rg_demapper_0_0_0, '0']
 - [ncjt_noair_0_1_0, '1', ncjt_rg_demapper_0_0_0, '1']
+- [ncjt_pdc_0, '0', blocks_null_sink_0_1_1_0_0_0, '0']
 - [ncjt_pdc_0, '0', ncjt_err_stats_0_0_0, '0']
+- [ncjt_pdc_0, '1', blocks_null_sink_0_1_1_0_0_1, '0']
 - [ncjt_pdc_0, '1', ncjt_err_stats_0_0_0_0, '0']
 - [ncjt_remapper_muxer_0_0_0, '0', blocks_null_sink_0_1_1, '0']
 - [ncjt_remapper_muxer_0_0_0, '0', ncjt_rg_mapper_0, '0']
@@ -1116,15 +1172,17 @@ connections:
 - [ncjt_remapper_muxer_1, '0', ncjt_rg_mapper_0_0, '0']
 - [ncjt_remapper_muxer_1_0, '0', ncjt_rg_mapper_0_0_0, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_demapper_0, '0']
+- [ncjt_rg_demapper_0, '0', ncjt_pdc_0, '2']
 - [ncjt_rg_demapper_0, '1', ncjt_demapper_0, '1']
+- [ncjt_rg_demapper_0, '1', ncjt_pdc_0, '5']
 - [ncjt_rg_demapper_0_0, '0', ncjt_demapper_0_0, '0']
 - [ncjt_rg_demapper_0_0, '0', ncjt_pdc_0, '0']
 - [ncjt_rg_demapper_0_0, '1', ncjt_demapper_0_0, '1']
-- [ncjt_rg_demapper_0_0, '1', ncjt_pdc_0, '2']
+- [ncjt_rg_demapper_0_0, '1', ncjt_pdc_0, '3']
 - [ncjt_rg_demapper_0_0_0, '0', ncjt_demapper_0_0_0, '0']
 - [ncjt_rg_demapper_0_0_0, '0', ncjt_pdc_0, '1']
 - [ncjt_rg_demapper_0_0_0, '1', ncjt_demapper_0_0_0, '1']
-- [ncjt_rg_demapper_0_0_0, '1', ncjt_pdc_0, '3']
+- [ncjt_rg_demapper_0_0_0, '1', ncjt_pdc_0, '4']
 - [ncjt_rg_demapper_0_1, '0', blocks_null_sink_0_1_0, '0']
 - [ncjt_rg_demapper_0_1, '0', blocks_tag_debug_0_0, '0']
 - [ncjt_rg_demapper_0_1, '0', ncjt_demapper_1, '0']

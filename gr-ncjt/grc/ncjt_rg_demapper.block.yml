@@ -43,7 +43,6 @@ parameters:
     default: 'False'
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
-    hide: part
 
 inputs:
   - label: in

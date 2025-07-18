@@ -180,6 +180,20 @@ namespace gr
         std::vector<float> snr_values = pmt::f32vector_elements(tags[0].value);
         size_t num_snr_elements = snr_values.size();
 
+        // print SNRs for debugging
+        if (d_debug)
+        {
+          std::cout << "[remapper_muxer_impl] SNRs for RG mode "
+                    << d_rgmode << ": ";
+          for (size_t i = 0; i < num_snr_elements; i++)
+          {
+            std::cout << snr_values[i] << " dB";
+            if (i < num_snr_elements - 1)
+              std::cout << ", ";
+          }
+          std::cout << std::endl;
+        }
+
         uint64_t packed = quantize_snrs(snr_values.data(), num_snr_elements,
                                         RB_B0[d_rgmode], RB_Bd[d_rgmode],
                                         MIN_ABS, MAX_ABS,
@@ -309,6 +323,8 @@ namespace gr
       assert(used_bits.size() == (size_t)frame_data_bits_out_capacity);
 
       // Map used_bits -> QAM symbols
+      int tmp_num_syms_to_show = 3;
+      int tmpflag = tmp_num_syms_to_show;
       for (int k = 0; k < num_periods; k++)
       {
         int period_offset = k * d_nstrm * d_modtype;
@@ -316,10 +332,23 @@ namespace gr
         {
           int val = 0;
           // gather bits for this symbol
+          if (tmpflag == tmp_num_syms_to_show && d_seqno == 0) {
+            std::cout << "Remapper bits: ";
+          }
           for (int j = 0; j < d_modtype; j++)
           {
             int bit_index = period_offset + s + j * d_nstrm;
+            if (tmpflag > 0 && d_seqno == 0) {
+              std::cout << (int)used_bits[bit_index] << " ";
+            }
             val |= (used_bits[bit_index] << j);
+          }
+          if (tmpflag == 0 && d_seqno == 0) {
+            std::cout << std::endl;
+            tmpflag--;
+          } else if (tmpflag > 0 && d_seqno == 0) {
+            std::cout << " - ";
+            tmpflag--;
           }
           // map val to a constellation point
           gr_complex sym;

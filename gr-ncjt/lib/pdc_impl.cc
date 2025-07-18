@@ -12,6 +12,7 @@
 #include "qam_constellation.h"
 #include <random>
 #include "srsran/srsvec/bit.h"
+#include "common.h"
 #include <gnuradio/ncjt/rg_modes.h>
 
 namespace gr
@@ -55,8 +56,9 @@ namespace gr
     {
       if (rgmode < 0 || rgmode >= 8)
         throw std::runtime_error("Unsupported RG mode");
-      else {
-        d_num_packet_syms = (RG_NUM_OFDM_SYM[rgmode] * RG_NUM_DATA_SC[rgmode] - 6);
+      else
+      {
+        d_num_packet_syms = (RG_NUM_OFDM_SYM[rgmode] * RG_NUM_DATA_SC[rgmode] - 64);
         set_min_noutput_items(d_num_packet_syms * 8);
       }
 
@@ -200,29 +202,35 @@ namespace gr
       int64_t _seqno = 0;
       uint64_t _packet_len_syms = 0;
       int64_t _modtype = 0;
+      int64_t _p2modtype = 0;
+      int64_t _p3modtype = 0;
       int64_t _rx_coding_rate;
       uint64_t _rx_data_checksum = 0;
       uint64_t _ctrl_syms_len = 0;
       uint64_t _sd_num = 0;
       uint64_t _tt = 0;
+
       for (size_t qam_inp = 0; qam_inp < static_cast<size_t>(d_num_copies); qam_inp++)
       {
+        // std::cout << "Nima: Processing input port " << qam_inp
+        //           << ", ninput_items=" << ninput_items[qam_inp]
+        //           << ", ninput_items[qam_inp + d_num_copies]=" << ninput_items[qam_inp + d_num_copies] 
+        //           << ", d_num_packet_syms=" << d_num_packet_syms << std::endl;
         if (ninput_items[qam_inp] >= d_num_packet_syms && ninput_items[qam_inp + d_num_copies] >= d_num_packet_syms)
         {
+          // std::cout << "\tNima: Processing input port " << qam_inp << std::endl;
           // tag: packet_len
           get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("packet_len"));
           _packet_len_syms = pmt::to_uint64(tags2[0].value);
           if (_packet_len_syms != d_num_packet_syms)
           {
-            throw std::runtime_error(
-                "[pdc_impl] ERROR: Only one stream is supported for now!");
+            throw std::runtime_error("[pdc_impl] ERROR: Only one stream is supported for now!");
           }
           // tag: rx_ctrl_ok
           get_tags_in_window(tags1, qam_inp, 0, 1, pmt::string_to_symbol("rx_ctrl_ok"));
           if (tags1.size() == 0)
           {
-            throw std::runtime_error(
-                "[pdc_impl] ERROR: No rx_ctrl_ok tag found in input stream");
+            throw std::runtime_error("[pdc_impl] ERROR: No rx_ctrl_ok tag found in input stream");
           }
           tag_ctrl_ok = pmt::to_bool(tags1[0].value);
           if (tag_ctrl_ok)
@@ -231,6 +239,12 @@ namespace gr
             // tag: rx_modtype
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_modtype"));
             _modtype = pmt::to_uint64(tags2[0].value);
+            // tag: rx_modtype_phase2
+            get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_modtype_phase2"));
+            _p2modtype = pmt::to_uint64(tags2[0].value);
+            // tag: rx_modtype_phase3
+            get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_modtype_phase3"));
+            _p3modtype = pmt::to_uint64(tags2[0].value);
             // tag: rx_coding_rate
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_coding_rate"));
             _rx_coding_rate = pmt::to_uint64(tags2[0].value);
@@ -238,12 +252,28 @@ namespace gr
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_data_checksum"));
             _rx_data_checksum = pmt::to_uint64(tags2[0].value);
             // tag: snr_rbs_db
+
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("snr_rbs_db"));
-            size_t blob_len = pmt::blob_length(tags2[0].value);
-            const float *snr_values = reinterpret_cast<const float *>(pmt::blob_data(tags2[0].value));
-            size_t num_snr_elements = blob_len / sizeof(float);
+
+            if (!pmt::is_f32vector(tags2[0].value))
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: snr_rbs_db tag is not a f32vector!");
+            }
+
+            size_t num_snr_elements;
+            auto snr_tag_val = pmt::f32vector_elements(tags2[0].value, num_snr_elements);
+
             float *_snr_rbs_db = (float *)malloc(num_snr_elements * sizeof(float));
-            std::memcpy(_snr_rbs_db, snr_values, num_snr_elements * sizeof(float));
+            // print SNR values
+            // std::cout << "SNR values: ";
+            for (size_t i = 0; i < num_snr_elements; i++)
+            {
+              _snr_rbs_db[i] = snr_tag_val[i];
+              // std::cout << _snr_rbs_db[i] << " ";
+            }
+            // std::cout << std::endl;
+            std::memcpy(_snr_rbs_db, snr_tag_val, num_snr_elements * sizeof(float));
+
             // tag: ctrl_syms_len
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("ctrl_syms_len"));
             _ctrl_syms_len = pmt::to_uint64(tags2[0].value);
@@ -272,8 +302,19 @@ namespace gr
               if (it != pending.end())
               {
                 // Found the seqno!
-                pending[qam_inp] = {_buf, _csi_buf, _seqno, _packet_len_syms, _modtype, _rx_coding_rate,
-                                    _rx_data_checksum, _snr_rbs_db, _ctrl_syms_len, _sd_num, ts};
+                pending[qam_inp] = {_buf,
+                                    _csi_buf,
+                                    _seqno,
+                                    _packet_len_syms,
+                                    _modtype,
+                                    _p2modtype,
+                                    _p3modtype,
+                                    _rx_coding_rate,
+                                    _rx_data_checksum,
+                                    _snr_rbs_db,
+                                    _ctrl_syms_len,
+                                    _sd_num,
+                                    ts};
                 // std::cout << "\t\tUpdated existing entry in d_pendings for [qam_inp] " << qam_inp
                 //           << ", seqno=" << _seqno << std::endl;
                 found = true;
@@ -300,8 +341,19 @@ namespace gr
               if (add_flag_last)
               {
                 std::unordered_map<int, packet> new_entry;
-                new_entry[qam_inp] = {_buf, _csi_buf, _seqno, _packet_len_syms, _modtype, _rx_coding_rate,
-                                      _rx_data_checksum, _snr_rbs_db, _ctrl_syms_len, _sd_num, ts};
+                new_entry[qam_inp] = {_buf,
+                                      _csi_buf,
+                                      _seqno,
+                                      _packet_len_syms,
+                                      _modtype,
+                                      _p2modtype,
+                                      _p3modtype,
+                                      _rx_coding_rate,
+                                      _rx_data_checksum,
+                                      _snr_rbs_db,
+                                      _ctrl_syms_len,
+                                      _sd_num,
+                                      ts};
                 d_pendings.push_back(new_entry);
                 // std::cout << "\t\tAdded new entry to d_pendings for [qam_inp] " << qam_inp
                 //           << ", seqno=" << _seqno << std::endl;
@@ -314,8 +366,19 @@ namespace gr
                 {
                   // Insert in the middle
                   std::unordered_map<int, packet> new_entry;
-                  new_entry[qam_inp] = {_buf, _csi_buf, _seqno, _packet_len_syms, _modtype, _rx_coding_rate,
-                                        _rx_data_checksum, _snr_rbs_db, _ctrl_syms_len, _sd_num, ts};
+                  new_entry[qam_inp] = {_buf,
+                                        _csi_buf,
+                                        _seqno,
+                                        _packet_len_syms,
+                                        _modtype,
+                                        _p2modtype,
+                                        _p3modtype,
+                                        _rx_coding_rate,
+                                        _rx_data_checksum,
+                                        _snr_rbs_db,
+                                        _ctrl_syms_len,
+                                        _sd_num,
+                                        ts};
                   for (auto it = d_pendings.begin(); it != d_pendings.end(); ++it)
                   {
                     if (_seqno < it->begin()->second.seqno)
@@ -392,10 +455,10 @@ namespace gr
         }
       }
 
-      if (d_debug)
-      {
-        std::cout << "process_till: " << process_till << std::endl;
-      }
+      // if (d_debug)
+      // {
+      //   std::cout << "process_till: " << process_till << std::endl;
+      // }
 
       for (int q = 0; q <= process_till; q++)
       {
@@ -403,31 +466,51 @@ namespace gr
         d_pendings.pop_front();
         auto seqno = pending.begin()->second.seqno;
         int packet_len = pending.begin()->second.packet_len;
-        auto modtype = pending.begin()->second.modtype;
+        // std::cout << "Nima: packet_len = " << packet_len << std::endl;
+        // auto modtype = pending.begin()->second.modtype;
+        // auto modtype = pending.begin()->second.p3modtype;
+        auto p2modtype = pending.begin()->second.p2modtype;
+        auto p3modtype = pending.begin()->second.p3modtype;
         auto rx_coding_rate = pending.begin()->second.rx_coding_rate;
         auto rx_data_checksum = pending.begin()->second.rx_data_checksum;
         auto sd_num = pending.begin()->second.sd_num;
 
         int copies_count = (int)pending.size();
-        int bits_per_pkt = packet_len * modtype;
 
         if (d_debug)
         {
-          std::cout << "Processing packet with seqno: " << seqno
+          NCJT_LOG(d_debug, "Processing packet with seqno: " << seqno
                     << ", packet_len: " << packet_len
-                    << ", modtype: " << modtype
+                    << ", copies_count: " << copies_count
+                    << ", p2modtype: " << p2modtype
+                    << ", p3modtype: " << p3modtype
                     << ", rx_coding_rate: " << rx_coding_rate
-                    << ", rx_data_checksum: " << rx_data_checksum
-                    << std::endl;
+                    << ", rx_data_checksum: " << rx_data_checksum);
         }
+        int max_modtype = 0;
+        for (const auto &pair : pending)
+        {
+          if (pair.second.modtype > max_modtype)
+          {
+            max_modtype = pair.second.modtype;
+          }
+          NCJT_LOG(d_debug, "\tCopy " << pair.first << " modtype: " << pair.second.modtype);
+        }
+
+        int max_bits_per_pkt = packet_len * max_modtype;
+        int p2max_bits_per_pkt = packet_len * p2modtype;
+
+        NCJT_LOG(d_debug, "max_modtype: " << max_modtype
+                  << ", max_bits_per_pkt: " << max_bits_per_pkt
+                  << ", packet_len: " << packet_len);
 
         /**************************************************************
          * 1) MAJORITY VOTING decode
          **************************************************************/
         // We'll demap each copy's QAM symbol -> bits[0..modtype-1],
         // and accumulate them. Then we threshold them at 'copies/2'.
-        std::vector<float> llrs_majority(bits_per_pkt, 0);
-        std::vector<uint8_t> bits_majority(bits_per_pkt, 0);
+        std::vector<float> llrs_majority(max_bits_per_pkt, 0);
+        std::vector<uint8_t> bits_majority(max_bits_per_pkt, 0);
 
         if (d_majority_enabled)
         {
@@ -441,26 +524,22 @@ namespace gr
               float y = pkt.buf[sym_idx].imag();
               float csi_val = pkt.csi_buf[sym_idx].real();
               uint8_t tmp_bits[8];
-              gr::ncjt::demap_symbol(x, y, csi_val, modtype, tmp_bits);
+              gr::ncjt::demap_symbol(x, y, csi_val, it->second.modtype, tmp_bits);
 
               // We assume single stream => just place them contiguously
-              int out_sym_offset = sym_idx * modtype;
-              for (int b = 0; b < modtype; b++)
+              int out_sym_offset = sym_idx * it->second.modtype;
+              for (int b = 0; b < it->second.modtype; b++)
               {
                 llrs_majority[out_sym_offset + b] += tmp_bits[b];
               }
             }
           }
-          for (int sym_idx = 0; sym_idx < packet_len; sym_idx++)
+          for (int i = 0; i < p2max_bits_per_pkt; i++)
           {
-            int out_sym_offset = sym_idx * modtype;
-            for (int b = 0; b < modtype; b++)
-            {
-              llrs_majority[out_sym_offset + b] /= copies_count;
-              llrs_majority[out_sym_offset + b] -= 0.5f; // Center around zero
-              // Now threshold
-              bits_majority[out_sym_offset + b] = (llrs_majority[out_sym_offset + b] > 0) ? 1 : 0;
-            }
+            llrs_majority[i] /= copies_count; // Normalize by number of copies
+            llrs_majority[i] -= 0.5f; // Center around zero
+            // Now threshold
+            bits_majority[i] = (llrs_majority[i] > 0) ? 1 : 0;
           }
         }
 
@@ -472,7 +551,7 @@ namespace gr
         std::vector<float> rx_imag(packet_len * copies_count);
         std::vector<float> SNRs(packet_len * copies_count);
         std::vector<float> llrs_hll;
-        std::vector<uint8_t> bits_hll(bits_per_pkt);
+        std::vector<uint8_t> bits_hll(p2max_bits_per_pkt);
 
         pmt::pmt_t rb_snrs_dict = pmt::make_dict();
         if (d_hll_enabled)
@@ -493,35 +572,80 @@ namespace gr
             {
               int start = rb * RB_SIZE[d_rgmode];
               int end = (rb != num_rbs - 1) ? start + RB_SIZE[d_rgmode] : sd_num;
+              // std::cout << "RB[" << rb << "] SNR (dB) = " << pkt.snr_rbs_db[rb] << std::endl;
               float snr_linear = pow(10.0f, pkt.snr_rbs_db[rb] / 10.0f);
+              // std::cout << "RB[" << rb << "] SNR (linear) = " << snr_linear << std::endl;
               for (int j = start; j < end; j++)
               {
                 snr_sc_linear[j] = snr_linear;
                 // DEBUG
-                // std::cout << "PDC_SNR[" << j << "] = " << snr_sc_linear[j] << std::endl;
+                // std::cout << "\tPDC_SNR[" << j << "] = " << snr_sc_linear[j] << std::endl;
               }
             }
             //
             int sc_ind = pkt.ctrl_syms_len;
+
+            //////////////////
+            // std::cout << "*** NIMA: copy_cnt = " << copy_cnt
+            //           << ", packet_len = " << packet_len
+            //           << ", tmp_remap_buf size = " << packet_len * it->second.modtype
+            //           << std::endl;
+            uint8_t *tmp_remap_buf = (uint8_t *)malloc(packet_len * sizeof(uint8_t) * it->second.modtype);
             for (int sym_idx = 0; sym_idx < packet_len; sym_idx++)
             {
+              int idx = sym_idx * copies_count + copy_cnt;
+              SNRs[idx] = snr_sc_linear[sc_ind % sd_num];
+              sc_ind++;
+              //
               float x = pkt.buf[sym_idx].real();
               float y = pkt.buf[sym_idx].imag();
               float csi_val = pkt.csi_buf[sym_idx].real();
-              uint8_t tmp_bits[8];
-              gr_complex remapped_sym = gr::ncjt::demap_symbol(x, y, csi_val, modtype, tmp_bits);
-              int idx = sym_idx * copies_count + copy_cnt;
-              rx_real[idx] = remapped_sym.real();
-              rx_imag[idx] = remapped_sym.imag();
-              SNRs[idx] = snr_sc_linear[sc_ind % sd_num];
-              sc_ind++;
+              uint8_t tmp_bits[8]; // up to 8 bits
+              gr::ncjt::demap_symbol(x, y, csi_val, it->second.modtype, tmp_bits);
+              int out_sym_offset = sym_idx * it->second.modtype;
+              for (int b = 0; b < it->second.modtype; b++)
+              {
+                tmp_remap_buf[out_sym_offset + b] = tmp_bits[b];
+              }
             }
+            // Remap
+            for (int k = 0; k < packet_len; k++) {
+              int period_offset = k * it->second.p2modtype;
+              int val = 0;
+              for (int b = 0; b < it->second.p2modtype; b++)
+              {
+                int bit_index = period_offset + b;
+                val |= (tmp_remap_buf[bit_index] << b);
+              }
+              gr_complex sym;
+              switch (it->second.p2modtype)
+              {
+              case 2:
+                sym = CONST_QPSK[val];
+                break;
+              case 4:
+                sym = CONST_16QAM[val];
+                break;
+              case 6:
+                sym = CONST_64QAM[val];
+                break;
+              case 8:
+                sym = CONST_256QAM[val];
+                break;
+              default:
+                throw std::runtime_error("Unsupported modulation type for remapping");
+              }
+              rx_real[k] = sym.real();
+              rx_imag[k] = sym.imag();
+            }
+            free(tmp_remap_buf);
+            //////////////////
             copy_cnt++;
           }
 
           // Run HardLogLikelihoodVanilla -> returns bit LLRs if sum_over_rx=true + return_bit_llrs=true
 
-          d_hlls[modtype][copies_count]->Compute(rx_real.data(),
+          d_hlls[p2modtype][copies_count]->Compute(rx_real.data(),
                                                  rx_imag.data(),
                                                  SNRs.data(),
                                                  packet_len,
@@ -529,13 +653,13 @@ namespace gr
                                                  llrs_hll,
                                                  d_num_threads);
           // Reverse the order of the LLRs
-          for (size_t d = 0; d < llrs_hll.size(); d += modtype)
+          for (size_t d = 0; d < llrs_hll.size(); d += p2modtype)
           {
-            std::reverse(llrs_hll.begin() + d, llrs_hll.begin() + d + modtype);
+            std::reverse(llrs_hll.begin() + d, llrs_hll.begin() + d + p2modtype);
           }
 
           // Now we "hard"-decide bits from LLR sign:
-          for (int i = 0; i < bits_per_pkt; i++)
+          for (int i = 0; i < p2max_bits_per_pkt; i++)
           {
             bits_hll[i] = (llrs_hll[i] >= 0.0f) ? 1 : 0;
           }
@@ -553,40 +677,48 @@ namespace gr
           {
             // Majority bits
             std::cout << "[";
-            for (int b = 0; b < modtype; b++)
+            for (int b = 0; b < p2modtype; b++)
             {
-              std::cout << (int)bits_majority[p * modtype + b];
+              std::cout << (int)bits_majority[p * p2modtype + b];
             }
             std::cout << "]\t";
             // Majority LLRs
             std::cout << "[";
-            for (int b = 0; b < modtype; b++)
+            for (int b = 0; b < p2modtype; b++)
             {
-              std::cout << std::setw(5) << std::fixed << std::setprecision(2) << llrs_majority[p * modtype + b] << ", ";
+              std::cout << std::setw(5) << std::fixed << std::setprecision(2) << llrs_majority[p * p2modtype + b];
+              if (b < p2modtype - 1)
+                std::cout << ", ";
             }
             std::cout << "]\t";
             // HLL bits
             std::cout << "[";
-            for (int b = 0; b < modtype; b++)
+            for (int b = 0; b < p2modtype; b++)
             {
-              std::cout << (int)bits_hll[p * modtype + b];
+              std::cout << (int)bits_hll[p * p2modtype + b];
             }
             std::cout << "]\t";
             // HLL LLRs
             std::cout << "[";
-            for (int b = 0; b < modtype; b++)
+            for (int b = 0; b < p2modtype; b++)
             {
-              std::cout << std::setw(5) << std::fixed << std::setprecision(2) << llrs_hll[p * modtype + b] << ", ";
+              std::cout << std::setw(5) << std::fixed << std::setprecision(2) << llrs_hll[p * p2modtype + b];
+              if (b < p2modtype - 1)
+                std::cout << ", ";
             }
             std::cout << "]\t";
             // Symbols (copies)
             for (auto it = pending.begin(); it != pending.end(); ++it)
             {
               auto &pkt = it->second;
-              std::cout << "(" << std::setw(10) << std::fixed << std::setprecision(6) << pkt.buf[p].real()
+              std::cout << "(" << std::setw(6) << std::fixed << std::setprecision(2) << pkt.buf[p].real()
                         << " + "
-                        << std::setw(10) << std::fixed << std::setprecision(6) << pkt.buf[p].imag()
+                        << std::setw(6) << std::fixed << std::setprecision(2) << pkt.buf[p].imag()
                         << "i)\t";
+              if (std::next(it) != pending.end())
+              {
+                std::cout << ", ";
+              }
             }
             std::cout << std::endl;
           }
@@ -602,17 +734,17 @@ namespace gr
         if (rx_coding_rate > 0)
         {
           double R = code_rates[rx_coding_rate];
-          int message_len_bits = int(std::floor(bits_per_pkt * R));
-          message_len_bits = message_len_bits + (modtype - message_len_bits % modtype);
+          int message_len_bits = int(std::floor(p2max_bits_per_pkt * R));
+          message_len_bits = message_len_bits + (p2modtype - message_len_bits % p2modtype);
           int seg_out_size = packet_len;
-          int num_segs = (packet_len * modtype) / seg_out_size;
+          int num_segs = (packet_len * p2modtype) / seg_out_size;
           int base_in_bits_per_seg = message_len_bits / num_segs;
           int remainder = message_len_bits % num_segs;
           ///
           if (d_majority_enabled)
           {
-            std::vector<srsran::log_likelihood_ratio> srs_llrs_majority(packet_len * modtype);
-            for (int k = 0; k < packet_len * modtype; k++)
+            std::vector<srsran::log_likelihood_ratio> srs_llrs_majority(packet_len * p2modtype);
+            for (int k = 0; k < packet_len * p2modtype; k++)
             {
               srs_llrs_majority[k] = (int)(llrs_majority[k] * -20); // bits_majority[k] ? -10 : 10;
               if (d_debug && k < 5)
@@ -636,8 +768,8 @@ namespace gr
           }
           if (d_hll_enabled)
           {
-            std::vector<srsran::log_likelihood_ratio> srs_llrs_hll(packet_len * modtype);
-            for (int k = 0; k < packet_len * modtype; k++)
+            std::vector<srsran::log_likelihood_ratio> srs_llrs_hll(packet_len * p2modtype);
+            for (int k = 0; k < packet_len * p2modtype; k++)
             {
               {
                 float temp = llrs_hll[k] * -10;
@@ -674,15 +806,15 @@ namespace gr
           // No coding, just copy the bits
           if (d_majority_enabled)
           {
-            majority_buf = (uint8_t *)malloc(bits_per_pkt);
-            std::memcpy(majority_buf, bits_majority.data(), bits_per_pkt);
-            majority_buf_len = bits_per_pkt;
+            majority_buf = (uint8_t *)malloc(p2max_bits_per_pkt);
+            std::memcpy(majority_buf, bits_majority.data(), p2max_bits_per_pkt);
+            majority_buf_len = p2max_bits_per_pkt;
           }
           if (d_hll_enabled)
           {
-            hll_buf = (uint8_t *)malloc(bits_per_pkt);
-            std::memcpy(hll_buf, bits_hll.data(), bits_per_pkt);
-            hll_buf_len = bits_per_pkt;
+            hll_buf = (uint8_t *)malloc(p2max_bits_per_pkt);
+            std::memcpy(hll_buf, bits_hll.data(), p2max_bits_per_pkt);
+            hll_buf_len = p2max_bits_per_pkt;
           }
         }
         /**************************************************************
@@ -697,13 +829,17 @@ namespace gr
         {
           // Recalculate how many *info bits* the mapper used
           int frame_data_syms = packet_len;
-          int frame_data_bits_out = frame_data_syms * modtype;
+          int frame_data_bits_out = frame_data_syms * p2modtype;
           double R = code_rates[rx_coding_rate];
           int in_bits_needed = frame_data_bits_out;
           if (rx_coding_rate > 0)
           {
             in_bits_needed = int(std::floor(frame_data_bits_out * R));
-            in_bits_needed = in_bits_needed + (modtype - (in_bits_needed % modtype));
+            int rem = in_bits_needed % p2modtype;
+            if (rem != 0)
+            {
+              in_bits_needed += (p2modtype - rem);
+            }
           }
           // Generate the same PRNG bits used by mapper_muxer_impl
           std::mt19937 gen(seqno);
@@ -759,7 +895,7 @@ namespace gr
           if (rx_coding_rate > 0)
           {
             int seg_out_size = packet_len;
-            int num_segs = (packet_len * modtype) / seg_out_size;
+            int num_segs = (packet_len * p2modtype) / seg_out_size;
             int base_in_bits_per_seg = in_bits_needed / num_segs;
             int remainder = in_bits_needed % num_segs;
             if (d_majority_enabled)
@@ -915,12 +1051,12 @@ namespace gr
           auto out = static_cast<uint8_t *>(output_items[hll_port]);
           // std::memcpy(out, hll_buf, hll_buf_len);
           // Pack modtype bits into bytes
-          for (int d = 0; d < hll_buf_len / modtype; d++)
+          for (int d = 0; d < hll_buf_len / p2modtype; d++)
           {
             uint8_t val = 0;
-            for (int b = 0; b < modtype; b++)
+            for (int b = 0; b < p2modtype; b++)
             {
-              val = (val << 1) | hll_buf[d * modtype + b];
+              val = (val << 1) | hll_buf[d * p2modtype + b];
             }
             out[d] = val;
           }
@@ -931,7 +1067,7 @@ namespace gr
           add_item_tag(hll_port, nitems_written(hll_port), pmt::string_to_symbol("rx_data_crc"),
                        pmt::from_bool(crc_ok_hll), pmt::string_to_symbol(this->name()));
           add_item_tag(hll_port, nitems_written(hll_port), pmt::string_to_symbol("packet_len"),
-                       pmt::from_long(hll_buf_len / modtype),
+                       pmt::from_long(hll_buf_len / p2modtype),
                        pmt::string_to_symbol(this->name()));
         }
         if (d_majority_enabled)
@@ -939,12 +1075,12 @@ namespace gr
           auto out = static_cast<uint8_t *>(output_items[majority_port]);
           // std::memcpy(out, majority_buf, majority_buf_len);
           // Pack modtype bits into bytes
-          for (int d = 0; d < majority_buf_len / modtype; d++)
+          for (int d = 0; d < majority_buf_len / p2modtype; d++)
           {
             uint8_t val = 0;
-            for (int b = 0; b < modtype; b++)
+            for (int b = 0; b < p2modtype; b++)
             {
-              val = (val << 1) | majority_buf[d * modtype + b];
+              val = (val << 1) | majority_buf[d * p2modtype + b];
             }
             out[d] = val;
           }
@@ -955,7 +1091,7 @@ namespace gr
           add_item_tag(majority_port, nitems_written(majority_port), pmt::string_to_symbol("rx_data_crc"),
                        pmt::from_bool(crc_ok_majority), pmt::string_to_symbol(this->name()));
           add_item_tag(majority_port, nitems_written(majority_port), pmt::string_to_symbol("packet_len"),
-                       pmt::from_long(majority_buf_len / modtype),
+                       pmt::from_long(majority_buf_len / p2modtype),
                        pmt::string_to_symbol(this->name()));
         }
         for (int pp = 0; pp < int(d_hll_enabled) + int(d_majority_enabled); pp++)
@@ -967,7 +1103,7 @@ namespace gr
                        pmt::from_uint64(pending.begin()->second.seqno),
                        pmt::string_to_symbol(this->name()));
           add_item_tag(pp, nitems_written(pp), pmt::string_to_symbol("rx_modtype"),
-                       pmt::from_uint64(pending.begin()->second.modtype),
+                       pmt::from_uint64(pending.begin()->second.p2modtype), // TODO: Check this
                        pmt::string_to_symbol(this->name()));
           add_item_tag(pp, nitems_written(pp), pmt::string_to_symbol("rx_nstrm"),
                        pmt::from_uint64(pending.size()),
@@ -988,11 +1124,11 @@ namespace gr
 
         if (d_hll_enabled)
         {
-          produce(hll_port, hll_buf_len / modtype);
+          produce(hll_port, hll_buf_len / p2modtype);
         }
         if (d_majority_enabled)
         {
-          produce(majority_port, majority_buf_len / modtype);
+          produce(majority_port, majority_buf_len / p2modtype);
         }
         return WORK_CALLED_PRODUCE;
       }
