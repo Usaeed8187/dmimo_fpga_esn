@@ -333,7 +333,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '18'
     widget: counter_slider
   states:
     bus_sink: false
@@ -877,7 +877,7 @@ blocks:
     mergestrm: 'True'
     minoutbuf: '32768'
     nctrlsyms: num_ctrl_syms_p2
-    ndatasyms: num_data_syms
+    ndatasyms: num_data_syms_p2
     npilotsyms: '0'
     nstrm: '1'
     rgmode: rg_mode
@@ -2177,7 +2177,6 @@ blocks:
 
 connections:
 - [ncjt_add_ctrldata_0_0, '0', ncjt_rg_mapper_0, '0']
-- [ncjt_check_ctrldata_0, '0', ncjt_add_ctrldata_0_0, '0']
 - [ncjt_check_ctrldata_0, '0', ncjt_pkt_err_0_0_0_0, '0']
 - [ncjt_check_ctrldata_0_0, '0', ncjt_pkt_err_0_0_0, '0']
 - [ncjt_check_ctrldata_0_0, '1', ncjt_pkt_err_0_0_0, '1']
@@ -2207,6 +2206,7 @@ connections:
 - [ncjt_pkt_err_0_0_0_0, '0', qtgui_time_sink_x_0, '1']
 - [ncjt_rg_demapper_0, '0', ncjt_check_ctrldata_0_0, '0']
 - [ncjt_rg_demapper_0, '1', ncjt_check_ctrldata_0_0, '1']
+- [ncjt_rg_demapper_0_0, '0', ncjt_add_ctrldata_0_0, '0']
 - [ncjt_rg_demapper_0_0, '0', ncjt_check_ctrldata_0, '0']
 - [ncjt_rg_demapper_1, '0', ncjt_pkt_err_0, '0']
 - [ncjt_rg_demapper_1, '1', ncjt_pkt_err_0, '1']

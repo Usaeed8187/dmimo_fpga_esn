@@ -593,7 +593,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1632, 568.0]
+    coordinate: [1648, 688.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -783,7 +783,7 @@ blocks:
     alias: ''
     buffersize: '20'
     comment: ''
-    debug: 'True'
+    debug: 'False'
     llrsum: 'False'
     majority: 'True'
     maxoutbuf: '0'
@@ -1973,7 +1973,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: float
-    update_time: '0.5'
+    update_time: '1'
     width1: '2'
     width10: '1'
     width2: '2'
@@ -2776,8 +2776,8 @@ connections:
 - [ncjt_ofdm_demod_0_1, '0', ncjt_mu_chanest_0_0_0, '0']
 - [ncjt_ofdm_demod_0_1_0, '0', ncjt_mu_chanest_0_0, '0']
 - [ncjt_ofdm_demod_0_4, '0', ncjt_mu_chanest_0_1, '0']
-- [ncjt_pkt_err_0, '0', blocks_null_sink_0_0_0_0_0, '0']
-- [ncjt_pkt_err_0_0, '0', qtgui_time_sink_x_0, '0']
+- [ncjt_pkt_err_0, '0', qtgui_time_sink_x_0, '0']
+- [ncjt_pkt_err_0_0, '0', blocks_null_sink_0_0_0_0_0, '0']
 - [ncjt_pkt_err_0_0_0_1, '0', blocks_null_sink_0_0_0_0, '0']
 - [ncjt_pkt_err_0_0_1, '0', qtgui_time_sink_x_0, '2']
 - [ncjt_pkt_err_0_0_1_0, '0', qtgui_time_sink_x_0, '3']

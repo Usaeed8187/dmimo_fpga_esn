@@ -412,9 +412,9 @@ blocks:
 - name: ncjt_add_ctrldata_0_0
   id: ncjt_add_ctrldata
   parameters:
-    add_llr: 'True'
-    add_rxseq: 'True'
-    add_txseq: 'False'
+    add_llr: 'False'
+    add_rxseq: 'False'
+    add_txseq: 'True'
     affinity: '6'
     alias: ''
     comment: ''
@@ -434,9 +434,9 @@ blocks:
 - name: ncjt_add_ctrldata_0_0_0
   id: ncjt_add_ctrldata
   parameters:
-    add_llr: 'True'
-    add_rxseq: 'True'
-    add_txseq: 'False'
+    add_llr: 'False'
+    add_rxseq: 'False'
+    add_txseq: 'True'
     affinity: '6'
     alias: ''
     comment: ''
@@ -462,7 +462,7 @@ blocks:
     ctrl_datalen: 4*num_ctrl_syms_p1r*sd_num
     debug: 'False'
     extract_llr: 'False'
-    has_llr: 'True'
+    has_llr: 'False'
     has_rxseq: 'True'
     has_txseq: 'True'
     maxoutbuf: '0'
