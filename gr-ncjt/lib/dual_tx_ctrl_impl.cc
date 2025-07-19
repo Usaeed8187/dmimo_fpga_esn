@@ -166,7 +166,7 @@ dual_tx_ctrl_impl::process_txen_message(const pmt::pmt_t &msg)
 {
     gr::thread::scoped_lock lock(fp_mutex);
 
-    bool txen = pmt::to_bool(msg);
+    bool txen = (pmt::to_long(msg) > 0);
     if (txen != d_txen)
     {
         d_txen = txen;

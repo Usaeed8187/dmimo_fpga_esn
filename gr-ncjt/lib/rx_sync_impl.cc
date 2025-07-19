@@ -208,13 +208,17 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (start_pos < 0)
             {
                 // frame start not found, discard samples
+                d_current_foe_comp1 = 0.0;
                 consume_each(buffer_len - 2 * STF_LEN);
                 break;
             }
             auto packet_start = nitems_read(0) + (uint64_t) start_pos;
-            dout << "Packet start detected at " << packet_start << std::endl;
+            dout << "P1 packet start detected at " << packet_start << std::endl;
             consume_each(start_pos);
             d_rx_ready = false;
+            d_rx_ready_cnt1 = 0;
+            d_rx_ready_cnt2 = 0;
+            d_rx_ready_cnt3 = 0;
             d_sync_err_cnt1 = 0;
             d_sync_err_cnt2 = 0;
             d_sync_err_cnt3 = 0;
@@ -244,16 +248,17 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             uint64_t cur_frame_start = 0;
             if (ht_start < 0)
             {
-                dout << "Fine synchronize failed!" << std::endl;
+                dout << "P1 fine synchronize failed!" << std::endl;
                 consume_each(min_input_items);
                 d_sync_err_cnt1 += 1;
                 if (d_sync_err_cnt1 >= 5)
                 {
                     // changing from ready state
                     // std::cout << "======== Receiver synchronization lost ========" << std::endl;
-                    send_rxstate(false);
+                    send_rxstate(-1);
                     d_sync_err_cnt1 = 0;
                     d_rx_ready_cnt1 = 0;
+                    d_current_foe_comp1 = 0.0;
                     d_state = P1SEARCH;
                 }
                 break;
@@ -263,12 +268,12 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 // skip HT preambles excluding LTFs
                 ht_start += d_ht_len1;
                 cur_frame_start = nitems_read(0) + ht_start;
-                dout << "Data frame start at " << ht_start << " (" << cur_frame_start << ")" << std::endl;
+                dout << "P1 data frame start at " << ht_start << " (" << cur_frame_start << ")" << std::endl;
             }
 
             if (d_rx_ready_cnt1 > 20 && (d_rx_ready_cnt1 % 100) == 0)
             {
-                std::cout << "Fine frequency offset compensation: " << d_current_foe_comp1 << "    ("
+                std::cout << "P1 fine frequency offset compensation: " << d_current_foe_comp1 << "    ("
                           << d_current_foe_comp1 * d_samplerate / (2.0 * M_PI) << " Hz)" << std::endl;
             }
 
@@ -278,7 +283,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 // use frame start prediction
                 cur_frame_start = d_prev_p1frame_start + uint64_t(d_frame_interval + d_clk_offset_est);
                 ht_start = std::max(0, int(cur_frame_start - nitems_read(0)));
-                std::cout << "Fine frame synchronization not correct, using prediction instead!" << std::endl;
+                std::cout << "P1 fine frame synchronization not correct, using prediction instead!" << std::endl;
             }
             else if (d_prev_p1frame_start > 0) // frame_offset >= -SYM_LEN && frame_offset <= SYM_LEN
             {
@@ -292,7 +297,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                     d_clk_offset_cnt = 0;
                     d_clk_offset_ok = true;
                     double clk_offset_pps = 1e6 * d_clk_offset_est / (double) (d_frame_interval);
-                    std::cout << "Fine clock offset estimation: " << d_clk_offset_est
+                    std::cout << "P1 fine clock offset estimation: " << d_clk_offset_est
                               << " (" << clk_offset_pps << " ppm)" << std::endl;
                 }
             }
@@ -318,16 +323,23 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_rx_ready_cnt1 % 10 == 0 && d_rxtime_offset > 0) // && d_clk_offset_ok
                 send_rxtime();
 
-            if (d_rx_ready_cnt1 > 20 && d_clk_offset_ok && d_rxtime_offset > 0
-                && (!d_p2rx || d_rx_ready_cnt2 > 20) &&  (!d_p3rx || d_rx_ready_cnt3 > 20))
+            if (d_rx_ready_cnt1 > 20 && d_clk_offset_ok && d_rxtime_offset > 0)
             {
-                d_rx_ready = true;
-                send_rxstate(true);
+               if ((!d_p2rx || d_rx_ready_cnt2 > 20) && (!d_p3rx || d_rx_ready_cnt3 > 20))
+                {
+                    d_rx_ready = true;
+                    send_rxstate(2); // both P2 & P3 ready
+                }
+                else if ((!d_p2rx || d_rx_ready_cnt2 > 20) || (!d_p3rx || d_rx_ready_cnt3 > 20))
+                {
+                    d_rx_ready = false;
+                    send_rxstate(1); // both P2 & P3 ready
+                }
             }
             else if (d_rx_ready_cnt1 == 0 || (d_p2rx && d_rx_ready_cnt2 == 0) || (d_p3rx && d_rx_ready_cnt3 == 0) )
             {
                 d_rx_ready = false;
-                send_rxstate(false);
+                send_rxstate(-1);
             }
 
             d_rx_ready_cnt1 += 1;
@@ -352,13 +364,13 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 {
                     d_wait_interval = d_next_p2frame_start - uint64_t(noutput_samples + d_ht_len2 + 5 * SYM_LEN) - nitems_read(0);
                     if (d_rx_ready_cnt2 == 0) // additional samples for sync search buffer
-                        d_wait_interval -= d_max_corr_len / 4;
+                        d_wait_interval -= d_max_corr_len / 2;
                 }
                 else  // phase 1 & 3 reception
                 {
                     d_wait_interval = d_next_p3frame_start - uint64_t(noutput_samples + d_ht_len3 + 5 * SYM_LEN) - nitems_read(0);
                     if (d_rx_ready_cnt3 == 0) // additional samples for sync search buffer
-                        d_wait_interval -= d_max_corr_len / 4;
+                        d_wait_interval -= d_max_corr_len / 2;
                 }
                 d_wait_count = 0;
                 d_state = WAIT1;
@@ -416,6 +428,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
+                d_data_samples = 0;
                 if (!d_p2rx && !d_p3rx)
                     d_state = P1FINESYNC;
                 else if (d_p2rx)
@@ -438,9 +451,12 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             int start_pos = sync_search(input_items, buffer_len, d_current_foe_comp2);
             if (start_pos < 0)
             {
-                // frame start not found, discard samples
-                consume_each(buffer_len - 2 * STF_LEN);
+                dout << "P2 packet start not detected" << std::endl;
+                d_current_foe_comp2 = 0.0;
                 d_skip_p2_frame = true;
+                // skip the search buffer
+                int skip_samples = d_max_corr_len / 2;
+                consume_each(skip_samples);
                 d_state = P2DEFRAME;
                 break;
             }
@@ -471,10 +487,11 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 if (d_sync_err_cnt2 >= 5)
                 {
                     // changing from ready state
-                    // std::cout << "======== P2 Receiver synchronization lost ========" << std::endl;
+                    std::cout << "======== P2 receiver synchronization lost ========" << std::endl;
                     d_sync_err_cnt2 = 0;
                     d_rx_ready_cnt2 = 0;
                     d_prev_p2frame_start = 0;
+                    d_current_foe_comp2 = 0.0;
                     d_skip_p2_frame = true;
                     // skip the whole beacon
                     consume_each(5 * SYM_LEN + d_ht_len2);
@@ -520,13 +537,15 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_data_samples + noutput_samples >= d_frame_len2)
             {
                 noutput_samples = d_frame_len2 - d_data_samples;
+                if (d_skip_p2_frame)
+                    d_next_p2frame_start += d_frame_interval;
                 if (!d_p3rx)
                     d_wait_interval = d_next_p1frame_start - uint64_t(noutput_samples + d_ht_len1 + 5 * SYM_LEN);
                 else
                 {
                     d_wait_interval = d_next_p3frame_start - uint64_t(noutput_samples + d_ht_len3 + 5 * SYM_LEN);
                     if (d_rx_ready_cnt3 == 0) // additional samples for sync search buffer
-                        d_wait_interval -= d_max_corr_len / 4;
+                        d_wait_interval -= d_max_corr_len / 2;
                 }
                 d_wait_interval -= nitems_read(0);
                 d_wait_count = 0;
@@ -580,6 +599,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             {
                 d_wait_count = 0;
                 min_input_items -= new_data_count;
+                d_data_samples = 0;
                 if (!d_p3rx)
                     d_state = P1FINESYNC;
                 else
@@ -601,9 +621,12 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             int start_pos = sync_search(input_items, buffer_len, d_current_foe_comp3);
             if (start_pos < 0)
             {
-                // frame start not found, discard samples
-                consume_each(buffer_len - 2 * STF_LEN);
+                dout << "P3 packet start not detected" << std::endl;
+                d_current_foe_comp3 = 0.0;
                 d_skip_p3_frame = true;
+                // skip the search buffer
+                int skip_samples = d_max_corr_len / 2;
+                consume_each(skip_samples);
                 d_state = P3DEFRAME;
                 break;
             }
@@ -634,10 +657,11 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                 if (d_sync_err_cnt3 >= 5)
                 {
                     // changing from ready state
-                    std::cout << "======== P3 Receiver synchronization lost ========" << std::endl;
+                    std::cout << "======== P3 receiver synchronization lost ========" << std::endl;
                     d_sync_err_cnt3 = 0;
                     d_rx_ready_cnt3 = 0;
                     d_prev_p3frame_start = 0;
+                    d_current_foe_comp3 = 0.0;
                     d_skip_p3_frame = true;
                     // skip the whole beacon
                     consume_each(5 * SYM_LEN + d_ht_len3);
@@ -683,6 +707,8 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
             if (d_data_samples + noutput_samples >= d_frame_len3)
             {
                 noutput_samples = d_frame_len3 - d_data_samples;
+                if (d_skip_p3_frame)
+                    d_next_p3frame_start += d_frame_interval;
                 d_wait_interval = d_next_p1frame_start - uint64_t(noutput_samples + d_ht_len1 + 5 * SYM_LEN) - nitems_read(0);
                 d_wait_count = 0;
                 d_state = WAIT3;
@@ -703,7 +729,7 @@ rx_sync_impl::general_work(int noutput_items, gr_vector_int &ninput_items,
                     add_item_tag(2 * d_num_chans + ch,
                                  nitems_written(2 * d_num_chans + ch),
                                  pmt::string_to_symbol("frame_start"),
-                                 pmt::from_long(d_frame_len2),
+                                 pmt::from_long(d_frame_len3),
                                  _id);
             }
 
@@ -755,9 +781,9 @@ rx_sync_impl::send_tagcmd()
 }
 
 void
-rx_sync_impl::send_rxstate(bool ready)
+rx_sync_impl::send_rxstate(int state)
 {
-    message_port_pub(pmt::mp("rxrdy"), pmt::from_bool(ready));
+    message_port_pub(pmt::mp("rxrdy"), pmt::from_long(state));
 }
 
 void

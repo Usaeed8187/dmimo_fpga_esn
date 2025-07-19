@@ -101,7 +101,7 @@ private:
     send_tagcmd();
 
     void
-    send_rxstate(bool ready);
+    send_rxstate(int state);
 
     void
     check_rxtime(int rx_windows_size);

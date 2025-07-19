@@ -251,7 +251,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     // send LLR magnitude per subcarrier
     send_llr_message();
 
-	if (d_scnum == 56)
+	/* if (d_scnum == 56)
 	{
 		std::vector<float> SNRs(d_scnum - 4, 0.0f);
 		int j = 0;
@@ -270,7 +270,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
 	{
 		// @TODO
 		throw std::runtime_error("Unsupported number of subcarriers");
-	}
+	} */
 
     noutput_items = (d_scdata * d_numsyms);
     add_item_tag(0,
