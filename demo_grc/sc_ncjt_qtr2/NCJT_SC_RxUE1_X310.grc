@@ -102,7 +102,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 212.0]
+    coordinate: [720, 204.0]
     rotation: 0
     state: true
 - name: modulations
@@ -222,7 +222,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 148.0]
+    coordinate: [944, 140.0]
     rotation: 0
     state: true
 - name: num_ltf_syms
@@ -246,7 +246,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [824, 148.0]
+    coordinate: [824, 140.0]
     rotation: 0
     state: true
 - name: pkts_per_sec
@@ -294,7 +294,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 12.0]
+    coordinate: [832, 12.0]
     rotation: 0
     state: enabled
 - name: rg_fft_size
@@ -399,7 +399,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 148.0]
+    coordinate: [720, 140.0]
     rotation: 0
     state: true
 - name: tx_gain
@@ -979,7 +979,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 328.0]
+    coordinate: [264, 328.0]
     rotation: 0
     state: enabled
 - name: ncjt_skip_data_0_1_0_0
@@ -1021,7 +1021,7 @@ blocks:
 - name: ncjt_stbc_decode_0_0
   id: ncjt_stbc_decode
   parameters:
-    affinity: '5'
+    affinity: '4'
     alias: ''
     comment: ''
     debug: 'False'
@@ -1070,7 +1070,7 @@ blocks:
     comment: ''
     csifile: ''
     debug: 'False'
-    eigenmode: 'False'
+    eigenmode: 'True'
     loadcsi: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -1458,7 +1458,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1656, 648.0]
+    coordinate: [1624, 456.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -2171,7 +2171,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 372.0]
+    coordinate: [40, 372.0]
     rotation: 0
     state: enabled
 
