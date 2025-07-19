@@ -201,6 +201,18 @@ blocks:
     coordinate: [296, 244.0]
     rotation: 0
     state: true
+- name: num_data_syms_p3r
+  id: variable
+  parameters:
+    comment: ''
+    value: '10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 164.0]
+    rotation: 0
+    state: true
 - name: num_ltf_syms
   id: variable
   parameters:
@@ -366,6 +378,18 @@ blocks:
     coordinate: [768, 164.0]
     rotation: 0
     state: true
+- name: tx_frame_size_p3r
+  id: variable
+  parameters:
+    comment: ''
+    value: num_data_syms_p3r * (fft_size + cp_len)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [768, 236.0]
+    rotation: 0
+    state: true
 - name: tx_gain
   id: variable_qtgui_range
   parameters:
@@ -399,6 +423,94 @@ blocks:
     coordinate: [16, 116.0]
     rotation: 0
     state: true
+- name: blocks_file_source_0
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: '"../../data/su_mimo_he/4t2s_csd/" + qam_type + "/txrgfrm_s1.bin"'
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [656, 1300.0]
+    rotation: 0
+    state: enabled
+- name: blocks_file_source_0_0
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: '"../../data/su_mimo_he/4t2s_csd/" + qam_type + "/txrgfrm_s2.bin"'
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [456, 1332.0]
+    rotation: 0
+    state: enabled
+- name: blocks_file_source_0_1
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: '"../../data/su_mimo_he/4t2s_csd/" + qam_type + "/txrgfrm_s3.bin"'
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [456, 1444.0]
+    rotation: 0
+    state: enabled
+- name: blocks_file_source_0_2
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: '"../../data/su_mimo_he/4t2s_csd/" + qam_type + "/txrgfrm_s4.bin"'
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [656, 1492.0]
+    rotation: 0
+    state: enabled
 - name: blocks_null_sink_0
   id: blocks_null_sink
   parameters:
@@ -447,7 +559,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1760, 776.0]
+    coordinate: [1760, 744.0]
     rotation: 0
     state: enabled
 - name: blocks_null_sink_0_0_0_0
@@ -465,6 +577,99 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1528, 344.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_0_0_0_0_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1632, 568.0]
+    rotation: 0
+    state: enabled
+- name: blocks_stream_to_tagged_stream_0
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: '15'
+    alias: ''
+    comment: ''
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '32768'
+    packet_len: tx_frame_size_p3r
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 1324.0]
+    rotation: 0
+    state: enabled
+- name: blocks_stream_to_tagged_stream_0_0
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: '15'
+    alias: ''
+    comment: ''
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '32768'
+    packet_len: tx_frame_size_p3r
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 1388.0]
+    rotation: 0
+    state: enabled
+- name: blocks_stream_to_tagged_stream_0_1
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: '15'
+    alias: ''
+    comment: ''
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '32768'
+    packet_len: tx_frame_size_p3r
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 1452.0]
+    rotation: 0
+    state: enabled
+- name: blocks_stream_to_tagged_stream_0_2
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: '15'
+    alias: ''
+    comment: ''
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '32768'
+    packet_len: tx_frame_size_p3r
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 1516.0]
     rotation: 0
     state: enabled
 - name: ncjt_check_ctrldata_0
@@ -511,7 +716,7 @@ blocks:
     nstrm: '2'
     rgmode: rg_mode
     soffset: '0'
-    waitrdy: 'True'
+    waitrdy: 'False'
   states:
     bus_sink: false
     bus_source: false
@@ -578,7 +783,7 @@ blocks:
     alias: ''
     buffersize: '20'
     comment: ''
-    debug: 'False'
+    debug: 'True'
     llrsum: 'False'
     majority: 'True'
     maxoutbuf: '0'
@@ -693,7 +898,7 @@ blocks:
     affinity: '6'
     alias: ''
     comment: ''
-    debug: 'True'
+    debug: 'False'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -718,7 +923,7 @@ blocks:
     affinity: '7'
     alias: ''
     comment: ''
-    debug: 'True'
+    debug: 'False'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -734,7 +939,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 800.0]
+    coordinate: [712, 800.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -936,7 +1141,29 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1544, 648.0]
+    coordinate: [1536, 552.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_pkt_err_0_0
+  id: ncjt_pkt_err
+  parameters:
+    affinity: ''
+    alias: ''
+    avgwindow: '10'
+    comment: ''
+    debug: 'False'
+    filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data_s1.bin"'
+    logfreq: '50'
+    logpkterr: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nstrms: '1'
+    shortterm: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1536, 672.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_0_0_1
@@ -947,7 +1174,7 @@ blocks:
     avgwindow: '10'
     comment: ''
     debug: 'False'
-    filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data.bin"'
+    filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data_s1.bin"'
     logfreq: '50'
     logpkterr: 'False'
     maxoutbuf: '0'
@@ -968,7 +1195,7 @@ blocks:
     alias: ''
     avgwindow: '10'
     comment: ''
-    debug: 'True'
+    debug: 'False'
     filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data_s1.bin"'
     logfreq: '50'
     logpkterr: 'False'
@@ -980,7 +1207,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1736, 824.0]
+    coordinate: [1736, 808.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_0_1_0
@@ -990,7 +1217,7 @@ blocks:
     alias: ''
     avgwindow: '10'
     comment: ''
-    debug: 'True'
+    debug: 'False'
     filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data_s1.bin"'
     logfreq: '50'
     logpkterr: 'False'
@@ -1002,7 +1229,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1736, 904.0]
+    coordinate: [1736, 880.0]
     rotation: 0
     state: enabled
 - name: ncjt_pkt_err_0_1
@@ -1183,7 +1410,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 920.0]
+    coordinate: [1096, 920.0]
     rotation: 0
     state: enabled
 - name: ncjt_skip_data_0_0
@@ -1201,7 +1428,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1064, 1152.0]
+    coordinate: [1088, 1144.0]
     rotation: 0
     state: enabled
 - name: ncjt_skip_data_0_1_0
@@ -1283,26 +1510,26 @@ blocks:
   parameters:
     affinity: '15'
     alias: ''
-    autostart: 'False'
+    autostart: 'True'
     comment: ''
     debug: 'False'
     delay: '0'
-    filename: '"../../data/sc_ncjt_he/1t1s/" + qam_type + "/ncjt_preamble.bin"'
-    frmdatalen: (num_data_syms_p2+2) * (fft_size+cp_len)
+    filename: '"../../data/su_mimo_he/4t2s_csd/" + qam_type + "/preamble.bin"'
+    frmdatalen: tx_frame_size_p3r
     fs: samp_rate
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: '4'
     padding: '500'
     pktspersec: pkts_per_sec
-    starttime: start_time_p3r + 5.0
+    starttime: start_time_p3r + 2.0
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1128, 1360.0]
+    coordinate: [1184, 1320.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: qtgui_const_sink_x_0
   id: qtgui_const_sink_x
   parameters:
@@ -1392,7 +1619,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1192, 900.0]
+    coordinate: [1216, 900.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_0
@@ -1484,7 +1711,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1192, 1132.0]
+    coordinate: [1216, 1124.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_1_0
@@ -1746,12 +1973,12 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: float
-    update_time: '1'
+    update_time: '0.5'
     width1: '2'
     width10: '1'
     width2: '2'
     width3: '2'
-    width4: '3'
+    width4: '2'
     width5: '2'
     width6: '1'
     width7: '1'
@@ -1765,7 +1992,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1760, 520.0]
+    coordinate: [1752, 560.0]
     rotation: 0
     state: enabled
 - name: reseterrs_1
@@ -2060,9 +2287,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1368, 1196.0]
+    coordinate: [1448, 1156.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: uhd_usrp_source_0
   id: uhd_usrp_source
   parameters:
@@ -2501,11 +2728,20 @@ blocks:
     state: enabled
 
 connections:
+- [blocks_file_source_0, '0', blocks_stream_to_tagged_stream_0, '0']
+- [blocks_file_source_0_0, '0', blocks_stream_to_tagged_stream_0_0, '0']
+- [blocks_file_source_0_1, '0', blocks_stream_to_tagged_stream_0_1, '0']
+- [blocks_file_source_0_2, '0', blocks_stream_to_tagged_stream_0_2, '0']
+- [blocks_stream_to_tagged_stream_0, '0', ncjt_tx_frm_ctrl_0, '0']
+- [blocks_stream_to_tagged_stream_0_0, '0', ncjt_tx_frm_ctrl_0, '1']
+- [blocks_stream_to_tagged_stream_0_1, '0', ncjt_tx_frm_ctrl_0, '2']
+- [blocks_stream_to_tagged_stream_0_2, '0', ncjt_tx_frm_ctrl_0, '3']
 - [ncjt_check_ctrldata_0, '0', ncjt_llr_combine_0, '0']
 - [ncjt_check_ctrldata_0, '0', ncjt_pkt_err_0, '0']
 - [ncjt_check_ctrldata_0_0, '0', ncjt_pkt_err_0_0_0_1, '0']
 - [ncjt_check_ctrldata_0_0, '1', ncjt_pkt_err_0_0_0_1, '1']
 - [ncjt_check_ctrldata_0_0_0, '0', ncjt_llr_combine_0, '1']
+- [ncjt_check_ctrldata_0_0_0, '0', ncjt_pkt_err_0_0, '0']
 - [ncjt_check_ctrldata_0_1, '0', ncjt_llr_combine_0, '2']
 - [ncjt_check_ctrldata_0_1, '0', ncjt_pkt_err_0_1, '0']
 - [ncjt_check_ctrldata_0_1, '1', ncjt_llr_combine_0, '3']
@@ -2540,7 +2776,8 @@ connections:
 - [ncjt_ofdm_demod_0_1, '0', ncjt_mu_chanest_0_0_0, '0']
 - [ncjt_ofdm_demod_0_1_0, '0', ncjt_mu_chanest_0_0, '0']
 - [ncjt_ofdm_demod_0_4, '0', ncjt_mu_chanest_0_1, '0']
-- [ncjt_pkt_err_0, '0', qtgui_time_sink_x_0, '0']
+- [ncjt_pkt_err_0, '0', blocks_null_sink_0_0_0_0_0, '0']
+- [ncjt_pkt_err_0_0, '0', qtgui_time_sink_x_0, '0']
 - [ncjt_pkt_err_0_0_0_1, '0', blocks_null_sink_0_0_0_0, '0']
 - [ncjt_pkt_err_0_0_1, '0', qtgui_time_sink_x_0, '2']
 - [ncjt_pkt_err_0_0_1_0, '0', qtgui_time_sink_x_0, '3']
@@ -2564,7 +2801,6 @@ connections:
 - [ncjt_rx_sync_0, '8', ncjt_ofdm_demod_0_1_0, '0']
 - [ncjt_rx_sync_0, '9', ncjt_ofdm_demod_0_0_0_0, '0']
 - [ncjt_rx_sync_0, rxrdy, ncjt_check_ctrldata_0, rxrdy]
-- [ncjt_rx_sync_0, rxrdy, ncjt_check_ctrldata_0_0, rxrdy]
 - [ncjt_rx_sync_0, rxrdy, ncjt_check_ctrldata_0_0_0, rxrdy]
 - [ncjt_rx_sync_0, rxrdy, ncjt_check_ctrldata_0_1, rxrdy]
 - [ncjt_rx_sync_0, rxrdy, ncjt_tx_frm_ctrl_0, txen]

@@ -1396,10 +1396,10 @@ blocks:
     entags: 'False'
     grid: 'True'
     gui_hint: (2,0,2,6)
-    label1: TxGNB
+    label1: Tx gNB
     label10: Signal 10
     label2: TxUE
-    label3: Rx2
+    label3: Rx gNB
     label4: Signal 4
     label5: Signal 5
     label6: Signal 6

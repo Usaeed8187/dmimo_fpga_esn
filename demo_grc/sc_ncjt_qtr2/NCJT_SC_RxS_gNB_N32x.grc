@@ -789,7 +789,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [624, 344.0]
+    coordinate: [640, 344.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0_0
