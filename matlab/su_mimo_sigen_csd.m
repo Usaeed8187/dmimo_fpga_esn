@@ -8,6 +8,8 @@ function su_mimo_sigen_csd(cfg, mimotype, psdulen, modtype, datadir)
 
 % Load 4x4 HT LTF signals (for CSI feedback)
 b = load('beacon4x4.mat');
+
+% L-LLTF v2 for gNB-based sync
 load('lltfx4.mat','lltfx4');
 
 % Spatial mapping for HT-LTF (for data reception)
@@ -28,16 +30,17 @@ txPSDU = randi([0 1], psdulen*8, 1, 'int8'); % PSDULength in bytes
 [txdata, encdata, strmdata, txdsyms] = tx_processing(cfg, txPSDU);
 
 % Time-domain preamble signals (HT-SIG, HT-STF, HT-LTF)
-% preamble = sqrt(2)*[b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; b.htltf; htltfx];
-preamble = sqrt(2)*[b.lstf; lltfx4; b.lsig; b.htsig; b.htstf; b.htltf; htltfx];
+preamble = sqrt(2)*[b.lstf; b.lltf; b.lsig; b.htsig; b.htstf; b.htltf; htltfx];
+v2preamble = sqrt(2)*[b.lstf; lltfx4; b.lsig; b.htsig; b.htstf; b.htltf; htltfx];
 
 % Prepare transmitter signal for USRP
-txFrame = reshape([preamble; txdata], [], cfg.Nt);
+txFrame = reshape([v2preamble; txdata], [], cfg.Nt);
 
 % Convert Tx signals to range (-1,1)
 % scaling = 1.0/max(abs([real(txFrame(:)); imag(txFrame(:))]));
 scaling = 0.5; % fixed scaling
 txsig = signal_clipping(scaling * txFrame);
+txrgfrm = signal_clipping(scaling * txdata);
 
 % Zero-padding for burst transmission
 padding = zeros(1000, cfg.Nt);
@@ -60,13 +63,24 @@ write_complex_binary(txsig, ...
 for k=1:cfg.Nt
     write_complex_binary(txsig(:,k), ...
         sprintf('%s/%s/%s/txsig_s%d.bin',datadir,mimotype,modtype,k));
+    write_complex_binary(txrgfrm(:,k), ...
+        sprintf('%s/%s/%s/txrgfrm_s%d.bin',datadir,mimotype,modtype,k));
 end
+
+% Save preamble signals
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/preamble.bin',datadir,mimotype,modtype));
 write_complex_binary(scaling*preamble(:, 1:2), ...
     sprintf('%s/%s/%s/preamble_12.bin',datadir,mimotype,modtype));
 write_complex_binary(scaling*preamble(:, 3:4), ...
     sprintf('%s/%s/%s/preamble_34.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*v2preamble, ...
+    sprintf('%s/%s/%s/v2preamble.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*v2preamble(:, 1:2), ...
+    sprintf('%s/%s/%s/v2preamble_12.bin',datadir,mimotype,modtype));
+write_complex_binary(scaling*v2preamble(:, 3:4), ...
+    sprintf('%s/%s/%s/v2preamble_34.bin',datadir,mimotype,modtype));
+
 
 fid = fopen(sprintf('%s/%s/%s/enc_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, encdata(:), "char");

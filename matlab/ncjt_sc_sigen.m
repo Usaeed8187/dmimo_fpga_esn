@@ -59,6 +59,11 @@ write_complex_binary(txsig(:,2), ...
 write_complex_binary(scaling*preamble, ...
     sprintf('%s/%s/%s/ncjt_preamble.bin',datadir,mimotype,modtype));
 
+% Save preamble signals without L-STF/L-LTF
+preamble_nolltf = scaling * [zeros(400,2); preamble(401:end,:)];
+write_complex_binary(preamble_nolltf, ...
+    sprintf('%s/%s/%s/ncjt_preamble_nolltf.bin',datadir,mimotype,modtype));
+
 % Save preamble with v2 lltf
 lx = load('lltfx2.mat','lltfx');
 v2preamble = [b.lstf; lx.lltfx; b.lsig; b.htsig; b.htstf; htltfx];
