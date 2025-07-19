@@ -205,7 +205,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '50'
   states:
     bus_sink: false
     bus_source: false
@@ -485,7 +485,7 @@ blocks:
     add_llr: 'True'
     add_rxseq: 'True'
     add_txseq: 'False'
-    affinity: '6'
+    affinity: '5'
     alias: ''
     comment: ''
     ctrl_datalen: 4*num_ctrl_syms_p1r*sd_num
@@ -504,7 +504,7 @@ blocks:
 - name: ncjt_check_ctrldata_0_0
   id: ncjt_check_ctrldata
   parameters:
-    affinity: ''
+    affinity: '3'
     alias: ''
     comment: ''
     ctrl_datalen: 4*num_ctrl_syms*sd_num
@@ -532,7 +532,7 @@ blocks:
   parameters:
     affinity: '7'
     alias: ''
-    autostart: 'True'
+    autostart: 'False'
     beaconfile1: '"../../data/mu_mimo_he/2t2s/" + qam_type + "/preamble_noltfx.bin"'
     beaconfile2: '"../../data/sc_ncjt_he/1t1s/" + qam_type + "/ncjt_preamble.bin"'
     comment: ''
@@ -540,13 +540,13 @@ blocks:
     frmdatalen1: (num_data_syms_p1r+num_ctrl_syms_p1r+2) * (fft_size+cp_len)
     frmdatalen2: (num_data_syms_p2+num_ctrl_syms_p2) * (fft_size+cp_len)
     maxoutbuf: '0'
-    minoutbuf: '65536'
+    minoutbuf: '32768'
     ntx: '2'
     padding: '500'
     pktspersec: pkts_per_sec
     samplerate: samp_rate
     starttime1: start_time_p1r + 1.0
-    starttime2: start_time_p2 + 1.0
+    starttime2: start_time_p2 + 2.0
   states:
     bus_sink: false
     bus_source: false
@@ -557,7 +557,7 @@ blocks:
 - name: ncjt_mc_stbc_decode_0
   id: ncjt_mc_stbc_decode
   parameters:
-    affinity: ''
+    affinity: '3'
     alias: ''
     comment: ''
     debug: 'False'
@@ -577,7 +577,7 @@ blocks:
 - name: ncjt_mu_chanest_0
   id: ncjt_mu_chanest
   parameters:
-    affinity: '3'
+    affinity: '2'
     alias: ''
     comment: ''
     debug: 'True'
@@ -602,7 +602,7 @@ blocks:
 - name: ncjt_ofdm_demod_0
   id: ncjt_ofdm_demod
   parameters:
-    affinity: '3'
+    affinity: '2'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -620,7 +620,7 @@ blocks:
 - name: ncjt_ofdm_demod_0_0
   id: ncjt_ofdm_demod
   parameters:
-    affinity: '3'
+    affinity: '2'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -638,7 +638,7 @@ blocks:
 - name: ncjt_ofdm_mod_0
   id: ncjt_ofdm_mod
   parameters:
-    affinity: '2'
+    affinity: '6'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -657,7 +657,7 @@ blocks:
 - name: ncjt_ofdm_mod_0_0
   id: ncjt_ofdm_mod
   parameters:
-    affinity: '2'
+    affinity: '6'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -676,7 +676,7 @@ blocks:
 - name: ncjt_ofdm_mod_0_0_0
   id: ncjt_ofdm_mod
   parameters:
-    affinity: '15'
+    affinity: '6'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -695,7 +695,7 @@ blocks:
 - name: ncjt_ofdm_mod_0_1
   id: ncjt_ofdm_mod
   parameters:
-    affinity: '15'
+    affinity: '6'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -736,7 +736,7 @@ blocks:
 - name: ncjt_rg_demapper_0
   id: ncjt_rg_demapper
   parameters:
-    affinity: '11'
+    affinity: '3'
     alias: ''
     comment: ''
     ctrlmodtype: '4'
@@ -764,7 +764,7 @@ blocks:
   parameters:
     addcs: 'False'
     addltf: 'False'
-    affinity: '1'
+    affinity: '4'
     alias: ''
     comment: ''
     ctrlmodtype: '4'
@@ -773,7 +773,7 @@ blocks:
     framelen: frame_data_len_p2
     ltfdata: ''
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     mucpt: 'False'
     nctrlsyms: num_ctrl_syms_p2
     ndatasyms: num_data_syms_p2
@@ -794,7 +794,7 @@ blocks:
   parameters:
     addcs: 'False'
     addltf: 'True'
-    affinity: '7'
+    affinity: '5'
     alias: ''
     comment: ''
     ctrlmodtype: '4'
@@ -823,7 +823,7 @@ blocks:
   id: ncjt_rx_sync
   parameters:
     acorrthrd: '0.65'
-    affinity: ''
+    affinity: '1'
     alias: ''
     comment: ''
     dataframelen: (fft_size+cp_len)*(num_ltf_syms+num_data_syms+num_ctrl_syms)
@@ -833,7 +833,7 @@ blocks:
     lltf2: 'True'
     maxcorrlen: '2000'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     nchans: '2'
     p1rx: 'True'
     p2framelen: '0'
@@ -895,12 +895,12 @@ blocks:
 - name: ncjt_stbc_encode_0
   id: ncjt_stbc_encode
   parameters:
-    affinity: '1'
+    affinity: '4'
     alias: ''
     comment: ''
     debug: 'False'
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ndatasyms: num_data_syms_p2+num_ctrl_syms_p2
     npilotsyms: '0'
     rgmode: rg_mode
@@ -915,7 +915,7 @@ blocks:
 - name: ncjt_ul_precoding_0
   id: ncjt_ul_precoding
   parameters:
-    affinity: '7'
+    affinity: '5'
     alias: ''
     comment: ''
     csifile: ''
@@ -1222,7 +1222,7 @@ blocks:
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:
-    affinity: '1'
+    affinity: '7'
     alias: ''
     ant0: TX/RX
     ant1: TX/RX
@@ -1465,7 +1465,7 @@ blocks:
     minoutbuf: '0'
     nchan: '2'
     num_mboards: '1'
-    otw: ''
+    otw: sc16
     samp_rate: samp_rate
     sd_spec0: ''
     sd_spec1: ''
@@ -1493,7 +1493,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1456, 588.0]
+    coordinate: [1456, 580.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_source_0

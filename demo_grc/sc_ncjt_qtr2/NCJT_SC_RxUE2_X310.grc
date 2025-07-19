@@ -174,7 +174,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 204.0]
+    coordinate: [432, 204.0]
     rotation: 0
     state: true
 - name: num_data_syms
@@ -253,7 +253,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '50'
   states:
     bus_sink: false
     bus_source: false
@@ -1052,7 +1052,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '32768'
     ntx: '2'
-    padding: '1000'
+    padding: '500'
     pktspersec: pkts_per_sec
     starttime: start_time_p3 + 5.0
   states:
