@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(rg_mapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(1f04a5f4088990a1337d483d1699b889) */
+/* BINDTOOL_HEADER_FILE_HASH(3b87d71486b11a6d0f75e1ce4a7ac555) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -31,16 +31,15 @@ namespace py = pybind11;
 
 void bind_rg_mapper(py::module &m) {
 
-  using rg_mapper = ::gr::ncjt::rg_mapper;
+  using rg_mapper = gr::ncjt::rg_mapper;
 
-  py::class_<rg_mapper, gr::tagged_stream_block, gr::block, gr::basic_block,
-             std::shared_ptr<rg_mapper>>(m, "rg_mapper", D(rg_mapper))
+  py::class_<rg_mapper, gr::block, gr::basic_block, std::shared_ptr<rg_mapper>>(
+      m, "rg_mapper", D(rg_mapper))
 
-      .def(py::init(&rg_mapper::make), py::arg("nstrm"), py::arg("n_ofdm_syms"),
-           py::arg("sc_num"), py::arg("pilot_sc_ind"), py::arg("addcs"),
-           py::arg("debug"), py::arg("numue"), py::arg("ueidx"),
-           py::arg("mucpt"), py::arg("addltf"), py::arg("ltfdata"),
-           D(rg_mapper, make))
+      .def(py::init(&rg_mapper::make), py::arg("rgmode"), py::arg("nstrm"),
+           py::arg("addcs"), py::arg("debug"), py::arg("numue"),
+           py::arg("ueidx"), py::arg("mucpt"), py::arg("addltf"),
+           py::arg("*ltfdata"), D(rg_mapper, make))
 
       ;
 }

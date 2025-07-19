@@ -22,6 +22,7 @@
 #include <thread>   // for sleep_for
 #include <chrono>   // for steady_clock
 #include <cmath>    // for pow, sqrt, etc.
+#include <gnuradio/ncjt/rg_modes.h>
 #include "common.h"
 
 namespace gr
@@ -31,18 +32,14 @@ namespace gr
 
     // ------------------ public make() ------------------
     noair::sptr
-    noair::make(int n_ofdm_syms,
-                int sc_num,
-                const std::vector<int> &pilot_sc_ind,
+    noair::make(int rgmode,
                 float frame_per_sec,
                 float snr_db,
                 int num_drop_init_packets,
                 bool debug)
     {
       return gnuradio::make_block_sptr<noair_impl>(
-          n_ofdm_syms,
-          sc_num,
-          pilot_sc_ind,
+          rgmode,
           frame_per_sec,
           snr_db,
           num_drop_init_packets,
@@ -51,9 +48,7 @@ namespace gr
 
     // ------------------ noair_impl methods ------------------
 
-    noair_impl::noair_impl(int n_ofdm_syms,
-                           int sc_num,
-                           const std::vector<int> &pilot_sc_ind,
+    noair_impl::noair_impl(int rgmode,
                            float frame_per_sec,
                            float snr_db,
                            int num_drop_init_packets,
@@ -62,9 +57,6 @@ namespace gr
                                   gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                   gr::io_signature::make(2, 2, sizeof(gr_complex)),
                                   "packet_len"),
-          d_ofdm_syms(n_ofdm_syms),
-          d_sc_num(sc_num),
-          d_pilot_sc_ind(pilot_sc_ind),
           d_debug(debug),
           d_num_drop_init_packets(num_drop_init_packets),
           d_frame_per_sec(frame_per_sec),
@@ -81,13 +73,22 @@ namespace gr
 
       if (d_debug)
       {
-        std::cout << "\n[noair_impl] Constructor: ofdm_syms=" << d_ofdm_syms
-                  << ", sc_num=" << d_sc_num
-                  << ", pilot_sc_ind.size()=" << d_pilot_sc_ind.size()
+        std::cout << "\n[noair_impl] Constructor: rgmode=" << rgmode
                   << ", frame_per_sec=" << d_frame_per_sec
                   << ", snr_db=" << d_snr_db
                   << ", debug=" << d_debug
                   << std::endl;
+      }
+
+      if (rgmode < 0 || rgmode >= 8)
+        throw std::runtime_error("Unsupported RG mode");
+      else {
+        d_ofdm_syms = RG_NUM_OFDM_SYM[rgmode];
+        d_sc_num = RG_NUM_VALID_SC[rgmode];
+        for (int k = 0; k < RG_NUM_CPT[rgmode]; k++)
+        {
+          d_pilot_sc_ind.push_back(RG_CPT_INDX[rgmode][k]);
+        }
       }
 
       // If throttling is enabled (frame_per_sec > 0), compute the time per frame.
@@ -105,8 +106,8 @@ namespace gr
       std::random_device rd;
       d_rng.seed(rd());
 
-      message_port_register_in(pmt::intern("sel_snr"));
-      set_msg_handler(pmt::intern("sel_snr"), [this](pmt::pmt_t msg)
+      message_port_register_in(pmt::intern("s_snr"));
+      set_msg_handler(pmt::intern("s_snr"), [this](pmt::pmt_t msg)
                       {
                         if (pmt::is_number(msg))
                         {
@@ -151,7 +152,7 @@ namespace gr
                     << " => " << ninput_items[p] << " items" << std::endl;
         }
       }
-      // The TSB mechanism ensures each work call is "one packet" from upstream.
+      // Making sure each work call is "one packet" from upstream.
       const int in_count = ninput_items[0]; // e.g. 2240 for 56×40
       if (in_count == 0)
       {

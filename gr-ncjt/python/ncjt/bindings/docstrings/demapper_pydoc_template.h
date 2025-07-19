@@ -16,6 +16,4 @@
 
 static const char *__doc_gr_ncjt_demapper = R"doc()doc";
 
-static const char *__doc_gr_ncjt_demapper_demapper_0 = R"doc()doc";
-
 static const char *__doc_gr_ncjt_demapper_make = R"doc()doc";

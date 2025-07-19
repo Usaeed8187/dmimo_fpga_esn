@@ -4,35 +4,38 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.mapper_muxer(${nstrm}, ${modtype}, ${n_ofdm_syms}, ${sd_num}, ${use_polar}, ${code_rate}, ${deterministic_input}, ${debug})
+  make: ncjt.mapper_muxer(${rgmode}, ${nstrm}, ${phase1_modtype}, ${phase2_modtype}, ${phase3_modtype}, ${code_rate}, ${deterministic_input}, ${debug})
 
 parameters:
+  - id: rgmode
+    label: RG Mode
+    dtype: int
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    hide: part
   - id: nstrm
     label: Number of Streams
     dtype: int
     default: 1
     options: [1, 2, 3, 4]
-  - id: modtype
-    label: Bits per Symbol
+  - id: phase1_modtype
+    label: Phase 1 Bits per Symbol
     dtype: int
     default: 2
     options: [2, 4, 6, 8]
     option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
-  - id: n_ofdm_syms
-    label: Number of OFDM Symbols
+  - id: phase2_modtype
+    label: Phase 2 Bits per Symbol
     dtype: int
-    default: 40
-  - id: sd_num
-    label: Number of Data Subcarriers
+    default: 2
+    options: [2, 4, 6, 8]
+    option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
+  - id: phase3_modtype
+    label: Phase 3 Bits per Symbol
     dtype: int
-    default: 52
-    readonly: true
-  - id: use_polar
-    label: Polar or Repetition Code
-    dtype: bool
-    default: 'False'
-    options: [ 'True', 'False' ]
-    option_labels: [ Polar, Repetition ]
+    default: 2
+    options: [2, 4, 6, 8]
+    option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
   - id: code_rate
     label: Code Rate
     dtype: int
@@ -59,10 +62,10 @@ inputs:
     vlen: 1
     optional: true
     hide: ${ deterministic_input }
-  - label: sel_mod_type
+  - label: s_modtypes
     domain: message
     optional: true
-  - label: sel_code_rate
+  - label: s_code_rate
     domain: message
     optional: true
 

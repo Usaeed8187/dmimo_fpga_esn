@@ -8,7 +8,7 @@
 #define INCLUDED_NCJT_SIC_DETECT_IMPL_H
 
 #include <gnuradio/ncjt/sic_detect.h>
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 
 namespace gr::ncjt
 {

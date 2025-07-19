@@ -45,8 +45,12 @@ namespace gr
       bool d_debug; // Debug flag
       int cc;       // Debug counter
 
+      int d_rgmode; // RG mode (0-7)
+      int d_current_phase;    // Storing received rx_current_phase tag value.
       int d_last_nstrm;       // The most recently seen "rx_nstrm"
       int d_last_modtype;     // The most recently seen "rx_modtype"
+      int d_last_modtype_phase1; // The most recently seen "rx_modtype_phase1"
+      int d_last_modtype_phase2; // The most recently seen "rx_modtype_phase2"
       int d_last_modtype_phase3; // The most recently seen "rx_modtype_phase3"
       unsigned __int128 d_last_raw_ctrl; // The most recently seen "rx_raw_ctrl"
       int d_last_coding_rate; // The most recently seen "rx_coding_rate"
@@ -80,7 +84,8 @@ namespace gr
                               int rx_modtype, uint8_t *outbits) const;
 
     public:
-      demapper_impl(bool coded,
+      demapper_impl(int rgmode,
+                    bool coded,
                     bool deterministic_input,
                     bool debug);
       ~demapper_impl();

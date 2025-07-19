@@ -21,18 +21,7 @@ namespace gr
      *
      * \details
      * This is a \c tagged_stream_block that:
-     *  - Receives a chunk of QAM symbols corresponding to one entire frame (usually from \p mapper_muxer).
-     *  - Distributes those symbols into the resource grid of size \p sc_num x \p n_ofdm_syms for each \p nstrm output port.
-     *  - Inserts pilot symbols in the specified \p pilot_sc_ind subcarriers.
-     *  - Optionally applies a per-stream cyclic shift if \p addcs is \c true (often used in multi-antenna transmissions).
-     *
-     * **Parameters**
-     *  - \p nstrm : Number of spatial streams (and number of output ports).
-     *  - \p n_ofdm_syms : Number of OFDM symbols in the frame.
-     *  - \p sc_num : Total subcarriers (e.g., 56).
-     *  - \p pilot_sc_ind : Indices of pilot subcarriers within those 56 (e.g., [7,21,34,48]).
-     *  - \p addcs : If \c true, apply additional cyclic shifts to each stream.
-     *  - \p debug : If \c true, prints verbose debug info.
+     *  - To be completed.
      *
      * **Input/Output**
      *  - **Input** (1 port): \n
@@ -51,10 +40,9 @@ namespace gr
       /*!
        * \brief Creates a new instance of ncjt::rg_mapper.
        */
-      static sptr make(int nstrm,
-        int n_ofdm_syms,
-        int sc_num,
-        const std::vector<int> &pilot_sc_ind,
+      static sptr make(
+        int rgmode,
+        int nstrm,
         bool addcs,
         bool debug, 
         int numue,

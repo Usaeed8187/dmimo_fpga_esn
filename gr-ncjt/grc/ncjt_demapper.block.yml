@@ -4,15 +4,22 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.demapper(${coded}, ${deterministic_input}, ${debug})
+  make: ncjt.demapper(${rgmode}, ${coded}, ${deterministic_input}, ${debug})
 
 parameters:
+  - id: rgmode
+    label: RG Mode
+    dtype: int
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    hide: part
   - id: coded
-    label: Output Raw Bits
+    label: Output Coded Bits
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
+    hide: all
   - id: deterministic_input
     label: Deterministic Input
     dtype: bool
@@ -26,7 +33,6 @@ parameters:
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
     hide: part
-    
 
 inputs:
   - label: in

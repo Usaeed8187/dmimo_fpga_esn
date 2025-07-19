@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(pdc.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(c13808cf7aa2c2d078f3c231cdd4f328) */
+/* BINDTOOL_HEADER_FILE(remapper_muxer.h) */
+/* BINDTOOL_HEADER_FILE_HASH(857834466db60b48fd8edaa280444a9d) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,20 +25,20 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/pdc.h>
+#include <gnuradio/ncjt/remapper_muxer.h>
 // pydoc.h is automatically generated in the build directory
-#include <pdc_pydoc.h>
+#include <remapper_muxer_pydoc.h>
 
-void bind_pdc(py::module &m) {
+void bind_remapper_muxer(py::module &m) {
 
-  using pdc = gr::ncjt::pdc;
+  using remapper_muxer = gr::ncjt::remapper_muxer;
 
-  py::class_<pdc, gr::block, gr::basic_block, std::shared_ptr<pdc>>(m, "pdc",
-                                                                    D(pdc))
+  py::class_<remapper_muxer, gr::block, gr::basic_block,
+             std::shared_ptr<remapper_muxer>>(m, "remapper_muxer",
+                                              D(remapper_muxer))
 
-      .def(py::init(&pdc::make), py::arg("rgmode"), py::arg("majority_enabled"),
-           py::arg("num_copies"), py::arg("expire_ms"), py::arg("num_threads"),
-           py::arg("deterministic_input"), py::arg("debug"), D(pdc, make))
+      .def(py::init(&remapper_muxer::make), py::arg("rgmode"), py::arg("nstrm"),
+           py::arg("debug"), D(remapper_muxer, make))
 
       ;
 }

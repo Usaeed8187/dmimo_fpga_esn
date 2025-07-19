@@ -9,7 +9,7 @@
 
 #include <gnuradio/ncjt/ltf_chanest.h>
 #include "cmatrix.h"
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 
 namespace gr::ncjt
 {

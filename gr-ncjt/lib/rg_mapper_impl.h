@@ -69,10 +69,9 @@ namespace gr
       int calculate_output_stream_length(const gr_vector_int &ninput_items) override;
 
     public:
-      rg_mapper_impl(int nstrm,
-                        int n_ofdm_syms,
-                        int sc_num,
-                        const std::vector<int> &pilot_sc_ind,
+      rg_mapper_impl(
+                        int rgmode,   
+                        int nstrm,
                         bool addcs,
                         bool debug,
                         int numue,

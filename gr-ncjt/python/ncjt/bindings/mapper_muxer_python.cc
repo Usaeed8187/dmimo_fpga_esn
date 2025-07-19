@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(mapper_muxer.h) */
-/* BINDTOOL_HEADER_FILE_HASH(60bd8dfe9fb4e3b71b09af72cafb70a6) */
+/* BINDTOOL_HEADER_FILE_HASH(fd5c2d0e91bdbbe5399fd5c0782acbe1) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -31,15 +31,16 @@ namespace py = pybind11;
 
 void bind_mapper_muxer(py::module &m) {
 
-  using mapper_muxer = ::gr::ncjt::mapper_muxer;
+  using mapper_muxer = gr::ncjt::mapper_muxer;
 
   py::class_<mapper_muxer, gr::block, gr::basic_block,
              std::shared_ptr<mapper_muxer>>(m, "mapper_muxer", D(mapper_muxer))
 
-      .def(py::init(&mapper_muxer::make), py::arg("nstrm"), py::arg("modtype"),
-           py::arg("n_ofdm_syms"), py::arg("sd_num"), py::arg("use_polar"),
-           py::arg("code_rate"), py::arg("deterministic_input"),
-           py::arg("debug"), D(mapper_muxer, make))
+      .def(py::init(&mapper_muxer::make), py::arg("rgmode"), py::arg("nstrm"),
+           py::arg("phase1_modtype"), py::arg("phase2_modtype"),
+           py::arg("phase3_modtype"), py::arg("code_rate"),
+           py::arg("deterministic_input"), py::arg("debug"),
+           D(mapper_muxer, make))
 
       ;
 }

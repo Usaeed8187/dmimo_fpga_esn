@@ -37,7 +37,8 @@ namespace gr
        *
        * \param debug Whether to enable verbose debugging
        */
-      static sptr make(bool coded,
+      static sptr make(int rgmode, 
+                       bool coded,
                        bool deterministic_input,
                        bool debug);
     };

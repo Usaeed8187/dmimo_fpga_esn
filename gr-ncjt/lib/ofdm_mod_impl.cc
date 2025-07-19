@@ -7,7 +7,7 @@
 #include "ofdm_mod_impl.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 
 namespace gr::ncjt
 {

@@ -45,7 +45,7 @@ list(APPEND ncjt_sources
     ctrl.cc
     noair_impl.cc
     demapper_impl.cc
-    mapper_muxer_phase3_impl.cc
+    remapper_muxer_impl.cc
     pdc_impl.cc
     skip_data_impl.cc)
 

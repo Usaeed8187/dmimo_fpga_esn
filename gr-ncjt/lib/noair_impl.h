@@ -49,9 +49,7 @@ namespace gr
       int calculate_output_stream_length(const gr_vector_int &ninput_items) override;
 
     public:
-      noair_impl(int n_ofdm_syms,
-                 int sc_num,
-                 const std::vector<int> &pilot_sc_ind,
+      noair_impl(int rgmode,
                  float frame_per_sec,
                  float snr_db,
                  int num_drop_init_packets,

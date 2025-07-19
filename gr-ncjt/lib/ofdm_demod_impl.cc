@@ -6,7 +6,7 @@
 
 #include "ofdm_demod_impl.h"
 #include <gnuradio/io_signature.h>
-#include "rg_modes.h"
+#include <gnuradio/ncjt/rg_modes.h>
 
 namespace gr::ncjt
 {

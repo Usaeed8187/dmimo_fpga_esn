@@ -14,6 +14,6 @@
   and will be overwritten during the build process
  */
 
-static const char *__doc_gr_ncjt_mapper_muxer = R"doc()doc";
+static const char *__doc_gr_ncjt_remapper_muxer = R"doc()doc";
 
-static const char *__doc_gr_ncjt_mapper_muxer_make = R"doc()doc";
+static const char *__doc_gr_ncjt_remapper_muxer_make = R"doc()doc";

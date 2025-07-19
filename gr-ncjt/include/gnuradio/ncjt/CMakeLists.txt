@@ -35,6 +35,6 @@ install(FILES api.h
     mapper_muxer.h
     noair.h
     demapper.h
-    mapper_muxer_phase3.h
+    remapper_muxer.h
     pdc.h
     skip_data.h DESTINATION include/gnuradio/ncjt)

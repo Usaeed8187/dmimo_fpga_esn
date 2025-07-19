@@ -73,10 +73,7 @@ namespace ncjt
             243, 238, 245, 246, 249, 127, 250, 191, 252, 223, 239, 247, 251, 253, 254, 255
         };
 
-        if (d_debug)
-        {
-            std::cerr << "[CTRL] Constructor called (debug mode enabled)." << std::endl;
-        }
+        NCJT_LOG(d_debug, "CTRL object created.");
     }
 
     // --------------------------------------------------------------------
@@ -118,10 +115,7 @@ namespace ncjt
                 frozen_positions,
                 frozen_vals));
 
-        if (d_debug)
-        {
-            std::cerr << "[CTRL::init_polar_64] Created polar encoder/decoder (64->128)." << std::endl;
-        }
+        NCJT_LOG(d_debug, "Polar encoder/decoder (64->128) initialized.");
     }
 
     // --------------------------------------------------------------------
@@ -162,10 +156,7 @@ namespace ncjt
                 frozen_positions,
                 frozen_vals));
 
-        if (d_debug)
-        {
-            std::cerr << "[CTRL::init_polar_128] Created polar encoder/decoder (128->256)." << std::endl;
-        }
+        NCJT_LOG(d_debug, "Polar encoder/decoder (128->256) initialized.");
     }
 
     // --------------------------------------------------------------------
@@ -175,11 +166,9 @@ namespace ncjt
     {
         // 1) pack 64 bits + compute CRC10 over [0..53]
         uint64_t cword = pack_64bits_and_crc();
-        if (d_debug)
-        {
-            std::cerr << "[pack_and_modulate_qpsk] TX cword = 0x"
-                      << std::hex << cword << std::dec << std::endl;
-        }
+
+        NCJT_LOG(d_debug, "\n\tTX cword = 0x"
+                      << std::hex << cword << std::dec);
 
         // 2) build bits_64
         std::vector<uint8_t> bits_64(64);
@@ -189,11 +178,13 @@ namespace ncjt
         }
         if (d_debug)
         {
-            std::cerr << "  64 TX info bits (LSB->MSB): ";
+            std::ostringstream oss;
+            oss << "  64 TX info bits (LSB->MSB): ";
             for (int i = 0; i < 64; i++)
-                std::cerr << (int)bits_64[i];
-            std::cerr << std::endl;
+                oss << (int)bits_64[i];
+            NCJT_LOG(d_debug, oss.str());
         }
+
 
         // 3) polar encode
         init_polar_64();
@@ -202,10 +193,11 @@ namespace ncjt
 
         if (d_debug)
         {
-            std::cerr << "  128 TX coded bits (LSB->MSB): ";
+            std::ostringstream oss;
+            oss << "  128 TX coded bits (LSB->MSB): ";
             for (int i = 0; i < 128; i++)
-                std::cerr << (int)coded[i];
-            std::cerr << std::endl;
+                oss << (int)coded[i];
+            NCJT_LOG(d_debug, oss.str());
         }
 
         // 4) map => 64 QPSK
@@ -225,10 +217,8 @@ namespace ncjt
     {
         if (syms.size() < 64)
         {
-            if (d_debug)
-            {
-                std::cerr << "[CTRL::demodulate_and_unpack_qpsk] not enough symbols!" << std::endl;
-            }
+            NCJT_LOG(d_debug, "Not enough symbols for QPSK demodulation: "
+                      << syms.size() << " < 64");
             return false;
         }
 
@@ -249,10 +239,11 @@ namespace ncjt
 
         if (d_debug)
         {
-            std::cerr << "[demodulate_and_unpack_qpsk] Detected bits: ";
+            std::ostringstream oss;
+            oss << " Detected bits:";
             for (int i = 0; i < 128; i++)
-                std::cerr << (int)detected_bits[i];
-            std::cerr << std::endl;
+                oss << (int)detected_bits[i];
+            NCJT_LOG(d_debug, oss.str());
         }
 
         // 2) polar decode => bits_64
@@ -266,21 +257,23 @@ namespace ncjt
         {
             cword |= (uint64_t(bits_64[i]) & 1ULL) << i;
         }
+
         if (d_debug)
         {
-            std::cerr << "  64 RX info bits (LSB->MSB): ";
+            std::ostringstream oss;
+            oss << "  64 RX info bits (LSB->MSB): ";
             for (int i = 0; i < 64; i++)
             {
-                std::cerr << ((cword >> i) & 1ULL);
+                oss << ((cword >> i) & 1ULL);
             }
-            std::cerr << std::endl;
+            NCJT_LOG(d_debug, oss.str());
         }
 
         // 4) unpack => check CRC
         bool ok = unpack_64bits_and_crc(cword);
-        if (!ok && d_debug)
+        if (!ok)
         {
-            std::cerr << "[CTRL::demodulate_and_unpack_qpsk] CRC mismatch.\n";
+            NCJT_LOG(d_debug, "CRC mismatch!");
         }
 
         // In QPSK mode, extended is ignored
@@ -299,8 +292,10 @@ namespace ncjt
 
         if (d_debug)
         {
-            std::cerr << "[pack_and_modulate_16qam] TX ctrl64=0x"
-                      << std::hex << ctrl64 << " ext64=0x" << ext64 << std::dec << std::endl;
+            std::ostringstream oss;
+            oss << "TX ctrl64=0x" << std::hex << ctrl64
+                << " ext64=0x" << ext64 << std::dec;
+            NCJT_LOG(d_debug, oss.str());
         }
 
         // 2) build bits_128
@@ -310,12 +305,15 @@ namespace ncjt
             bits_128[i] = (ctrl64 >> i) & 1;
             bits_128[64 + i] = (ext64 >> i) & 1;
         }
+
         if (d_debug)
         {
-            std::cerr << "  TX bits_128[0..7]: ";
+            std::ostringstream oss;
+            oss << "  TX bits_128[0..7]: ";
             for (int i = 0; i < 8; i++)
-                std::cerr << (int)bits_128[i];
-            std::cerr << " ..." << std::endl;
+                oss << (int)bits_128[i];
+            oss << " ...";
+            NCJT_LOG(d_debug, oss.str());
         }
 
         // 3) polar encode => 256 bits
@@ -342,10 +340,8 @@ namespace ncjt
     {
         if (syms.size() < 64)
         {
-            if (d_debug)
-            {
-                std::cerr << "[CTRL::demodulate_and_unpack_16qam] not enough symbols!" << std::endl;
-            }
+            NCJT_LOG(d_debug, "Not enough symbols for 16QAM demodulation: "
+                      << syms.size() << " < 64");
             return false;
         }
 
@@ -368,10 +364,12 @@ namespace ncjt
 
         if (d_debug)
         {
-            std::cerr << "[demodulate_and_unpack_16qam] First 128 LLRs: ";
+            std::ostringstream oss;
+            oss << "First 128 LLRs: ";
             for (int i = 0; i < 128; i++)
-                std::cerr << llr[i] << " ";
-            std::cerr << "..." << std::endl;
+                oss << llr[i] << " ";
+            oss << "...";
+            NCJT_LOG(d_debug, oss.str());
         }
 
         // 2) decode => 128 bits
@@ -387,21 +385,16 @@ namespace ncjt
             ext64 |= (uint64_t(bits_128[64 + i]) & 1ULL) << i;
         }
 
-        if (d_debug)
-        {
-            std::cerr << "  RX ctrl64=0x" << std::hex << ctrl64
-                      << " ext64=0x" << ext64 << std::dec << std::endl;
-        }
+        NCJT_LOG(d_debug, "RX ctrl64=0x" << std::hex << ctrl64
+                      << " ext64=0x" << ext64 << std::dec);
 
         // 4) check CRC
         bool ok = unpack_128bits_and_crc(ctrl64, ext64);
         if (!ok)
         {
             d_extended = 0ULL;
-            if (d_debug)
-            {
-                std::cerr << "[CTRL::demodulate_and_unpack_16qam] CRC mismatch!" << std::endl;
-            }
+
+            NCJT_LOG(d_debug, "CRC mismatch!");
             return false;
         }
         return true;
@@ -436,10 +429,7 @@ namespace ncjt
         uint16_t c10 = compute_crc10(bits_54);
 
         // place c10 into bits [54..63]
-        if (d_debug)
-        {
-            std::cerr << "[pack_64bits_and_crc] CRC10 = " << std::hex << c10 << std::dec << std::endl;
-        }
+        NCJT_LOG(d_debug, "CRC10 = " << std::hex << c10 << std::dec);
         return w | ((uint64_t)c10 << 54);
     }
 
@@ -455,11 +445,8 @@ namespace ncjt
             bits_54[i] = (data_wo_crc >> i) & 1;
         }
         uint16_t calc = compute_crc10(bits_54);
-        if (d_debug)
-        {
-            std::cerr << "[unpack_64bits_and_crc] Calculated CRC10 = " << std::hex << calc
-                      << " Stored CRC10 = " << stored_crc << std::dec << std::endl;
-        }
+        NCJT_LOG(d_debug, "Calculated CRC10 = " << std::hex << calc
+                    << " Stored CRC10 = " << stored_crc << std::dec);
         if (calc != stored_crc)
         {
             return false;

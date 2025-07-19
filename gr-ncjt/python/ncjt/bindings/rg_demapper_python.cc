@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(rg_demapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(e0e0078228ca80bf7612f3be13198ead) */
+/* BINDTOOL_HEADER_FILE_HASH(ae164c3c06c9a6be09b747335d731f89) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -31,14 +31,13 @@ namespace py = pybind11;
 
 void bind_rg_demapper(py::module &m) {
 
-  using rg_demapper = ::gr::ncjt::rg_demapper;
+  using rg_demapper = gr::ncjt::rg_demapper;
 
-  py::class_<rg_demapper, gr::tagged_stream_block, gr::block, gr::basic_block,
+  py::class_<rg_demapper, gr::block, gr::basic_block,
              std::shared_ptr<rg_demapper>>(m, "rg_demapper", D(rg_demapper))
 
-      .def(py::init(&rg_demapper::make), py::arg("phase"), py::arg("nstrm"),
-           py::arg("modtype"), py::arg("n_ofdm_syms"), py::arg("sd_num"),
-           py::arg("usecsi"), py::arg("code_rate"), py::arg("tag_snr"),
+      .def(py::init(&rg_demapper::make), py::arg("phase"), py::arg("rgmode"),
+           py::arg("nstrm"), py::arg("usecsi"), py::arg("tag_snr"),
            py::arg("debug"), D(rg_demapper, make))
 
       ;

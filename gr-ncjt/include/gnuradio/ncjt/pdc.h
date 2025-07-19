@@ -34,7 +34,8 @@ namespace gr
        * class. ncjt::pdc::make is the public interface for
        * creating new instances.
        */
-      static sptr make(bool majority_enabled,
+      static sptr make(int rgmode,
+                       bool majority_enabled,
                        int num_copies,
                        int expire_ms,
                        int num_threads,

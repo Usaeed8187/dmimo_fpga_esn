@@ -24,6 +24,7 @@ namespace gr
     private:
       // We leave everything mostly unchanged, but add support for FFT=64 or 256
       int d_phase;
+      int d_rgmode; // RG mode (0-7)
       bool d_ctrl_ok; // whether control was successfully decoded
       int d_code_rate;
       int d_code_rate_phase1;
@@ -60,7 +61,6 @@ namespace gr
 
       void update_seqno();
       void update_coding_rate();
-      int convert_modtype(int modtype);
       void update_modtype();
       void update_data_checksum();
 
@@ -69,12 +69,9 @@ namespace gr
 
     public:
       rg_demapper_impl(int phase,
+                       int rgmode,
                        int nstrm,
-                       int modtype,
-                       int n_ofdm_syms,
-                       int sd_num,
                        bool usecsi,
-                       int code_rate,
                        bool tag_snr,
                        bool debug);
       ~rg_demapper_impl() override {}

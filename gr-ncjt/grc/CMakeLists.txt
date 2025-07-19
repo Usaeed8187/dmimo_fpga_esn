@@ -34,6 +34,6 @@ install(FILES
     ncjt_demapper.block.yml
     ncjt_err_stats.block.yml
     ncjt_knobs.block.yml
-    ncjt_mapper_muxer_phase3.block.yml
+    ncjt_remapper_muxer.block.yml
     ncjt_pdc.block.yml
     ncjt_skip_data.block.yml DESTINATION share/gnuradio/grc/blocks)
