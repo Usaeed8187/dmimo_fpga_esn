@@ -568,6 +568,7 @@ namespace gr
             rb_snrs_dict = pmt::dict_add(rb_snrs_dict,
                                          pmt::from_long(copy_id),
                                          pmt::init_f32vector(num_rbs, pkt.snr_rbs_db));
+            // First extract SNR values for each RB
             for (int rb = 0; rb < num_rbs; rb++)
             {
               int start = rb * RB_SIZE[d_rgmode];
@@ -582,7 +583,8 @@ namespace gr
                 // std::cout << "\tPDC_SNR[" << j << "] = " << snr_sc_linear[j] << std::endl;
               }
             }
-            //
+
+            // Account for the CTRL syms offset
             int sc_ind = pkt.ctrl_syms_len;
 
             //////////////////
@@ -590,6 +592,8 @@ namespace gr
             //           << ", packet_len = " << packet_len
             //           << ", tmp_remap_buf size = " << packet_len * it->second.modtype
             //           << std::endl;
+            
+            // Make a temporary buffer for remapping
             uint8_t *tmp_remap_buf = (uint8_t *)malloc(packet_len * sizeof(uint8_t) * it->second.modtype);
             for (int sym_idx = 0; sym_idx < packet_len; sym_idx++)
             {
@@ -609,8 +613,10 @@ namespace gr
               }
             }
             // Remap
-            for (int k = 0; k < packet_len; k++) {
-              int period_offset = k * it->second.p2modtype;
+            for (int sym_idx = 0; sym_idx < packet_len; sym_idx++) {
+              int idx = sym_idx * copies_count + copy_cnt;
+            // for (int k = 0; k < packet_len; k++) {
+              int period_offset = sym_idx * it->second.p2modtype;
               int val = 0;
               for (int b = 0; b < it->second.p2modtype; b++)
               {
@@ -635,8 +641,8 @@ namespace gr
               default:
                 throw std::runtime_error("Unsupported modulation type for remapping");
               }
-              rx_real[k] = sym.real();
-              rx_imag[k] = sym.imag();
+              rx_real[idx] = sym.real();
+              rx_imag[idx] = sym.imag();
             }
             free(tmp_remap_buf);
             //////////////////

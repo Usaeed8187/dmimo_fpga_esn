@@ -332,24 +332,24 @@ namespace gr
         {
           int val = 0;
           // gather bits for this symbol
-          if (tmpflag == tmp_num_syms_to_show && d_seqno == 0) {
-            std::cout << "Remapper bits: ";
-          }
+          // if (tmpflag == tmp_num_syms_to_show && d_seqno == 0) {
+          //   std::cout << "Remapper bits: ";
+          // }
           for (int j = 0; j < d_modtype; j++)
           {
             int bit_index = period_offset + s + j * d_nstrm;
-            if (tmpflag > 0 && d_seqno == 0) {
-              std::cout << (int)used_bits[bit_index] << " ";
-            }
+            // if (tmpflag > 0 && d_seqno == 0) {
+            //   std::cout << (int)used_bits[bit_index] << " ";
+            // }
             val |= (used_bits[bit_index] << j);
           }
-          if (tmpflag == 0 && d_seqno == 0) {
-            std::cout << std::endl;
-            tmpflag--;
-          } else if (tmpflag > 0 && d_seqno == 0) {
-            std::cout << " - ";
-            tmpflag--;
-          }
+          // if (tmpflag == 0 && d_seqno == 0) {
+          //   std::cout << std::endl;
+          //   tmpflag--;
+          // } else if (tmpflag > 0 && d_seqno == 0) {
+          //   std::cout << " - ";
+          //   tmpflag--;
+          // }
           // map val to a constellation point
           gr_complex sym;
           switch (d_modtype)

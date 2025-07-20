@@ -276,9 +276,9 @@ namespace gr {
         std::uniform_int_distribution<int> dist(0, 1);
         for (int i = 0; i < in_bits_needed; i++) {
           raw_in_bits[i] = dist(gen) & 0x1;
-          if (i < 10 && d_seqno == 0) {
-            std::cout << "Generated bit " << i << ": " << (int)raw_in_bits[i] << std::endl;
-          }
+          // if (i < 10 && d_seqno == 0) {
+          //   std::cout << "Generated bit " << i << ": " << (int)raw_in_bits[i] << std::endl;
+          // }
         }
         // END DETERMINISTIC
       } else {
@@ -408,10 +408,10 @@ namespace gr {
           for (int j = 0; j < d_phase1_modtype; j++) {
             int bit_index = period_offset + s + j * d_nstrm;
             val |= (used_bits[bit_index] << j);
-            if (d_seqno == 0 && k == 0 && s == 0) {
-              std::cout << "Mapping bit " << (int)used_bits[bit_index]
-                        << " at index " << bit_index << std::endl;
-            }
+            // if (d_seqno == 0 && k == 0 && s == 0) {
+            //   std::cout << "Mapping bit " << (int)used_bits[bit_index]
+            //             << " at index " << bit_index << std::endl;
+            // }
           }
           // map val to a constellation point
           gr_complex sym;

@@ -85,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '5'
+    value: '20'
   states:
     bus_sink: false
     bus_source: false
@@ -561,7 +561,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1064, 1592.0]
+    coordinate: [1200, 1536.0]
     rotation: 180
     state: enabled
 - name: ncjt_demapper_1
@@ -715,7 +715,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 1388.0]
+    coordinate: [912, 1420.0]
     rotation: 180
     state: enabled
 - name: ncjt_err_stats_0_1
@@ -890,7 +890,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [568, 1752.0]
+    coordinate: [616, 1712.0]
     rotation: 180
     state: enabled
 - name: ncjt_remapper_muxer_0_0_0
