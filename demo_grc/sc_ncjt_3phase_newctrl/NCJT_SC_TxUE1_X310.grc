@@ -121,7 +121,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '{2: ''QPSK'', 4: ''16QAM'', 6: ''64QAM'', 8: ''256QAM''}'
+    value: '{2: "QPSK", 4: "16QAM", 6: "64QAM", 8: "256QAM"}'
   states:
     bus_sink: false
     bus_source: false
@@ -262,7 +262,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '32000'
+    value: 15.36e6
   states:
     bus_sink: false
     bus_source: false
@@ -301,6 +301,18 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1352, 580.0]
+    rotation: 0
+    state: enabled
+- name: usrp_address
+  id: variable
+  parameters:
+    comment: ''
+    value: '"addr=192.168.30.2"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [776, 68.0]
     rotation: 0
     state: enabled
 - name: ncjt_demapper_1
@@ -348,7 +360,7 @@ blocks:
 - name: ncjt_ltf_chanest_0
   id: ncjt_ltf_chanest
   parameters:
-    affinity: ''
+    affinity: '4'
     alias: ''
     comment: ''
     csi_fb: 'True'
@@ -395,7 +407,7 @@ blocks:
 - name: ncjt_mimo_detect_0
   id: ncjt_mimo_detect
   parameters:
-    affinity: ''
+    affinity: '5'
     alias: ''
     comment: ''
     debug: 'False'
@@ -437,7 +449,7 @@ blocks:
 - name: ncjt_ofdm_demod_0
   id: ncjt_ofdm_demod
   parameters:
-    affinity: ''
+    affinity: '3'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -455,7 +467,7 @@ blocks:
 - name: ncjt_ofdm_demod_1
   id: ncjt_ofdm_demod
   parameters:
-    affinity: ''
+    affinity: '3'
     alias: ''
     comment: ''
     cplen: cp_len
@@ -473,12 +485,12 @@ blocks:
 - name: ncjt_ofdm_mod_0
   id: ncjt_ofdm_mod
   parameters:
-    affinity: ''
+    affinity: '1'
     alias: ''
     comment: ''
     cplen: cp_len
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ntx: '2'
     rgmode: rgmode
     scaling: '0.5'
@@ -492,14 +504,14 @@ blocks:
 - name: ncjt_ofdm_mod_1
   id: ncjt_ofdm_mod
   parameters:
-    affinity: ''
+    affinity: '1'
     alias: ''
     comment: ''
     cplen: cp_len
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ntx: '2'
-    rgmode: '0'
+    rgmode: rgmode
     scaling: '0.5'
   states:
     bus_sink: false
@@ -552,7 +564,7 @@ blocks:
   parameters:
     addcs: 'False'
     addltf: 'False'
-    affinity: ''
+    affinity: '2'
     alias: ''
     comment: ''
     debug: 'False'
@@ -629,13 +641,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 352.0]
+    coordinate: [424, 352.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
   id: ncjt_stbc_encode
   parameters:
-    affinity: ''
+    affinity: '2'
     alias: ''
     comment: ''
     debug: 'False'
@@ -661,11 +673,11 @@ blocks:
     comment: ''
     debug: 'False'
     delay: '0'
-    filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "ncjt_preamble.bin"'
+    filename: '"../../data/sc_ncjt/1t1s/" + qam_type + "/ncjt_preamble.bin"'
     frmdatalen: tx_frame_length
     fs: samp_rate
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     ntx: '2'
     padding: '1000'
     pktspersec: pkts_per_sec
@@ -674,7 +686,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [472, 1072.0]
+    coordinate: [464, 1072.0]
     rotation: 180
     state: enabled
 - name: qtgui_const_sink_x_0
@@ -864,7 +876,7 @@ blocks:
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:
-    affinity: ''
+    affinity: '1'
     alias: ''
     ant0: '"TX/RX"'
     ant1: '"TX/RX"'
@@ -962,7 +974,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 200e6
+    clock_rate: 184.32e6
     clock_source0: ''
     clock_source1: ''
     clock_source2: ''
@@ -1239,7 +1251,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 200e6
+    clock_rate: 184.32e6
     clock_source0: ''
     clock_source1: ''
     clock_source2: ''
@@ -1599,6 +1611,7 @@ connections:
 - [ncjt_rx_sync_0, '1', ncjt_ofdm_demod_1, '0']
 - [ncjt_rx_sync_0, rxrdy, ncjt_tx_frm_ctrl_0, txen]
 - [ncjt_rx_sync_0, rxtime, ncjt_tx_frm_ctrl_0, rxtime]
+- [ncjt_rx_sync_0, uhdcmd, uhd_usrp_source_0, command]
 - [ncjt_stbc_encode_0, '0', ncjt_ofdm_mod_1, '0']
 - [ncjt_stbc_encode_0, '1', ncjt_ofdm_mod_0, '0']
 - [ncjt_tx_frm_ctrl_0, '0', uhd_usrp_sink_0, '0']
