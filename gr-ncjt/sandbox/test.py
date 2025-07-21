@@ -73,7 +73,7 @@ remapper_phase2_debug = False or debug_all
 ncjt_remapper_muxer_phase2 = ncjt.remapper_muxer(rgmode, num_streams, remapper_phase2_debug)
 
 ## Phase 3
-ncopies = 2
+ncopies = 3
 
 ncjt_rg_mapper_phase3_1 = ncjt.rg_mapper(rgmode, num_streams, False, False, 2, 2, True, False, '')
 ##

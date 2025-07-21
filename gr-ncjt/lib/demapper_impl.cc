@@ -302,11 +302,11 @@ namespace gr
           for (int b = 0; b < d_last_modtype; b++)
           {
             d_coded_buf[out_sym_offset + b * d_last_nstrm + strm] = bits[b];
-            if (d_last_seq_no == 0 && di == 0)
-            {
-              std::cout << "Demapped symbol " << sym_idx
-                        << " to bits: " << (int)bits[b] << std::endl;
-            }
+            // if (d_last_seq_no == 0 && di == 0)
+            // {
+            //   std::cout << "Demapped symbol " << sym_idx
+            //             << " to bits: " << (int)bits[b] << std::endl;
+            // }
           }
         }
       }
