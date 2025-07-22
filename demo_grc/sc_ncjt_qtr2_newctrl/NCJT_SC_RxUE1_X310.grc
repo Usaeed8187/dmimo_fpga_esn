@@ -447,6 +447,23 @@ blocks:
     coordinate: [16, 116.0]
     rotation: 0
     state: true
+- name: blocks_null_sink_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 392.0]
+    rotation: 0
+    state: enabled
 - name: ncjt_demapper_1
   id: ncjt_demapper
   parameters:
@@ -874,7 +891,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    nstrm: '2'
+    nstrm: '1'
     phase: '1'
     rgmode: rg_mode
     tag_snr: 'False'
@@ -2095,7 +2112,7 @@ connections:
 - [ncjt_ltf_chanest_0, csi, ncjt_ul_precoding_0, csi]
 - [ncjt_mc_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_mc_stbc_decode_0, '0', ncjt_skip_data_0_1_0_1, '0']
-- [ncjt_mc_stbc_decode_0, '1', ncjt_rg_demapper_0, '1']
+- [ncjt_mc_stbc_decode_0, '1', blocks_null_sink_0, '0']
 - [ncjt_mimo_detect_0, '0', ncjt_rg_demapper_1, '0']
 - [ncjt_mimo_detect_0, '1', ncjt_rg_demapper_1, '1']
 - [ncjt_mimo_detect_0, '1', qtgui_const_sink_x_0, '0']

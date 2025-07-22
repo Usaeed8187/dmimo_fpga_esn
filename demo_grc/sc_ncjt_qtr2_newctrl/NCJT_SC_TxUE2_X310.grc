@@ -438,8 +438,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    caption: ''
-    cols: '2'
+    caption: Tx gNB to TxUE2
+    cols: '1'
     comment: ''
     dark: 'False'
     debug: 'False'
@@ -667,7 +667,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    nstrm: '2'
+    nstrm: '1'
     phase: '1'
     rgmode: rg_mode
     tag_snr: 'False'
@@ -1752,7 +1752,6 @@ connections:
 - [ncjt_mapper_muxer_0, '0', ncjt_rg_mapper_0_0, '0']
 - [ncjt_mc_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_mc_stbc_decode_0, '0', ncjt_skip_data_0_1_0, '0']
-- [ncjt_mc_stbc_decode_0, '1', ncjt_rg_demapper_0, '1']
 - [ncjt_mc_stbc_decode_0, '1', ncjt_skip_data_0_1_0_0, '0']
 - [ncjt_mu_chanest_0, '0', ncjt_mc_stbc_decode_0, '0']
 - [ncjt_mu_chanest_0, '1', ncjt_mc_stbc_decode_0, '1']

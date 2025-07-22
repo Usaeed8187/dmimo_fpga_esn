@@ -586,6 +586,23 @@ blocks:
     coordinate: [1560, 344.0]
     rotation: 0
     state: disabled
+- name: blocks_null_sink_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 424.0]
+    rotation: 0
+    state: enabled
 - name: blocks_stream_to_tagged_stream_0
   id: blocks_stream_to_tagged_stream
   parameters:
@@ -1322,7 +1339,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    nstrm: '2'
+    nstrm: '1'
     phase: '1'
     rgmode: rg_mode
     tag_snr: 'False'
@@ -1524,7 +1541,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 664.0]
+    coordinate: [1112, 632.0]
     rotation: 0
     state: enabled
 - name: ncjt_skip_data_0_1_0_0_0
@@ -2065,7 +2082,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1280, 812.0]
+    coordinate: [1280, 804.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -2804,7 +2821,7 @@ connections:
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_2, reset]
 - [ncjt_mc_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_mc_stbc_decode_0, '0', ncjt_skip_data_0_1_0, '0']
-- [ncjt_mc_stbc_decode_0, '1', ncjt_rg_demapper_0, '1']
+- [ncjt_mc_stbc_decode_0, '1', blocks_null_sink_1, '0']
 - [ncjt_mimo_detect_0, '0', ncjt_rg_demapper_0_1, '0']
 - [ncjt_mimo_detect_0, '0', ncjt_skip_data_0, '0']
 - [ncjt_mimo_detect_0, '1', ncjt_rg_demapper_0_2, '0']

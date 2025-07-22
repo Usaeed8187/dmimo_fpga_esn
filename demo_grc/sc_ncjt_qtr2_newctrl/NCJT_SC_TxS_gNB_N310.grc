@@ -545,7 +545,7 @@ blocks:
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
-    nstrm: '2'
+    nstrm: '1'
     phase1_modtype: '2'
     phase2_modtype: '2'
     phase3_modtype: '2'
@@ -785,7 +785,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     mucpt: 'False'
-    nstrm: '2'
+    nstrm: '1'
     numue: '2'
     rgmode: '0'
     ueidx: '-1'
@@ -1844,7 +1844,7 @@ connections:
 - [ncjt_rg_demapper_0_0_0_0, '0', ncjt_demapper_1_0, '0']
 - [ncjt_rg_demapper_0_0_0_0, '1', ncjt_demapper_1_0, '1']
 - [ncjt_rg_mapper_1_1, '0', ncjt_stbc_encode_0, '0']
-- [ncjt_rg_mapper_1_1, '1', ncjt_stbc_encode_0_0, '0']
+- [ncjt_rg_mapper_1_1, '0', ncjt_stbc_encode_0_0, '0']
 - [ncjt_sic_detect_0, '0', ncjt_rg_demapper_0_0_0, '0']
 - [ncjt_sic_detect_0, '0', ncjt_skip_data_0_1_0_0, '0']
 - [ncjt_sic_detect_0, '1', ncjt_rg_demapper_0_0_0_0, '0']
