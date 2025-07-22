@@ -229,7 +229,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '50'
   states:
     bus_sink: false
     bus_source: false
@@ -665,7 +665,7 @@ blocks:
     nstrm: '2'
     rgmode: rg_mode
     soffset: '0'
-    waitrdy: 'False'
+    waitrdy: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -2697,6 +2697,7 @@ connections:
 - [ncjt_rx_sync_0, '8', ncjt_ofdm_demod_0_1_0, '0']
 - [ncjt_rx_sync_0, '9', ncjt_ofdm_demod_0_0_0_0, '0']
 - [ncjt_rx_sync_0, rxrdy, ncjt_check_ctrldata_0, rxrdy]
+- [ncjt_rx_sync_0, rxrdy, ncjt_check_ctrldata_0_0, rxrdy]
 - [ncjt_rx_sync_0, rxrdy, ncjt_check_ctrldata_0_0_0, rxrdy]
 - [ncjt_rx_sync_0, rxrdy, ncjt_check_ctrldata_0_1, rxrdy]
 - [ncjt_rx_sync_0, rxrdy, ncjt_tx_frm_ctrl_0, txen]

@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 12.0]
+    coordinate: [360, 12.0]
     rotation: 0
     state: enabled
 - name: fft_size
@@ -210,7 +210,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 12.0]
+    coordinate: [432, 12.0]
     rotation: 0
     state: enabled
 - name: tx_gain
@@ -238,7 +238,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr0=192.168.40.2"'
+    value: '"addr0=192.168.30.2"'
   states:
     bus_sink: false
     bus_source: false
