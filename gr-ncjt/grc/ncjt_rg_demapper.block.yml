@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.rg_demapper(${phase}, ${rgmode}, ${nstrm}, ${usecsi}, ${tag_snr}, ${debug})
+  make: ncjt.rg_demapper(${phase}, ${rgmode}, ${nstrm}, ${usecsi}, ${debug})
 
 parameters:
   - id: phase
@@ -30,13 +30,6 @@ parameters:
     default: 'False'
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
-  - id: tag_snr
-    label: SNR from Tag
-    dtype: bool
-    default: 'False'
-    options: [ 'True', 'False' ]
-    option_labels: [ Enable, Disable ]
-    hide: part
   - id: debug
     label: Debug
     dtype: bool

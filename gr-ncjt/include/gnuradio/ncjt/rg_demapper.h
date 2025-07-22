@@ -49,7 +49,6 @@ namespace gr
                        int rgmode,
                        int nstrm,
                        bool usecsi,
-                       bool tag_snr,
                        bool debug);
     };
 

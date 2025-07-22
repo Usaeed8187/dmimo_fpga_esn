@@ -43,7 +43,6 @@ namespace gr
 
       int d_data_checksum;
       int d_seqno;
-      bool d_tag_snr;
       bool d_debug;
       int cc;
       bool d_usecsi;
@@ -72,7 +71,6 @@ namespace gr
                        int rgmode,
                        int nstrm,
                        bool usecsi,
-                       bool tag_snr,
                        bool debug);
       ~rg_demapper_impl() override {}
 

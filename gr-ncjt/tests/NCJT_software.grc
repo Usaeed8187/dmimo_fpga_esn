@@ -205,7 +205,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '0'
+    value: '3'
   states:
     bus_sink: false
     bus_source: false
@@ -583,33 +583,6 @@ blocks:
     coordinate: [1536, 408.0]
     rotation: 0
     state: enabled
-- name: ncjt_err_stats_0
-  id: ncjt_err_stats
-  parameters:
-    affinity: ''
-    alias: ''
-    caption: Phase 2 Rx (RX UE)
-    cols: '3'
-    comment: ''
-    dark: 'True'
-    debug: 'False'
-    frame_per_sec: frames_per_sec
-    gui_hint: ''
-    logfreq: '5'
-    row_height: '300'
-    show_birate: 'True'
-    show_coded_ber: 'False'
-    show_num_copies: 'False'
-    show_per: 'False'
-    show_throughput: 'False'
-    show_uncoded_ber: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [904, 980.0]
-    rotation: 180
-    state: disabled
 - name: ncjt_err_stats_0_0
   id: ncjt_err_stats
   parameters:
@@ -745,6 +718,33 @@ blocks:
     coordinate: [1520, 132.0]
     rotation: 180
     state: enabled
+- name: ncjt_err_stats_x
+  id: ncjt_err_stats
+  parameters:
+    affinity: ''
+    alias: ''
+    caption: Phase 2 Rx (RX UE)
+    cols: '3'
+    comment: ''
+    dark: 'True'
+    debug: 'False'
+    frame_per_sec: frames_per_sec
+    gui_hint: ''
+    logfreq: '5'
+    row_height: '300'
+    show_birate: 'True'
+    show_coded_ber: 'False'
+    show_num_copies: 'False'
+    show_per: 'False'
+    show_throughput: 'False'
+    show_uncoded_ber: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [904, 980.0]
+    rotation: 180
+    state: disabled
 - name: ncjt_knobs_0
   id: ncjt_knobs
   parameters:
@@ -765,7 +765,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [32, 448.0]
+    coordinate: [24, 472.0]
     rotation: 0
     state: enabled
 - name: ncjt_mapper_muxer_0_0
@@ -802,6 +802,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_drop_init_packets: '0'
+    phase: '2'
     rgmode: rgmode
     snr_db: SNR
   states:
@@ -822,6 +823,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_drop_init_packets: '0'
+    phase: '1'
     rgmode: rgmode
     snr_db: SNR
   states:
@@ -842,6 +844,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_drop_init_packets: '10'
+    phase: '3'
     rgmode: rgmode
     snr_db: SNR
   states:
@@ -862,6 +865,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_drop_init_packets: '1'
+    phase: '3'
     rgmode: rgmode
     snr_db: SNR
   states:
@@ -959,7 +963,6 @@ blocks:
     nstrm: num_streams
     phase: '2'
     rgmode: rgmode
-    tag_snr: 'True'
     usecsi: 'True'
   states:
     bus_sink: false
@@ -980,7 +983,6 @@ blocks:
     nstrm: num_streams
     phase: '3'
     rgmode: rgmode
-    tag_snr: 'False'
     usecsi: 'True'
   states:
     bus_sink: false
@@ -1001,7 +1003,6 @@ blocks:
     nstrm: num_streams
     phase: '3'
     rgmode: rgmode
-    tag_snr: 'False'
     usecsi: 'True'
   states:
     bus_sink: false
@@ -1022,7 +1023,6 @@ blocks:
     nstrm: num_streams
     phase: '1'
     rgmode: rgmode
-    tag_snr: 'True'
     usecsi: 'True'
   states:
     bus_sink: false
@@ -1124,14 +1124,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 328.0]
+    coordinate: [664, 336.0]
     rotation: 0
     state: enabled
 
 connections:
 - [blocks_head_0, '0', ncjt_rg_mapper_0_1, '0']
 - [ncjt_demapper_0, '0', blocks_null_sink_0_1_1_0_0, '0']
-- [ncjt_demapper_0, '0', ncjt_err_stats_0, '0']
+- [ncjt_demapper_0, '0', ncjt_err_stats_x, '0']
 - [ncjt_demapper_0, '0', ncjt_remapper_muxer_1, '0']
 - [ncjt_demapper_0, '0', ncjt_remapper_muxer_1_0, '0']
 - [ncjt_demapper_0_0, '0', ncjt_err_stats_0_0, '0']
@@ -1139,17 +1139,17 @@ connections:
 - [ncjt_demapper_1, '0', blocks_tag_debug_0, '0']
 - [ncjt_demapper_1, '0', ncjt_err_stats_0_1, '0']
 - [ncjt_demapper_1, '0', ncjt_remapper_muxer_0_0_0, '0']
-- [ncjt_knobs_0, reset, ncjt_err_stats_0, reset]
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_0, reset]
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_0_0, reset]
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_0_0_0, reset]
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_0_1, reset]
+- [ncjt_knobs_0, reset, ncjt_err_stats_x, reset]
 - [ncjt_knobs_0, s_code_rate, ncjt_mapper_muxer_0_0, s_code_rate]
 - [ncjt_knobs_0, s_modtypes, ncjt_mapper_muxer_0_0, s_modtypes]
-- [ncjt_knobs_0, s_snr, ncjt_noair_0, s_snr]
-- [ncjt_knobs_0, s_snr, ncjt_noair_0_0, s_snr]
-- [ncjt_knobs_0, s_snr, ncjt_noair_0_1, s_snr]
-- [ncjt_knobs_0, s_snr, ncjt_noair_0_1_0, s_snr]
+- [ncjt_knobs_0, s_snr1, ncjt_noair_0_0, s_snr]
+- [ncjt_knobs_0, s_snr2, ncjt_noair_0, s_snr]
+- [ncjt_knobs_0, s_snr3, ncjt_noair_0_1, s_snr]
+- [ncjt_knobs_0, s_snr3, ncjt_noair_0_1_0, s_snr]
 - [ncjt_mapper_muxer_0_0, '0', blocks_head_0, '0']
 - [ncjt_mapper_muxer_0_0, '0', ncjt_rg_mapper_0_1, '0']
 - [ncjt_noair_0, '0', ncjt_rg_demapper_0, '0']

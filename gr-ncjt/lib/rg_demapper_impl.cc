@@ -30,11 +30,10 @@ namespace gr
                                         int rgmode,
                                         int nstrm,
                                         bool usecsi,
-                                        bool tag_snr,
                                         bool debug)
     {
       return gnuradio::make_block_sptr<rg_demapper_impl>(
-          phase, rgmode, nstrm, usecsi, tag_snr, debug);
+          phase, rgmode, nstrm, usecsi, debug);
     }
 
     // ------------------------------------------------------------------------
@@ -44,7 +43,6 @@ namespace gr
                                        int rgmode,
                                        int nstrm,
                                        bool usecsi,
-                                       bool tag_snr,
                                        bool debug)
         : gr::tagged_stream_block("rg_demapper",
                                   gr::io_signature::make(usecsi ? nstrm : nstrm,
@@ -61,7 +59,6 @@ namespace gr
           d_nstrm_phase3(nstrm),
           d_data_checksum(0),
           d_seqno(-1),
-          d_tag_snr(tag_snr),
           d_debug(debug),
           cc(0),
           d_usecsi(usecsi),
@@ -100,8 +97,7 @@ namespace gr
                 "\n\tphase=" << d_phase
                 << "\n\trgmode=" << d_rgmode
                 << "\n\tnstrm_param=" << d_nstrm_param
-                << "\n\tusecsi=" << d_usecsi
-                << "\n\ttag_snr=" << d_tag_snr);
+                << "\n\tusecsi=" << d_usecsi);
 
       set_tag_propagation_policy(gr::block::TPP_DONT);
     }
@@ -314,7 +310,7 @@ namespace gr
                 << "\n\t\trx_current_phase(" << d_phase << "), rx_modtype(" << d_modtype << "), rx_modtype_phase1(" << d_modtype_phase1 << "), rx_modtype_phase2(" << d_modtype_phase2 << "), rx_modtype_phase3(" << d_modtype_phase3 << "), "
                 << "\n\t\trx_coding_rate(" << d_code_rate << "), rx_coding_rate_phase1(" << d_code_rate_phase1 << "), rx_coding_rate_phase2(" << d_code_rate_phase2 << "), rx_coding_rate_phase3(" << d_code_rate_phase3 << ")");
       int num_rbs = (int)std::floor(d_sd_num / RB_SIZE[d_rgmode]);
-      if (d_tag_snr)
+      if (d_phase == 2)
       {
         NCJT_LOG(d_debug, "(" << cc << ") Processing SNRs tag (snr_sc_linear) since tag_snr is set");
         std::ostringstream oss;
@@ -359,10 +355,10 @@ namespace gr
         }
         else
         {
-          throw std::runtime_error("[rg_demapper] ERROR: You set tag_snr flag but no snr_sc_linear tag found in input stream!");
+          throw std::runtime_error("[rg_demapper] ERROR: No snr_sc_linear tag found for phase 2!");
         }
       }
-      else
+      else if (d_phase == 3)
       {
         NCJT_LOG(d_debug, "(" << cc << ") Processing SNRs from CTRL since tag_snr is not set");
 
@@ -397,6 +393,8 @@ namespace gr
           std::cout << std::endl;
         }
         add_item_tag(0, d_wrt, pmt::string_to_symbol("snr_rbs_db"), pmt::init_f32vector(num_rbs, recovered), d_name);
+      } else {
+        NCJT_LOG(d_debug, "(" << cc << ") No SNRs processing since phase is not 2 or 3");
       }
 
       // Put interleaved symbols and CSI into output_items

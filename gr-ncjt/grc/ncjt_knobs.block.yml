@@ -70,7 +70,15 @@ outputs:
   domain: message
   optional: true
   hide: ${ not mcs }
-- label: s_snr
+- label: s_snr1
+  domain: message
+  optional: true
+  hide: ${ not noair }
+- label: s_snr2
+  domain: message
+  optional: true
+  hide: ${ not noair }
+- label: s_snr3
   domain: message
   optional: true
   hide: ${ not noair }

@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(rg_demapper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(ae164c3c06c9a6be09b747335d731f89) */
+/* BINDTOOL_HEADER_FILE_HASH(448570b7ee23397908ec64465e5949a5) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,8 +37,8 @@ void bind_rg_demapper(py::module &m) {
              std::shared_ptr<rg_demapper>>(m, "rg_demapper", D(rg_demapper))
 
       .def(py::init(&rg_demapper::make), py::arg("phase"), py::arg("rgmode"),
-           py::arg("nstrm"), py::arg("usecsi"), py::arg("tag_snr"),
-           py::arg("debug"), D(rg_demapper, make))
+           py::arg("nstrm"), py::arg("usecsi"), py::arg("debug"),
+           D(rg_demapper, make))
 
       ;
 }
