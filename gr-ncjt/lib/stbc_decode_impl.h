@@ -17,8 +17,8 @@ namespace gr::ncjt
 class stbc_decode_impl : public stbc_decode
 {
 private:
-    const int RG_SIZE = 13; // 13 subcarriers per resource group
     const int d_nrx = 2; // number of receive antennas
+    int d_rgmode; // RG mode (0-7)
     int d_scnum; // number of valid subcarriers
     int d_scdata; // number data subcarriers
     int d_ndatasyms;  // total number of data OFDM symbols)
@@ -31,7 +31,6 @@ private:
     float d_cpe_offset; // CPE estimation offset
 
     gr_complex *d_chan_est; // channel estimation using H-LTFs
-    uint8_t *d_llr_data;    // LLR magnitude per data subcarrier
 
     bool d_debug;
 

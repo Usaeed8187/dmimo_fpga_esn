@@ -6,6 +6,7 @@
 
 #include "stbc_decode_impl.h"
 #include <gnuradio/io_signature.h>
+#include <gnuradio/ncjt/rg_modes.h>
 #include "utils.h"
 
 namespace gr::ncjt
@@ -27,6 +28,8 @@ stbc_decode_impl::stbc_decode_impl(int rgmode, int ndatasyms, int npilotsyms, bo
     if (rgmode < 0 || rgmode >=8)
         throw std::runtime_error("Unsupported RG mode");
 
+    d_rgmode = rgmode;
+
     // d_fftsize = RG_FFT_SIZE[rgmode];
     d_scnum = RG_NUM_VALID_SC[rgmode];
     d_scdata = RG_NUM_DATA_SC[rgmode];
@@ -42,7 +45,6 @@ stbc_decode_impl::stbc_decode_impl(int rgmode, int ndatasyms, int npilotsyms, bo
     d_numsyms = ndatasyms + npilotsyms;
 
     d_chan_est = malloc_complex(4 * d_scnum);
-    d_llr_data = (uint8_t *) malloc(sizeof(uint8_t) * (d_scdata/RG_SIZE));
 
     message_port_register_out(pmt::mp("llr"));
 
@@ -53,8 +55,6 @@ stbc_decode_impl::~stbc_decode_impl()
 {
     if (d_chan_est != nullptr)
         volk_free(d_chan_est);
-    if (d_llr_data != nullptr)
-        free(d_llr_data);
 }
 
 int
@@ -215,7 +215,7 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     // symbols & csi output
     for (int m = 0; m < d_numsyms; m++)
     {
-        int sc_cnt = 0, llr_cnt = 0, rg_cnt = 0;
+        int sc_cnt = 0;
         float llr_mean = 0.0;
         for (int i = 0; i < d_scnum; i++)
         {
@@ -234,43 +234,48 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
             out1[offset] = gr_complex(h_eq_reshaped(i, m), noise_var);
             if (output_constl)
                 out2[offset] = z_summed(i, m) / h_eq_reshaped(i, m);
-            float llrval = 8.0f * log(h_eq_avg[i] / (2.0f * noise_var));
-            llr_mean += llrval;
-            if (rg_cnt == RG_SIZE-1)
-            {
-                llr_mean /= (float) RG_SIZE;
-                d_llr_data[llr_cnt] = (llr_mean >= 63.0) ? 63 : floor(llr_mean);
-                llr_mean = 0.0;
-                llr_cnt += 1;
-                rg_cnt = 0;
-            } else
-                rg_cnt += 1;
             sc_cnt += 1;
         }
     }
-    // send LLR magnitude per subcarrier
-    send_llr_message();
 
-	if (d_scnum == 56)
-	{
-		std::vector<float> SNRs(d_scnum - 4, 0.0f);
-		int j = 0;
-		for (int i = 0; i < d_scnum; i++)
-		{
-			if (i == 7 || i == 21 || i == 34 || i == 48)
-				continue;
-			SNRs[j] = h_eq_avg[i] / (noise_var * 2.0f);
-			j++;
-		}
-		add_item_tag(0, nitems_written(0), pmt::string_to_symbol("snr_sc_linear"),
-					 pmt::make_blob(SNRs.data(), SNRs.size() * sizeof(float)),
-					 pmt::string_to_symbol(name()));
-	}
-	else
-	{
-		// @TODO
-		throw std::runtime_error("Unsupported number of subcarriers");
-	}
+	// if (d_scnum == 56)
+	// {
+	// 	std::vector<float> SNRs(d_scnum - 4, 0.0f);
+	// 	int j = 0;
+	// 	for (int i = 0; i < d_scnum; i++)
+	// 	{
+	// 		if (i == 7 || i == 21 || i == 34 || i == 48)
+	// 			continue;
+	// 		SNRs[j] = h_eq_avg[i] / (noise_var * 2.0f);
+	// 		j++;
+	// 	}
+	// 	add_item_tag(0, nitems_written(0), pmt::string_to_symbol("snr_sc_linear"),
+	// 				 pmt::make_blob(SNRs.data(), SNRs.size() * sizeof(float)),
+	// 				 pmt::string_to_symbol(name()));
+	// }
+	// else
+	// {
+	// 	// @TODO
+	// 	throw std::runtime_error("Unsupported number of subcarriers");
+	// }
+
+    std::vector<float> SNRs(RG_NUM_DATA_SC[d_rgmode], 0.0f);
+    int j = 0;
+    for (int i = 0; i < d_scnum; i++)
+    {
+        // Check if i is in RG_CPT_INDX[NUM_RG_MODES][MAX_NUM_CPT]
+        for (int ci = 0; ci < RG_NUM_CPT[d_rgmode]; ci++)
+        {
+            if (i == RG_CPT_INDX[d_rgmode][ci])
+                continue;
+        }
+
+        SNRs[j] = h_eq_avg[i] / (noise_var * 2.0f);
+        j++;
+    }
+    add_item_tag(0, nitems_written(0), pmt::string_to_symbol("snr_sc_linear"),
+                 pmt::make_blob(SNRs.data(), SNRs.size() * sizeof(float)),
+                 pmt::string_to_symbol(name()));
 
     noutput_items = (d_scdata * d_numsyms);
     add_item_tag(0,
@@ -280,16 +285,6 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
                  pmt::string_to_symbol(name()));
 
     return noutput_items;
-}
-
-void
-stbc_decode_impl::send_llr_message()
-{
-    // make and send PDU message
-    pmt::pmt_t dict = pmt::make_dict();
-    dict = pmt::dict_add(dict, pmt::mp("llr"), pmt::PMT_T);
-    pmt::pmt_t pdu = pmt::make_blob(&d_llr_data[0], (d_scdata/RG_SIZE) * sizeof(uint8_t));
-    message_port_pub(pmt::mp("llr"), pmt::cons(dict, pdu));
 }
 
 

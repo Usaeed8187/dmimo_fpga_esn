@@ -87,13 +87,31 @@ class knobs(gr.sync_block, QtWidgets.QWidget):
             row += 1
         ###
         if noair:
-            self.mainLayout.addWidget(Qt.QLabel('SNR (dB):'), row, 0)
-            self.snr = Qt.QLineEdit()
-            self.snr.setText('20')
-            self.snr.editingFinished.connect(self.onSNRChange)
-            self.mainLayout.addWidget(self.snr, row, 1)
-            self.message_port_register_out(pmt.intern('s_snr'))
+            self.mainLayout.addWidget(Qt.QLabel('SNR1 (dB):'), row, 0)
+            #
+            self.snr1 = Qt.QLineEdit()
+            self.snr1.setText('20')
+            self.snr1.editingFinished.connect(self.onSNR1Change)
+            self.mainLayout.addWidget(self.snr1, row, 1)
+            self.message_port_register_out(pmt.intern('s_snr1'))
             row += 1
+            # SNR2
+            self.mainLayout.addWidget(Qt.QLabel('SNR2 (dB):'), row, 0)
+            self.snr2 = Qt.QLineEdit()
+            self.snr2.setText('20')
+            self.snr2.editingFinished.connect(self.onSNR2Change)
+            self.mainLayout.addWidget(self.snr2, row, 1)
+            self.message_port_register_out(pmt.intern('s_snr2'))
+            row += 1
+            # SNR3
+            self.mainLayout.addWidget(Qt.QLabel('SNR3 (dB):'), row, 0)
+            self.snr3 = Qt.QLineEdit()
+            self.snr3.setText('20')
+            self.snr3.editingFinished.connect(self.onSNR3Change)
+            self.mainLayout.addWidget(self.snr3, row, 1)
+            self.message_port_register_out(pmt.intern('s_snr3'))
+            row += 1
+
         ###
         if reset:
             self.reset_button = Qt.QPushButton('Reset Statistics')
@@ -186,9 +204,17 @@ class knobs(gr.sync_block, QtWidgets.QWidget):
         elif self.code_rate.currentText() == '5/6':
             coderate = 7
         self.message_port_pub(pmt.intern("s_code_rate"), pmt.to_pmt(coderate))
-    def onSNRChange(self):
-        print(f'[knobs::onSNRChange] SNR: {self.snr.text()}')
-        self.message_port_pub(pmt.intern("s_snr"), pmt.to_pmt(float(self.snr.text())))
+
+    def onSNR1Change(self):
+        print(f'[knobs::onSNR1Change] SNR1: {self.snr1.text()}')
+        self.message_port_pub(pmt.intern("s_snr1"), pmt.to_pmt(float(self.snr1.text())))
+
+    def onSNR2Change(self):
+        print(f'[knobs::onSNR2Change] SNR2: {self.snr2.text()}')
+        self.message_port_pub(pmt.intern("s_snr2"), pmt.to_pmt(float(self.snr2.text())))
+    def onSNR3Change(self):
+        print(f'[knobs::onSNR3Change] SNR3: {self.snr3.text()}')
+        self.message_port_pub(pmt.intern("s_snr3"), pmt.to_pmt(float(self.snr3.text())))
 
 
     def work(self, input_items, output_items):

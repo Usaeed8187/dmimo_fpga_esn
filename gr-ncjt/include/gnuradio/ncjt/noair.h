@@ -40,15 +40,9 @@ namespace gr
        * **Outputs:**
        *  - **Output0:** \c (sc_num - len(pilot_sc_ind)) * n_ofdm_syms complex samples (data subcarriers, possibly with noise).
        *  - **Output1:** \c (sc_num - len(pilot_sc_ind)) * n_ofdm_syms complex samples of CSI (all set to \c 1.0+0.0j).
-       *
-       * \param n_ofdm_syms    Number of OFDM symbols in the frame
-       * \param sc_num         Total subcarriers in the input (e.g., 56).
-       * \param pilot_sc_ind   Indices of pilot subcarriers (e.g., [7,21,34,48]) to remove.
-       * \param frame_per_sec  Limits throughput to this many frames per second (0 => no throttle).
-       * \param snr_db         If > 0, adds AWGN at approximately this SNR (in dB). If <= 0, no noise is added.
-       * \param debug          If true, prints debug information.
        */
-      static sptr make(int rgmode,
+      static sptr make(int phase,
+                       int rgmode,
                        float frame_per_sec,
                        float snr_db,
                        int num_drop_init_packets,

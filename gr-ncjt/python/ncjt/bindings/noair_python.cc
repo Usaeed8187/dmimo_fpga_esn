@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(noair.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(003217f7bfa93918106dc738eb506033) */
+/* BINDTOOL_HEADER_FILE_HASH(dc5e09ed46cef762b4bdb537fb0b1b2b) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,9 +36,9 @@ void bind_noair(py::module &m) {
   py::class_<noair, gr::block, gr::basic_block, std::shared_ptr<noair>>(
       m, "noair", D(noair))
 
-      .def(py::init(&noair::make), py::arg("rgmode"), py::arg("frame_per_sec"),
-           py::arg("snr_db"), py::arg("num_drop_init_packets"),
-           py::arg("debug"), D(noair, make))
+      .def(py::init(&noair::make), py::arg("phase"), py::arg("rgmode"),
+           py::arg("frame_per_sec"), py::arg("snr_db"),
+           py::arg("num_drop_init_packets"), py::arg("debug"), D(noair, make))
 
       ;
 }

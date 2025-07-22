@@ -4,9 +4,15 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.noair(${rgmode}, ${frame_per_sec}, ${snr_db}, ${num_drop_init_packets}, ${debug})
+  make: ncjt.noair(${phase}, ${rgmode}, ${frame_per_sec}, ${snr_db}, ${num_drop_init_packets}, ${debug})
 
 parameters:
+  - id: phase
+    label: dMIMO Phase
+    dtype: int
+    default: 1
+    options: [1, 2, 3]
+    option_labels: ['Phase 1', 'Phase 2', 'Phase 3']
   - id: rgmode
     label: RG Mode
     dtype: int

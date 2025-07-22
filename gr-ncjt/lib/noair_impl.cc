@@ -32,23 +32,25 @@ namespace gr
 
     // ------------------ public make() ------------------
     noair::sptr
-    noair::make(int rgmode,
+    noair::make(int phase,
+                int rgmode,
                 float frame_per_sec,
                 float snr_db,
                 int num_drop_init_packets,
                 bool debug)
     {
-      return gnuradio::make_block_sptr<noair_impl>(
-          rgmode,
-          frame_per_sec,
-          snr_db,
-          num_drop_init_packets,
-          debug);
+      return gnuradio::make_block_sptr<noair_impl>(phase,
+                                                   rgmode,
+                                                   frame_per_sec,
+                                                   snr_db,
+                                                   num_drop_init_packets,
+                                                   debug);
     }
 
     // ------------------ noair_impl methods ------------------
 
-    noair_impl::noair_impl(int rgmode,
+    noair_impl::noair_impl(int phase,
+                           int rgmode,
                            float frame_per_sec,
                            float snr_db,
                            int num_drop_init_packets,
@@ -58,6 +60,7 @@ namespace gr
                                   gr::io_signature::make(2, 2, sizeof(gr_complex)),
                                   "packet_len"),
           d_debug(debug),
+          d_phase(phase),
           d_num_drop_init_packets(num_drop_init_packets),
           d_frame_per_sec(frame_per_sec),
           d_snr_db(snr_db),
@@ -82,7 +85,8 @@ namespace gr
 
       if (rgmode < 0 || rgmode >= 8)
         throw std::runtime_error("Unsupported RG mode");
-      else {
+      else
+      {
         d_ofdm_syms = RG_NUM_OFDM_SYM[rgmode];
         d_sc_num = RG_NUM_VALID_SC[rgmode];
         for (int k = 0; k < RG_NUM_CPT[rgmode]; k++)
@@ -306,16 +310,19 @@ namespace gr
                    pmt::from_long(output_count),
                    d_me);
 
-      //////
-      int sd_num = d_sc_num - d_pilot_sc_ind.size();
-      std::vector<float> SNRs(sd_num, 0.0f);
-      for (int i = 0; i < sd_num; i++)
+      // SNR tags
+      if (d_phase != 1)
       {
-        SNRs[i] = std::pow(10.0, (double)d_snr_db / 10.0);
+        int sd_num = d_sc_num - d_pilot_sc_ind.size();
+        std::vector<float> SNRs(sd_num, 0.0f);
+        for (int i = 0; i < sd_num; i++)
+        {
+          SNRs[i] = std::pow(10.0, (double)d_snr_db / 10.0);
+        }
+        add_item_tag(0, nitems_written(0), pmt::string_to_symbol("snr_sc_linear"),
+                     pmt::make_blob(SNRs.data(), SNRs.size() * sizeof(float)),
+                     pmt::string_to_symbol(name()));
       }
-      add_item_tag(0, nitems_written(0), pmt::string_to_symbol("snr_sc_linear"),
-                   pmt::make_blob(SNRs.data(), SNRs.size() * sizeof(float)),
-                   pmt::string_to_symbol(name()));
       ////
       add_item_tag(0, abs_out0,
                    pmt::string_to_symbol("seqno"),

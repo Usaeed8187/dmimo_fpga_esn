@@ -25,6 +25,7 @@ namespace gr
     {
     private:
       // Our constructor parameters:
+      int d_phase;                   // 1, 2, or 3
       int d_ofdm_syms;                 // number of OFDM symbols
       int d_sc_num;                    // number of subcarriers (56)
       std::vector<int> d_pilot_sc_ind; // indices of pilot subcarriers
@@ -49,7 +50,8 @@ namespace gr
       int calculate_output_stream_length(const gr_vector_int &ninput_items) override;
 
     public:
-      noair_impl(int rgmode,
+      noair_impl(int phase,
+                 int rgmode,
                  float frame_per_sec,
                  float snr_db,
                  int num_drop_init_packets,
