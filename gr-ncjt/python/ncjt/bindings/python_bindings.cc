@@ -42,6 +42,7 @@ namespace py = pybind11;
     void bind_rx_sync(py::module& m);
     void bind_gnb_sync(py::module& m);
     void bind_tx_frm_ctrl(py::module& m);
+    void bind_dual_tx_ctrl(py::module& m);
     void bind_mapper_muxer(py::module& m);
     void bind_noair(py::module& m);
     void bind_demapper(py::module& m);
@@ -97,6 +98,7 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_rx_sync(m);
     bind_gnb_sync(m);
     bind_tx_frm_ctrl(m);
+    bind_dual_tx_ctrl(m);
     bind_mapper_muxer(m);
     bind_noair(m);
     bind_demapper(m);
