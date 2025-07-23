@@ -157,7 +157,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -169,7 +169,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -181,7 +181,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -193,7 +193,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '14'
+    value: ncjt.RG_NUM_OFDM_SYM[rg_mode]
   states:
     bus_sink: false
     bus_source: false
@@ -205,7 +205,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '14'
+    value: ncjt.RG_NUM_OFDM_SYM[rg_mode]
   states:
     bus_sink: false
     bus_source: false
@@ -217,7 +217,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '14'
+    value: ncjt.RG_NUM_OFDM_SYM[rg_mode]
   states:
     bus_sink: false
     bus_source: false
@@ -236,7 +236,7 @@ blocks:
     bus_structure: null
     coordinate: [872, 164.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: num_ltf_syms
   id: variable
   parameters:
@@ -358,7 +358,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '234'
+    value: ncjt.RG_NUM_DATA_SC[rg_mode]
   states:
     bus_sink: false
     bus_source: false
@@ -1342,7 +1342,6 @@ blocks:
     nstrm: '1'
     phase: '1'
     rgmode: rg_mode
-    tag_snr: 'False'
     usecsi: 'False'
   states:
     bus_sink: false
@@ -1363,7 +1362,6 @@ blocks:
     nstrm: '1'
     phase: '3'
     rgmode: rg_mode
-    tag_snr: 'False'
     usecsi: 'False'
   states:
     bus_sink: false
@@ -1384,7 +1382,6 @@ blocks:
     nstrm: '1'
     phase: '2'
     rgmode: rg_mode
-    tag_snr: 'True'
     usecsi: 'True'
   states:
     bus_sink: false
@@ -1405,7 +1402,6 @@ blocks:
     nstrm: '1'
     phase: '2'
     rgmode: rg_mode
-    tag_snr: 'True'
     usecsi: 'True'
   states:
     bus_sink: false
@@ -1426,7 +1422,6 @@ blocks:
     nstrm: '1'
     phase: '3'
     rgmode: rg_mode
-    tag_snr: 'False'
     usecsi: 'False'
   states:
     bus_sink: false
