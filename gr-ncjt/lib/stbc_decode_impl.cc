@@ -46,6 +46,7 @@ stbc_decode_impl::stbc_decode_impl(int rgmode, int ndatasyms, int npilotsyms, bo
 
     d_chan_est = malloc_complex(4 * d_scnum);
 
+
     message_port_register_out(pmt::mp("llr"));
 
     set_tag_propagation_policy(block::TPP_DONT);
@@ -264,12 +265,18 @@ stbc_decode_impl::work(int noutput_items, gr_vector_int &ninput_items,
     for (int i = 0; i < d_scnum; i++)
     {
         // Check if i is in RG_CPT_INDX[NUM_RG_MODES][MAX_NUM_CPT]
+        bool is_pilot = false;
         for (int ci = 0; ci < RG_NUM_CPT[d_rgmode]; ci++)
         {
             if (i == RG_CPT_INDX[d_rgmode][ci])
-                continue;
+            {
+                is_pilot = true ;
+                break;
+            }
         }
-
+        if (is_pilot)
+            continue;
+        
         SNRs[j] = h_eq_avg[i] / (noise_var * 2.0f);
         j++;
     }
