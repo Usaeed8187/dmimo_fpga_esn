@@ -348,7 +348,7 @@ namespace gr::ncjt
   void rg_mapper_impl::generate_cpt_pilots()
   {
     // LSFR approach for pilot parity
-    unsigned pilot_lsfr = (d_fftsize == 64) ? 0x78 : 0x71; // offset=3 or 4
+    unsigned pilot_lsfr = (d_fftsize == 64) ? 0x78 : 0x70; // offset=3 or 4
 
     // Same base pilot arrays as rg_mapper_impl
     static const float basePilots4[6][4] = {
