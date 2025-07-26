@@ -238,22 +238,57 @@ namespace gr
             _tt += 1;
             // tag: rx_modtype
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_modtype"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No rx_modtype tag found in input stream");
+            }
             _modtype = pmt::to_uint64(tags2[0].value);
             // tag: rx_modtype_phase2
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_modtype_phase2"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No rx_modtype_phase2 tag found in input stream");
+            }
             _p2modtype = pmt::to_uint64(tags2[0].value);
             // tag: rx_modtype_phase3
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_modtype_phase3"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No rx_modtype_phase3 tag found in input stream");
+            }
+            ////
+            if (_p2modtype > _modtype)
+            {
+              std::cout << "[pdc_impl] WARNING: rx_modtype_phase2 (" << _p2modtype
+                        << ") is greater than rx_modtype (" << _modtype << "), this is unexpected! " 
+                        << "Possibly an indicator of corrupted CTRL misidentified as valid. Still consuming input." << std::endl;
+              consume(qam_inp, _packet_len_syms);
+              consume(qam_inp + d_num_copies, _packet_len_syms);
+              continue; // Skip this copy
+            }
+            ////
             _p3modtype = pmt::to_uint64(tags2[0].value);
             // tag: rx_coding_rate
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_coding_rate"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No rx_coding_rate tag found in input stream");
+            }
             _rx_coding_rate = pmt::to_uint64(tags2[0].value);
             // tag: rx_data_checksum
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_data_checksum"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No rx_data_checksum tag found in input stream");
+            }
             _rx_data_checksum = pmt::to_uint64(tags2[0].value);
             // tag: snr_rbs_db
 
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("snr_rbs_db"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No snr_rbs_db tag found in input stream");
+            }
 
             if (!pmt::is_f32vector(tags2[0].value))
             {
@@ -272,16 +307,28 @@ namespace gr
               // std::cout << _snr_rbs_db[i] << " ";
             }
             // std::cout << std::endl;
-            std::memcpy(_snr_rbs_db, snr_tag_val, num_snr_elements * sizeof(float));
+            // std::memcpy(_snr_rbs_db, snr_tag_val, num_snr_elements * sizeof(float));
 
             // tag: ctrl_syms_len
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("ctrl_syms_len"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No ctrl_syms_len tag found in input stream");
+            }
             _ctrl_syms_len = pmt::to_uint64(tags2[0].value);
             // tag: sd_num
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("sd_num"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No sd_num tag found in input stream");
+            }
             _sd_num = pmt::to_uint64(tags2[0].value);
             // tag: rx_seqno
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_seqno"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No rx_seqno tag found in input stream");
+            }
             _seqno = (int64_t)pmt::to_uint64(tags2[0].value);
             // Get QAM and CSI
             gr_complex *_buf = (gr_complex *)malloc(_packet_len_syms * sizeof(gr_complex));
@@ -396,8 +443,11 @@ namespace gr
                               << ", seqno=" << _seqno << ", first_seqno=" << first_seqno << ", last_seqno=" << last_seqno << std::endl;
                   }
                   free(_buf);
+                  _buf = nullptr;
                   free(_csi_buf);
+                  _csi_buf = nullptr;
                   free(_snr_rbs_db);
+                  _snr_rbs_db = nullptr;
                 }
               }
             }
@@ -405,7 +455,7 @@ namespace gr
           else
           {
             // DEBUG
-            std::cout << " [pdc_impl] ctrl_ok=false, skipping this packet" << std::endl;
+            std::cout << " [pdc_impl] ctrl_ok=false, skipping this copy on input " << qam_inp << std::endl;
           }
           consume(qam_inp, _packet_len_syms);
           consume(qam_inp + d_num_copies, _packet_len_syms);
@@ -592,6 +642,8 @@ namespace gr
             //           << ", packet_len = " << packet_len
             //           << ", tmp_remap_buf size = " << packet_len * it->second.modtype
             //           << std::endl;
+
+            assert(it->second.p2modtype <= it->second.modtype);
             
             // Make a temporary buffer for remapping
             uint8_t *tmp_remap_buf = (uint8_t *)malloc(packet_len * sizeof(uint8_t) * it->second.modtype);
@@ -645,6 +697,7 @@ namespace gr
               rx_imag[idx] = sym.imag();
             }
             free(tmp_remap_buf);
+            tmp_remap_buf = nullptr;
             //////////////////
             copy_cnt++;
           }
@@ -1051,6 +1104,7 @@ namespace gr
           free(pair.second.csi_buf);
           pair.second.csi_buf = nullptr;
           free(pair.second.snr_rbs_db);
+          pair.second.snr_rbs_db = nullptr;
         }
         if (d_hll_enabled)
         {

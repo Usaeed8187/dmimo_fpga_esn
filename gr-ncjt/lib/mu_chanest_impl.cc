@@ -539,8 +539,15 @@ mu_chanest_impl::ltf_chan_est_2tx(gr_vector_const_void_star &input_items,
         Rx(0, 1) = in1[cidx + 2 * d_scnum], Rx(1, 1) = in1[cidx + 3 * d_scnum];  // (s0,r1) (s1,r1)
         CMatrix2 H2 = NORM_LTF_SEQ[cidx] * Pd * Rx;
 
-        Eigen::Map<CMatrix2> H(&d_chan_est[d_nrx * d_ntx * cidx], d_ntx, d_nrx);
-        H << H1, H2;
+        // Eigen::Map<CMatrix2> H(&d_chan_est[d_nrx * d_ntx * cidx], d_ntx, d_nrx);
+        // H << H1, H2;
+        using CMatrixXr = Eigen::Matrix<std::complex<float>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
+        size_t base = static_cast<size_t>(d_ntx) * d_nrx * cidx;
+        Eigen::Map<CMatrixXr> H(&d_chan_est[base], d_ntx, d_nrx);  // maps 4×2 at runtime
+
+        H.block<2,2>(0,0) = H1;
+        H.block<2,2>(2,0) = H2;
 
         // remove cyclic shift
         if (d_remove_cyclic_shift)

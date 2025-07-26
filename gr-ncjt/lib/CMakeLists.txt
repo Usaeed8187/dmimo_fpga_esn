@@ -61,6 +61,13 @@ find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(OpenMP REQUIRED)  # Added OpenMP
 
 add_library(gnuradio-ncjt SHARED ${ncjt_sources})
+
+target_compile_definitions(gnuradio-ncjt
+  PRIVATE
+    EIGEN_NO_DEBUG    # disable runtime assertions
+    EIGEN_NO_STATIC_ASSERT  # convert static asserts to runtime (optional)
+)
+
 target_link_libraries(gnuradio-ncjt PUBLIC
 	gnuradio-filter
 	gnuradio-fft
