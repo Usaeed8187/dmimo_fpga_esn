@@ -43,7 +43,7 @@ ofdm_mod_impl::ofdm_mod_impl(int rgmode, int cplen, int ntx, float scaling)
     d_symlen = d_fftsize + d_cplen;
 
     if (scaling <= 0 || scaling > 1.0)
-        throw std::runtime_error("invalid number of preamble symbols for training specified");
+        throw std::runtime_error("invalid output scaling specified");
 
     d_ifft = new fft::fft_complex_rev(d_fftsize, 1);
 
