@@ -4,12 +4,19 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.video_sink(${framelen}, ${debug})
+  make: ncjt.video_sink(${framelen}, ${byteinput}, ${debug})
 
 parameters:
   - id: framelen
     label: Frame Length
     dtype: int
+  - id: byteinput
+    label: Byte Input
+    dtype: bool
+    default: 'True'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
   - id: debug
     label: Debug
     dtype: bool

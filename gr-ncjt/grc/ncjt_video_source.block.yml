@@ -4,12 +4,19 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.video_source(${framelen}, ${debug})
+  make: ncjt.video_source(${framelen}, ${byteoutput}, ${debug})
 
 parameters:
   - id: framelen
     label: Frame Length
     dtype: int
+  - id: byteoutput
+    label: Byte Output
+    dtype: bool
+    default: 'True'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
   - id: debug
     label: Debug
     dtype: bool
@@ -23,6 +30,9 @@ inputs:
     domain: stream
     dtype: byte
     multiplicity: '1'
+  - label: pdus
+    domain: message
+    optional: true
 
 outputs:
   - label: out

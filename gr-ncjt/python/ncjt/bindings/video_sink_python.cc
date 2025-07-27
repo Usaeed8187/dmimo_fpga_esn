@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(video_sink.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(8297a07e95e8a8fd821a391df0d7021c) */
+/* BINDTOOL_HEADER_FILE_HASH(31091c30a7aa8ff7f048d7012482be78) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,7 +37,7 @@ void bind_video_sink(py::module &m) {
              std::shared_ptr<video_sink>>(m, "video_sink", D(video_sink))
 
       .def(py::init(&video_sink::make), py::arg("framelen"),
-           py::arg("debug") = false, D(video_sink, make))
+           py::arg("byteinput"), py::arg("debug") = false, D(video_sink, make))
 
       ;
 }

@@ -7,8 +7,8 @@
 #ifndef INCLUDED_NCJT_VIDEO_SOURCE_H
 #define INCLUDED_NCJT_VIDEO_SOURCE_H
 
-#include <gnuradio/block.h>
 #include <gnuradio/ncjt/api.h>
+#include <gnuradio/tagged_stream_block.h>
 
 namespace gr::ncjt
 {
@@ -18,7 +18,7 @@ namespace gr::ncjt
  * \ingroup ncjt
  *
  */
-class NCJT_API video_source : virtual public gr::block
+class NCJT_API video_source : virtual public gr::tagged_stream_block
 {
 public:
     typedef std::shared_ptr<video_source> sptr;
@@ -32,7 +32,7 @@ public:
      * creating new instances.
      */
     static sptr
-    make(int framelen, bool debug);
+    make(int framelen, bool byteoutput, bool debug = false);
 };
 
 } // namespace gr::ncjt

@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(video_source.h) */
-/* BINDTOOL_HEADER_FILE_HASH(95d4e256f78aff8c6237cda1ca4cca12) */
+/* BINDTOOL_HEADER_FILE_HASH(2ec2da3e777904198ebccc6212c2f295) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -33,10 +33,11 @@ void bind_video_source(py::module &m) {
 
   using video_source = ::gr::ncjt::video_source;
 
-  py::class_<video_source, gr::block, gr::basic_block,
+  py::class_<video_source, gr::tagged_stream_block, gr::block, gr::basic_block,
              std::shared_ptr<video_source>>(m, "video_source", D(video_source))
 
-      .def(py::init(&video_source::make), py::arg("framelen"), py::arg("debug"),
+      .def(py::init(&video_source::make), py::arg("framelen"),
+           py::arg("byteoutput"), py::arg("debug") = false,
            D(video_source, make))
 
       ;

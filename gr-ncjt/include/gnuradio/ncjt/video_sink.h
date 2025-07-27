@@ -1,8 +1,7 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2025 gr-ncjt author.
+ * Copyright 2025 Wireless @ Virginia Tech.
  *
- * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #ifndef INCLUDED_NCJT_VIDEO_SINK_H
@@ -11,16 +10,18 @@
 #include <gnuradio/ncjt/api.h>
 #include <gnuradio/tagged_stream_block.h>
 
-namespace gr::ncjt {
+namespace gr::ncjt
+{
 
 /*!
  * \brief <+description of block+>
  * \ingroup ncjt
  *
  */
-class NCJT_API video_sink : virtual public gr::tagged_stream_block {
+class NCJT_API video_sink : virtual public gr::tagged_stream_block
+{
 public:
-  typedef std::shared_ptr<video_sink> sptr;
+    typedef std::shared_ptr<video_sink> sptr;
 
     /*!
      * \brief Return a shared_ptr to a new instance of ncjt::video_sink.
@@ -30,7 +31,8 @@ public:
      * class. ncjt::video_sink::make is the public interface for
      * creating new instances.
      */
-  static sptr make(int framelen, bool debug = false);
+    static sptr
+    make(int framelen, bool byteinput, bool debug = false);
 };
 
 } // namespace gr::ncjt
