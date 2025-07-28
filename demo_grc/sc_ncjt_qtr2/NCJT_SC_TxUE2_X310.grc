@@ -73,7 +73,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: sd_num*num_data_syms_p1r*qam_order
+    value: sd_num*num_data_syms_p1r*qam_order_p1r
   states:
     bus_sink: false
     bus_source: false
@@ -85,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: sd_num*num_data_syms_p2*qam_order
+    value: sd_num*num_data_syms_p2*qam_order_p2
   states:
     bus_sink: false
     bus_source: false
@@ -102,7 +102,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 12.0]
+    coordinate: [1440, 12.0]
     rotation: 0
     state: enabled
 - name: ntx
@@ -222,7 +222,31 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 12.0]
+    coordinate: [720, 84.0]
+    rotation: 0
+    state: true
+- name: qam_order_p1r
+  id: variable
+  parameters:
+    comment: ''
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [728, 148.0]
+    rotation: 0
+    state: true
+- name: qam_order_p2
+  id: variable
+  parameters:
+    comment: ''
+    value: '6'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [728, 212.0]
     rotation: 0
     state: true
 - name: qam_type
@@ -235,6 +259,30 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1144, 12.0]
+    rotation: 0
+    state: enabled
+- name: qam_type_p1r
+  id: variable
+  parameters:
+    comment: ''
+    value: modulations[qam_order_p1r]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1232, 12.0]
+    rotation: 0
+    state: enabled
+- name: qam_type_p2
+  id: variable
+  parameters:
+    comment: ''
+    value: modulations[qam_order_p2]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1336, 12.0]
     rotation: 0
     state: enabled
 - name: rf_freq
@@ -354,7 +402,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '18'
     widget: counter_slider
   states:
     bus_sink: false
@@ -382,7 +430,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../../data/sc_ncjt_he/1t1s/" + qam_type + "/strm_data.bin"'
+    file: '"../../data/sc_ncjt_he/1t1s/" + qam_type_p1r + "/strm_data.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -428,7 +476,7 @@ blocks:
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '65536'
-    packet_len: frame_data_len_p2
+    packet_len: frame_data_len_p1r
     type: byte
     vlen: '1'
   states:
@@ -466,7 +514,7 @@ blocks:
     affinity: '6'
     alias: ''
     comment: ''
-    ctrl_datalen: 4*num_ctrl_syms*sd_num
+    ctrl_datalen: 4*num_ctrl_syms_p2*sd_num
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -533,7 +581,7 @@ blocks:
     affinity: '15'
     alias: ''
     autostart: 'False'
-    beaconfile1: '"../../data/mu_mimo_he/2t2s/" + qam_type + "/preamble_noltfx.bin"'
+    beaconfile1: '"../../data/mu_mimo_he/2t2s/" + qam_type_p1r + "/preamble_noltfx.bin"'
     beaconfile2: '"../../data/sc_ncjt_he/1t1s/" + qam_type + "/ncjt_preamble_nolltf.bin"'
     comment: ''
     debug: 'False'
@@ -768,7 +816,7 @@ blocks:
     alias: ''
     comment: ''
     ctrlmodtype: '4'
-    datamodtype: qam_order
+    datamodtype: qam_order_p2
     debug: 'False'
     framelen: frame_data_len_p2
     ltfdata: ''
@@ -798,10 +846,10 @@ blocks:
     alias: ''
     comment: ''
     ctrlmodtype: '4'
-    datamodtype: qam_order
+    datamodtype: qam_order_p1r
     debug: 'False'
     framelen: frame_data_len_p1r
-    ltfdata: '"../../data/mu_mimo_he/2t2s/" + qam_type + "/ltf2x2_t2.bin"'
+    ltfdata: '"../../data/mu_mimo_he/2t2s/" + qam_type_p1r + "/ltf2x2_t2.bin"'
     maxoutbuf: '0'
     minoutbuf: '32768'
     mucpt: 'True'
@@ -1177,8 +1225,8 @@ blocks:
     marker9: '-1'
     name: '""'
     nconnections: '1'
-    size: '40'
-    srate: '4'
+    size: '50'
+    srate: '50'
     stemplot: 'False'
     style1: '1'
     style10: '1'

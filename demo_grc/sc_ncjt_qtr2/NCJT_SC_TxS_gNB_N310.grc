@@ -61,7 +61,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: sd_num*num_data_syms_p1*qam_order
+    value: sd_num*num_data_syms_p1*qam_order_p1
   states:
     bus_sink: false
     bus_source: false
@@ -73,7 +73,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: sd_num*num_data_syms_p1r*qam_order
+    value: sd_num*num_data_syms_p1r*qam_order_p1r
   states:
     bus_sink: false
     bus_source: false
@@ -90,7 +90,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 12.0]
+    coordinate: [1456, 12.0]
     rotation: 0
     state: enabled
 - name: num_ctrl_syms_p1
@@ -177,6 +177,30 @@ blocks:
     coordinate: [624, 12.0]
     rotation: 0
     state: enabled
+- name: qam_order_p1
+  id: variable
+  parameters:
+    comment: ''
+    value: '6'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [720, 92.0]
+    rotation: 0
+    state: true
+- name: qam_order_p1r
+  id: variable
+  parameters:
+    comment: ''
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [712, 172.0]
+    rotation: 0
+    state: true
 - name: qam_type
   id: variable
   parameters:
@@ -187,6 +211,30 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1144, 12.0]
+    rotation: 0
+    state: enabled
+- name: qam_type_p1
+  id: variable
+  parameters:
+    comment: ''
+    value: modulations[qam_order_p1]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1240, 12.0]
+    rotation: 0
+    state: enabled
+- name: qam_type_p1r
+  id: variable
+  parameters:
+    comment: ''
+    value: modulations[qam_order_p1r]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1344, 12.0]
     rotation: 0
     state: enabled
 - name: rf_freq
@@ -291,7 +339,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 172.0]
+    coordinate: [912, 140.0]
     rotation: 0
     state: enabled
 - name: tx_gain
@@ -334,7 +382,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data_s1.bin"'
+    file: '"../../data/mc_ncjt_he/2t2s/" + qam_type_p1 + "/strm_data_s1.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -356,7 +404,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/strm_data_s2.bin"'
+    file: '"../../data/mc_ncjt_he/2t2s/" + qam_type_p1 + "/strm_data_s2.bin"'
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -487,8 +535,8 @@ blocks:
     alias: ''
     comment: ''
     debug: 'False'
-    hwdelayp2: '810'
-    hwdelayp3: '810'
+    hwdelayp2: '820'
+    hwdelayp3: '820'
     maxcorrlen: '2000'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -692,7 +740,7 @@ blocks:
     avgwindow: '10'
     comment: ''
     debug: 'True'
-    filename: '"../../data/sc_ncjt_he/1t1s/" + qam_type + "/strm_data_2x.bin"'
+    filename: '"../../data/sc_ncjt_he/1t1s/" + qam_type_p1r + "/strm_data_2x.bin"'
     logfreq: '50'
     logpkterr: 'False'
     maxoutbuf: '0'
@@ -713,7 +761,7 @@ blocks:
     alias: ''
     comment: ''
     ctrlmodtype: '4'
-    datamodtype: qam_order
+    datamodtype: qam_order_p1r
     debug: 'False'
     framelen: frame_data_len_p1r * 2
     maxoutbuf: '0'
@@ -741,7 +789,7 @@ blocks:
     alias: ''
     comment: ''
     ctrlmodtype: '4'
-    datamodtype: qam_order
+    datamodtype: qam_order_p1
     debug: 'False'
     framelen: frame_data_len_p1
     ltfdata: ''
@@ -771,7 +819,7 @@ blocks:
     alias: ''
     comment: ''
     ctrlmodtype: '4'
-    datamodtype: qam_order
+    datamodtype: qam_order_p1
     debug: 'False'
     framelen: frame_data_len_p1
     ltfdata: ''
@@ -898,7 +946,7 @@ blocks:
     comment: ''
     debug: 'False'
     delay: '0'
-    filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type + "/ncjt_v2preamble.bin"'
+    filename: '"../../data/mc_ncjt_he/2t2s/" + qam_type_p1 + "/ncjt_v2preamble.bin"'
     frmdatalen: tx_frame_len_p1
     fs: samp_rate
     maxoutbuf: '0'
@@ -1153,8 +1201,8 @@ blocks:
     marker9: '-1'
     name: '""'
     nconnections: '1'
-    size: '40'
-    srate: '4'
+    size: '50'
+    srate: '50'
     stemplot: 'False'
     style1: '1'
     style10: '1'
@@ -1173,7 +1221,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: float
-    update_time: '10'
+    update_time: '1'
     width1: '2'
     width10: '1'
     width2: '2'
