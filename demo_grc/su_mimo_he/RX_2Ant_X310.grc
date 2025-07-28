@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '16'
+    value: '64'
   states:
     bus_sink: false
     bus_source: false
@@ -54,7 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [888, 100.0]
+    coordinate: [888, 92.0]
     rotation: 0
     state: enabled
 - name: frame_data_len
@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '40'
+    value: '14'
   states:
     bus_sink: false
     bus_source: false
@@ -121,7 +121,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '50'
   states:
     bus_sink: false
     bus_source: false
@@ -133,7 +133,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '6'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -174,14 +174,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 100.0]
+    coordinate: [968, 92.0]
     rotation: 0
     state: enabled
 - name: rg_mode
   id: variable
   parameters:
     comment: ''
-    value: '0'
+    value: '2'
   states:
     bus_sink: false
     bus_source: false
@@ -226,7 +226,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '52'
+    value: '234'
   states:
     bus_sink: false
     bus_source: false
@@ -372,13 +372,13 @@ blocks:
     avgwindow: '10'
     comment: ''
     debug: 'True'
-    filename: '"../../data/su_mimo/2t2s/" + qam_type + "/strm_data.bin"'
+    filename: '"../../data/su_mimo_he/2t2s/" + qam_type + "/strm_data.bin"'
     logfreq: '50'
     logpkterr: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrms: '2'
-    shortterm: 'False'
+    shortterm: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -438,7 +438,7 @@ blocks:
     p3rx: 'False'
     p3start: '0'
     pktspersec: pkts_per_sec
-    preamblelen: (fft_size+cp_len)*3
+    preamblelen: (fft_size+cp_len)
     rxpwrthrd: 1e-3
     samplerate: samp_rate
     xcorrthrd: '0.5'
@@ -723,7 +723,7 @@ blocks:
     name: '""'
     nconnections: '1'
     size: '40'
-    srate: '4'
+    srate: '40'
     stemplot: 'False'
     style1: '1'
     style10: '1'
@@ -742,7 +742,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: float
-    update_time: '10'
+    update_time: '1'
     width1: '2'
     width10: '1'
     width2: '2'
@@ -866,7 +866,7 @@ blocks:
     center_freq8: '0'
     center_freq9: '0'
     clock_rate: 184.32e6
-    clock_source0: ''
+    clock_source0: external
     clock_source1: ''
     clock_source2: ''
     clock_source3: ''
@@ -1197,7 +1197,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [48, 300.0]
+    coordinate: [48, 292.0]
     rotation: 0
     state: enabled
 
