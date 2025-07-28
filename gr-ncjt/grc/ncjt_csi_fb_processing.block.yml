@@ -1,0 +1,80 @@
+id: ncjt_csi_fb_processing
+label: CSI Feedback Processing
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.csi_fb_processing(${num_ue}, ${rx_modtype}, ${nss}, ${ntx_gnb}, ${wideband}, ${nrb}, ${pmi_bits}, ${cqi_bits}, ${crc_bits}, ${total_csi_bits}, ${polar_code_rate}, ${debug})
+
+parameters:
+  - id: num_ue
+    label: Number of TX Squad UEs
+    dtype: int
+    default: 2
+  - id: rx_modtype
+    label: Modulation Order (CSI FB)
+    dtype: int
+    default: 2
+  - id: nss
+    label: Number of Streams
+    dtype: int
+    default: 2
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+  - id: ntx_gnb
+    label: Number of gNB Antennas
+    dtype: int
+    default: 4
+    options: [2, 4, 6, 8 ]
+  - id: wideband
+    label: Wideband Precoding
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    hide: part
+  - id: nrb
+    label: Number of RBs (Currently only WB)
+    dtype: int
+    default: 1
+    hide: part
+  - id: pmi_bits
+    label: PMI Bits
+    dtype: int
+    default: 0
+  - id: cqi_bits
+    label: CQI Bits
+    dtype: int
+    default: 0
+  - id: crc_bits
+    label: CRC Bits
+    dtype: int
+    default: 0
+  - id: total_csi_bits
+    label: Total CSI Bits
+    dtype: int
+    default: 0
+    hide: part
+  - id: polar_code_rate
+    label: Polar Code Rate
+    dtype: real
+    default: 0.5
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: byte
+    multiplicity: ${num_ue}
+    
+outputs:
+  - label: pmi
+    domain: message
+  - label: cqi
+    domain: message
+
+file_format: 1

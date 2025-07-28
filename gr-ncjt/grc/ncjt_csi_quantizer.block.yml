@@ -1,0 +1,66 @@
+id: ncjt_csi_quantizer
+label: CSI Quantizer
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.csi_quantizer(${fftsize}, ${ntx}, ${nrx}, ${nss}, ${rbg_size}, ${n_ofdm_syms_fb}, ${logfreq}, ${debug})
+
+parameters:
+  - id: fftsize
+    label: FFT Size
+    dtype: int
+    default: '64'
+    hide: part
+  - id: ntx
+    label: Num Tx Antennas
+    dtype: int
+    default: '2'
+  - id: nrx
+    label: Num Rx Antennas
+    dtype: int
+    default: '2'
+  - id: nss
+    label: Num Spatial Streams
+    dtype: int
+    default: '1'
+  - id: rbg_size
+    label: RBG Size
+    dtype: int
+    default: '12'
+  - id: n_ofdm_syms_fb
+    label: OFDM Symbols for CSI FB
+    dtype: int
+  - id: logfreq
+    label: Log Frequency
+    dtype: int
+    default: '50'
+    hide: part
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: ['True', 'False']
+    option_labels: [Enable, Disable]
+    hide: part
+
+inputs:
+  - label: csi
+    domain: message
+    optional: true
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: byte
+  - label: csi_bits
+    domain: message
+    optional: true
+
+asserts:
+  - ${ fftsize == 64 or fftsize == 256 }
+  - ${ ntx <= 8 and nrx <= 8 }
+  - ${ nss <= ntx and nss <= nrx }
+  - ${ rbg_size > 0 }
+
+file_format: 1

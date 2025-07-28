@@ -36,4 +36,7 @@ install(FILES
     ncjt_knobs.block.yml
     ncjt_remapper_muxer.block.yml
     ncjt_pdc.block.yml
-    ncjt_skip_data.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_skip_data.block.yml
+    ncjt_csi_quantizer.block.yml
+    ncjt_csi_fb_processing.block.yml
+    ncjt_p1_precoding.block.yml DESTINATION share/gnuradio/grc/blocks)

@@ -47,7 +47,10 @@ list(APPEND ncjt_sources
     demapper_impl.cc
     remapper_muxer_impl.cc
     pdc_impl.cc
-    skip_data_impl.cc)
+    skip_data_impl.cc
+    csi_quantizer_impl.cc
+    csi_fb_processing_impl.cc
+    p1_precoding_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"
@@ -71,7 +74,7 @@ target_compile_definitions(gnuradio-ncjt
 target_link_libraries(gnuradio-ncjt PUBLIC
 	gnuradio-filter
 	gnuradio-fft
-    gnuradio-fec
+	gnuradio-fec
 	Eigen3::Eigen)
 
 target_link_libraries(gnuradio-ncjt PRIVATE

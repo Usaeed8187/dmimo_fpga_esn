@@ -1,0 +1,83 @@
+id: ncjt_p1_precoding
+label: Phase 1 Precoding
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.p1_precoding(${num_ue}, ${nss}, ${ntx_gnb}, ${num_iter}, ${numltfsyms}, ${numdatasyms}, ${wideband}, ${nfft}, ${num_sc}, ${logfreq}, ${debug})
+
+parameters:
+  - id: num_ue
+    label: Number of TX Squad UEs
+    dtype: int
+    default: 2
+  - id: nss
+    label: Number of Streams
+    dtype: int
+    default: 2
+    options: [ 1, 2]
+  - id: ntx_gnb
+    label: Number of gNB Antennas
+    dtype: int
+    default: 4
+    hide: part
+  - id: num_iter
+    label: Number of Algorithm Iterations
+    dtype: int
+    default: 3
+  - id: numltfsyms
+    label: LTF Symbols
+    dtype: int
+    default: 9
+  - id: numdatasyms
+    label: Data Symbols
+    dtype: int
+    default: 40
+  - id: wideband
+    label: Wideband Precoding
+    dtype: bool
+    default: 'True'
+    options: [ 'True', 'False' ]
+    hide: part
+  - id: nfft
+    label: FFT Size
+    dtype: int
+    default: 64
+    hide: part
+  - id: num_sc
+    label: Number of Used Subcarriers
+    dtype: int
+    default: 56
+    hide: part
+  - id: logfreq
+    label: Log Frequency
+    dtype: int
+    default: 50
+    hide: part
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+    
+inputs:
+  - label: pmi
+    domain: message
+    optional: true
+  - label: cqi
+    domain: message
+    optional: true
+  - label: in
+    domain: stream
+    dtype: complex
+    multiplicity: ${nss}
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    multiplicity: ${ntx_gnb}
+
+file_format: 1

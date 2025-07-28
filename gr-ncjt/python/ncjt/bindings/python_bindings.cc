@@ -50,6 +50,9 @@ namespace py = pybind11;
     void bind_pdc(py::module& m);
     void bind_skip_data(py::module& m);
     void bind_rg_modes(py::module& m);
+    void bind_csi_quantizer(py::module& m);
+    void bind_csi_fb_processing(py::module& m);
+    void bind_p1_precoding(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 // We need this hack because import_array() returns NULL
@@ -106,5 +109,8 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_pdc(m);
     bind_skip_data(m);
     bind_rg_modes(m);
+    bind_csi_quantizer(m);
+    bind_csi_fb_processing(m);
+    bind_p1_precoding(m);
     // ) END BINDING_FUNCTION_CALLS
 }

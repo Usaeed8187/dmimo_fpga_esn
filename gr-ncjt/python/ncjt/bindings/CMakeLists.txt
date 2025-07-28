@@ -52,8 +52,10 @@ list(APPEND ncjt_python_files
     remapper_muxer_python.cc
     rg_modes_python.cc
     pdc_python.cc
-    skip_data_python.cc 
-    python_bindings.cc)
+    skip_data_python.cc
+    csi_quantizer_python.cc
+    csi_fb_processing_python.cc
+    p1_precoding_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(ncjt ../../.. gr::ncjt "${ncjt_python_files}")
 
