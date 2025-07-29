@@ -830,7 +830,7 @@ blocks:
     comment: ''
     dark: 'False'
     debug: 'False'
-    frame_per_sec: '20'
+    frame_per_sec: pkts_per_sec
     gui_hint: (6, 0, 1, 4)
     logfreq: '5'
     row_height: '300'
@@ -857,7 +857,7 @@ blocks:
     comment: ''
     dark: 'False'
     debug: 'False'
-    frame_per_sec: '20'
+    frame_per_sec: pkts_per_sec
     gui_hint: (4, 0, 1, 4)
     logfreq: '5'
     row_height: '300'
@@ -884,7 +884,7 @@ blocks:
     comment: ''
     dark: 'False'
     debug: 'False'
-    frame_per_sec: '20'
+    frame_per_sec: pkts_per_sec
     gui_hint: (5, 0, 1, 4)
     logfreq: '5'
     row_height: '300'
@@ -911,7 +911,7 @@ blocks:
     comment: ''
     dark: 'True'
     debug: 'False'
-    frame_per_sec: '20'
+    frame_per_sec: pkts_per_sec
     gui_hint: (2, 0, 1, 4)
     logfreq: '5'
     row_height: '300'
@@ -938,7 +938,7 @@ blocks:
     comment: ''
     dark: 'True'
     debug: 'False'
-    frame_per_sec: '20'
+    frame_per_sec: pkts_per_sec
     gui_hint: (3, 0, 1, 4)
     logfreq: '5'
     row_height: '300'
@@ -965,7 +965,7 @@ blocks:
     comment: ''
     dark: 'False'
     debug: 'False'
-    frame_per_sec: '20'
+    frame_per_sec: pkts_per_sec
     gui_hint: (7, 0, 1, 4)
     logfreq: '5'
     row_height: '300'
