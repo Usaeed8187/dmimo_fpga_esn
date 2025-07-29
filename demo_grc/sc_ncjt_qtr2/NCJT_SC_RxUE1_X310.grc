@@ -333,7 +333,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '18'
+    value: '20'
     widget: counter_slider
   states:
     bus_sink: false
@@ -540,7 +540,7 @@ blocks:
     alias: ''
     comment: ''
     csi_fb: 'True'
-    debug: 'True'
+    debug: 'False'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '32768'

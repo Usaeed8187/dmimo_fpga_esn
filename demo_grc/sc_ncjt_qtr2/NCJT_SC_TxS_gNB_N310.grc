@@ -501,7 +501,7 @@ blocks:
     comment: ''
     cqi_bits: '8'
     crc_bits: '10'
-    debug: 'True'
+    debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
     nrb: '1'
@@ -772,7 +772,7 @@ blocks:
     bus_structure: null
     coordinate: [1368, 352.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_rg_demapper_0_0_0
   id: ncjt_rg_demapper
   parameters:
@@ -1221,7 +1221,7 @@ blocks:
     bus_structure: null
     coordinate: [1480, 364.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:

@@ -540,7 +540,7 @@ blocks:
     alias: ''
     comment: ''
     csi_fb: 'True'
-    debug: 'True'
+    debug: 'False'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '32768'
