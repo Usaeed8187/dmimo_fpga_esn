@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: ncjt_demo_txs_gnb_n310
+    id: ncjt_demo_txs_gnb_n32x
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -54,7 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 756.0]
+    coordinate: [864, 764.0]
     rotation: 0
     state: enabled
 - name: fft_size
@@ -97,48 +97,48 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '3'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 756.0]
+    coordinate: [760, 764.0]
     rotation: 0
     state: enabled
 - name: init_phase1_bits_per_sym
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [208, 756.0]
+    coordinate: [280, 764.0]
     rotation: 0
     state: enabled
 - name: init_phase2_bits_per_sym
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 756.0]
+    coordinate: [440, 764.0]
     rotation: 0
     state: enabled
 - name: init_phase3_bits_per_sym
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '8'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 756.0]
+    coordinate: [600, 764.0]
     rotation: 0
     state: enabled
 - name: modulations
@@ -157,31 +157,31 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '0'
+    value: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [456, 92.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: num_ctrl_syms_p1r
   id: variable
   parameters:
     comment: ''
-    value: '0'
+    value: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [440, 172.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: num_data_syms_p1
   id: variable
   parameters:
     comment: ''
-    value: ncjt.RG_NUM_OFDM_SYM[rg_mode]
+    value: '14'
   states:
     bus_sink: false
     bus_source: false
@@ -193,7 +193,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: ncjt.RG_NUM_OFDM_SYM[rg_mode]
+    value: '14'
   states:
     bus_sink: false
     bus_source: false
@@ -217,7 +217,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '50'
+    value: '20'
   states:
     bus_sink: false
     bus_source: false
@@ -322,7 +322,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: ncjt.RG_NUM_DATA_SC[rg_mode]
+    value: '234'
   states:
     bus_sink: false
     bus_source: false
@@ -351,7 +351,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 172.0]
+    coordinate: [720, 92.0]
     rotation: 0
     state: enabled
 - name: tx_gain
@@ -384,7 +384,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 124.0]
+    coordinate: [8, 116.0]
     rotation: 0
     state: enabled
 - name: ncjt_demapper_1
@@ -403,7 +403,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1264, 328.0]
+    coordinate: [1272, 312.0]
     rotation: 0
     state: enabled
 - name: ncjt_demapper_1_0
@@ -422,7 +422,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1264, 432.0]
+    coordinate: [1272, 408.0]
     rotation: 0
     state: enabled
 - name: ncjt_err_stats_0
@@ -449,7 +449,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1536, 164.0]
+    coordinate: [1544, 140.0]
     rotation: 0
     state: enabled
 - name: ncjt_err_stats_1
@@ -476,7 +476,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1536, 380.0]
+    coordinate: [1544, 364.0]
     rotation: 0
     state: enabled
 - name: ncjt_gnb_sync_0
@@ -531,7 +531,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 932.0]
+    coordinate: [80, 948.0]
     rotation: 0
     state: enabled
 - name: ncjt_mapper_muxer_0_0
@@ -539,22 +539,22 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    code_rate: init_code_rate
+    code_rate: '0'
     comment: ''
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
     minoutbuf: '0'
-    nstrm: '1'
-    phase1_modtype: init_phase1_bits_per_sym
-    phase2_modtype: init_phase2_bits_per_sym
-    phase3_modtype: init_phase3_bits_per_sym
+    nstrm: '2'
+    phase1_modtype: '2'
+    phase2_modtype: '2'
+    phase3_modtype: '2'
     rgmode: rg_mode
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 940.0]
+    coordinate: [440, 956.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0
@@ -670,7 +670,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1128, 860.0]
+    coordinate: [1120, 852.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0
@@ -689,7 +689,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1128, 932.0]
+    coordinate: [1120, 924.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0_0
@@ -708,7 +708,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1128, 1012.0]
+    coordinate: [1120, 1004.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0_0_1
@@ -727,7 +727,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1128, 1092.0]
+    coordinate: [1120, 1084.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_demapper_0_0_0
@@ -747,7 +747,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1056, 316.0]
+    coordinate: [1064, 300.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_demapper_0_0_0_0
@@ -767,7 +767,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1056, 420.0]
+    coordinate: [1064, 396.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_1_1
@@ -783,15 +783,15 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     mucpt: 'False'
-    nstrm: '1'
+    nstrm: '2'
     numue: '2'
-    rgmode: rg_mode
+    rgmode: '0'
     ueidx: '-1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 964.0]
+    coordinate: [696, 976.0]
     rotation: 0
     state: enabled
 - name: ncjt_sic_detect_0
@@ -830,7 +830,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1024, 192.0]
+    coordinate: [1024, 232.0]
     rotation: 0
     state: enabled
 - name: ncjt_skip_data_0_1_1
@@ -848,7 +848,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 600.0]
+    coordinate: [1040, 544.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
@@ -868,7 +868,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 896.0]
+    coordinate: [936, 888.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0_0
@@ -888,7 +888,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 1040.0]
+    coordinate: [936, 1032.0]
     rotation: 0
     state: enabled
 - name: ncjt_tx_frm_ctrl_0
@@ -913,7 +913,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1320, 872.0]
+    coordinate: [1312, 864.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0
@@ -1005,7 +1005,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1144, 172.0]
+    coordinate: [1144, 212.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_0
@@ -1097,7 +1097,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1152, 580.0]
+    coordinate: [1160, 524.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -1374,7 +1374,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1568, 724.0]
+    coordinate: [1512, 700.0]
     rotation: 0
     state: true
 - name: uhd_usrp_source_0
@@ -1810,7 +1810,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 228.0]
+    coordinate: [16, 220.0]
     rotation: 0
     state: enabled
 
@@ -1842,7 +1842,7 @@ connections:
 - [ncjt_rg_demapper_0_0_0_0, '0', ncjt_demapper_1_0, '0']
 - [ncjt_rg_demapper_0_0_0_0, '1', ncjt_demapper_1_0, '1']
 - [ncjt_rg_mapper_1_1, '0', ncjt_stbc_encode_0, '0']
-- [ncjt_rg_mapper_1_1, '0', ncjt_stbc_encode_0_0, '0']
+- [ncjt_rg_mapper_1_1, '1', ncjt_stbc_encode_0_0, '0']
 - [ncjt_sic_detect_0, '0', ncjt_rg_demapper_0_0_0, '0']
 - [ncjt_sic_detect_0, '0', ncjt_skip_data_0_1_0_0, '0']
 - [ncjt_sic_detect_0, '1', ncjt_rg_demapper_0_0_0_0, '0']
