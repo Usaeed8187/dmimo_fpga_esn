@@ -85,6 +85,10 @@ end
 ltf2x2 = reshape(ltf2x2, [], 2);
 write_complex_binary(ltf2x2, ...
     sprintf('%s/%s/%s/ltf2x2.bin',datadir,mimotype,modtype));
+write_complex_binary(ltf2x2(:,1), ...
+    sprintf('%s/%s/%s/ltf2x2_t1.bin',datadir,mimotype,modtype));
+write_complex_binary(ltf2x2(:,2), ...
+    sprintf('%s/%s/%s/ltf2x2_t2.bin',datadir,mimotype,modtype));
 
 % Save LTF for debugging
 write_complex_binary(scaling*bx.heltfx, ...
@@ -97,6 +101,13 @@ fclose(fid);
 
 fid = fopen(sprintf('%s/%s/%s/strm_data.bin',datadir,mimotype,modtype),'wb');
 fwrite(fid, strmdata(:), "char");
+fclose(fid);
+
+fid = fopen(sprintf('%s/%s/%s/strm_data_s1.bin',datadir,mimotype,modtype),'wb');
+fwrite(fid, strmdata(:, 1), "char");
+fclose(fid);
+fid = fopen(sprintf('%s/%s/%s/strm_data_s2.bin',datadir,mimotype,modtype),'wb');
+fwrite(fid, strmdata(:, 2), "char");
 fclose(fid);
 
 fid = fopen(sprintf('%s/%s/%s/tx_strm_data.bin',datadir,mimotype,modtype),'wb');

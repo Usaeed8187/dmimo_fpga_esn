@@ -11,6 +11,7 @@ cmake-build-debug/
 .DS_Store
 .vscode/
 __pycache__
+*.mat
 *.png
 *.jpg
 *~
