@@ -111,8 +111,10 @@ int csi_fb_processing_impl::work(int noutput_items, gr_vector_int &ninput_items,
 
         int nbytes = ninput_items[ch];
 
-        if (nbytes * d_rx_modtype < d_total_csi_bits)
+        if (nbytes * d_rx_modtype < d_total_csi_bits){
+            dout << "[CSI FB Processing] incorrect number of bytes input" << std::endl;
             return 0;
+        }
 
         const uint8_t* in = reinterpret_cast<const uint8_t*>(input_items[ch]);
 
