@@ -74,7 +74,9 @@ inputs:
 outputs:
   - label: pmi
     domain: message
+    optional: true
   - label: cqi
     domain: message
+    optional: true
 
 file_format: 1

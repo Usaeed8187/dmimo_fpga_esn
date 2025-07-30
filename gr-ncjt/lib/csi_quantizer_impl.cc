@@ -85,7 +85,7 @@ csi_quantizer_impl::csi_quantizer_impl(int fftsize,
     d_wb_cqi.resize(d_nss, 0);
 
     build_codebook();
-    d_exp_bits = d_ofdm_syms_fb * d_sdnum * d_modtype;
+    d_exp_bits = (d_ofdm_syms_fb * d_sdnum - 64) * d_modtype;
     std::mt19937                 gen{std::random_device{}()};
     std::uniform_int_distribution<int> bit{0,1};
     d_out_buff.resize(d_exp_bits);
