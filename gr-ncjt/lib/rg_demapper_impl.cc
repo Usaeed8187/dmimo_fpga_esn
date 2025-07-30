@@ -93,11 +93,41 @@ namespace gr
       }
       modtype_bits_to_index(d_modtype);
 
+      // NCJT_LOG(d_debug,
+      //           "\n\tphase=" << d_phase
+      //           << "\n\trgmode=" << d_rgmode
+      //           << "\n\tnstrm_param=" << d_nstrm_param
+      //           << "\n\tusecsi=" << d_usecsi);
+
+      // int max_output_items = (d_n_ofdm_syms * d_sd_num - 64) * d_nstrm_param;
+      // set_min_output_buffer(0, max_output_items); // Output port 0: demapped symbols
+      // set_min_output_buffer(1, max_output_items); // Output port 1: CSI
+
+      // NCJT_LOG(d_debug,
+      //         "Set minimum output buffer size to " << max_output_items
+      //         << " items for RG mode " << rgmode
+      //         << " with " << d_nstrm_param << " streams");
+
+      const size_t frame_syms =
+      static_cast<size_t>(d_nstrm_param) *
+      static_cast<size_t>(d_n_ofdm_syms * d_sd_num - 64);
+
+      /* Make sure we are only called with full–frame multiples          */
+      set_output_multiple(frame_syms);
+
+      /* Enlarge the buffers on both output ports so one frame fits       */
+      set_min_output_buffer(0, frame_syms);   // data
+      set_min_output_buffer(1, frame_syms);   // CSI (or 1 + 0 j if !usecsi)
+
       NCJT_LOG(d_debug,
-                "\n\tphase=" << d_phase
-                << "\n\trgmode=" << d_rgmode
-                << "\n\tnstrm_param=" << d_nstrm_param
-                << "\n\tusecsi=" << d_usecsi);
+                "rg_demapper_impl: phase=" << d_phase
+                << ", rgmode=" << d_rgmode
+                << ", nstrm_param=" << d_nstrm_param
+                << ", usecsi=" << d_usecsi
+                << ", sd_num=" << d_sd_num
+                << ", n_ofdm_syms=" << d_n_ofdm_syms
+                << ", fftsize=" << d_fftsize
+                << ", frame_syms=" << frame_syms);
 
       set_tag_propagation_policy(gr::block::TPP_DONT);
     }
@@ -108,30 +138,23 @@ namespace gr
     int rg_demapper_impl::calculate_output_stream_length(
         const gr_vector_int &ninput_items)
     {
-      int min_in = ninput_items[0];
-      for (int p = 0; p < d_nstrm_param; p++)
-      {
-        NCJT_LOG(d_debug, "ninput_items[" << p << "]=" << ninput_items[p]);
-        min_in = std::min(min_in, ninput_items[p]);
-      }
-
-      if (min_in < 64)
+      if (ninput_items[0] < 64)
       {
         throw std::runtime_error(
             "[rg_demapper] ERROR: input ports must have at least 64 items");
       }
+      for (int p = 1; p < d_nstrm_param; p++) {
+        if (ninput_items[p] != ninput_items[0]) {
+          throw std::runtime_error("[rg_demapper] ERROR: input ports must have same length");
+        }
+      }
 
-      int total_data_syms = d_nstrm_param * min_in;
-      if (total_data_syms >= 64)
-      {
-        total_data_syms -= 64;
-      }
-      if (total_data_syms < 0)
-      {
-        total_data_syms = 0;
-      }
-      NCJT_LOG(d_debug, "(" << cc << ")] min_in=" << min_in
-                << ", total_data_syms=" << total_data_syms);
+      int total_data_syms = (ninput_items[0] - 64) * d_nstrm_param;
+
+      NCJT_LOG(d_debug, "(" << cc << ")"
+                << "\n\tninput_items[0]=" << ninput_items[0]
+                << "\n\tnstrm_param=" << d_nstrm_param
+                << "\n\tTotal data symbols: " << total_data_syms);
       return total_data_syms;
     }
 
@@ -436,7 +459,7 @@ namespace gr
           break;
       }
       // Add packet_len tag on output ports
-      for (int p = 0; p < nports; p++)
+      for (int p = 0; p < 1; p++)
       {
         add_item_tag(p, nitems_written(p), pmt::string_to_symbol("packet_len"), pmt::from_long(out_syms), d_name);
       }

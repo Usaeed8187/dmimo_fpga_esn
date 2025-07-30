@@ -452,7 +452,7 @@ namespace gr
       if (d_deterministic_input)
       {
         // Recalculate how many *info bits* the mapper used
-        int frame_data_syms = d_last_pkt_len * d_last_nstrm;
+        int frame_data_syms = d_last_pkt_len;
         // int frame_data_bits_out = frame_data_syms * d_last_modtype;
         int frame_data_bits_phase2_out = frame_data_syms * d_last_modtype_phase2;
         double R = code_rates[d_last_coding_rate];
