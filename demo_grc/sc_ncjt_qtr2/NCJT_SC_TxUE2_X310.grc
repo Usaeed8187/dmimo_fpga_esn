@@ -309,7 +309,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '20'
+    value: '18'
     widget: counter_slider
   states:
     bus_sink: false
@@ -816,7 +816,7 @@ blocks:
     bus_structure: null
     coordinate: [1080, 200.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_skip_data_0_1_0_0
   id: ncjt_skip_data
   parameters:
@@ -834,7 +834,7 @@ blocks:
     bus_structure: null
     coordinate: [1080, 432.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_stbc_encode_0
   id: ncjt_stbc_encode
   parameters:
@@ -863,7 +863,7 @@ blocks:
     comment: ''
     csifile: ''
     debug: 'False'
-    eigenmode: 'False'
+    eigenmode: 'True'
     loadcsi: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -1880,10 +1880,11 @@ connections:
 - [ncjt_ltf_chanest_0, '0', ncjt_mimo_detect_0, '0']
 - [ncjt_ltf_chanest_0, '1', ncjt_mimo_detect_0, '1']
 - [ncjt_ltf_chanest_0, csi, ncjt_csi_quantizer_0, csi]
+- [ncjt_ltf_chanest_0, csi, ncjt_ul_precoding_0, csi]
 - [ncjt_mapper_muxer_0, '0', ncjt_rg_mapper_1, '0']
 - [ncjt_mimo_detect_0, '0', ncjt_rg_demapper_0, '0']
-- [ncjt_mimo_detect_0, '0', qtgui_const_sink_x_0_1_0, '0']
-- [ncjt_mimo_detect_0, '1', qtgui_const_sink_x_0_1_0_0, '0']
+- [ncjt_mimo_detect_0, '0', ncjt_skip_data_0_1_0, '0']
+- [ncjt_mimo_detect_0, '1', ncjt_skip_data_0_1_0_0, '0']
 - [ncjt_ofdm_demod_0, '0', ncjt_ltf_chanest_0, '0']
 - [ncjt_ofdm_demod_0_0, '0', ncjt_ltf_chanest_0, '1']
 - [ncjt_ofdm_mod_0, '0', ncjt_dual_tx_ctrl_0, '2']

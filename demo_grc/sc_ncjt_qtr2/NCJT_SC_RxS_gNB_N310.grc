@@ -308,7 +308,7 @@ blocks:
     rangeType: float
     start: '0'
     step: '1'
-    stop: '60'
+    stop: '65'
     value: '50'
     widget: counter_slider
   states:
@@ -401,7 +401,7 @@ blocks:
     rangeType: float
     start: '0'
     step: '1'
-    stop: '60'
+    stop: '75'
     value: '45'
     widget: counter_slider
   states:
@@ -1164,17 +1164,11 @@ blocks:
     affinity: '6'
     alias: ''
     comment: ''
-    ctrlmodtype: '4'
-    datamodtype: qam_order
     debug: 'False'
-    framelen: frame_data_len_p2
     maxoutbuf: '0'
-    mergestrm: 'True'
     minoutbuf: '32768'
-    nctrlsyms: num_ctrl_syms_p2
-    ndatasyms: num_data_syms_p2
-    npilotsyms: '0'
     nstrm: '1'
+    phase: '1'
     rgmode: rg_mode
     usecsi: 'True'
   states:
@@ -1190,17 +1184,11 @@ blocks:
     affinity: '10'
     alias: ''
     comment: ''
-    ctrlmodtype: '4'
-    datamodtype: qam_order
     debug: 'False'
-    framelen: frame_data_len_p3 * 2
     maxoutbuf: '0'
-    mergestrm: 'False'
     minoutbuf: '32768'
-    nctrlsyms: num_ctrl_syms_p3
-    ndatasyms: num_data_syms_p3
-    npilotsyms: '0'
     nstrm: '2'
+    phase: '1'
     rgmode: rg_mode
     usecsi: 'False'
   states:
@@ -1216,17 +1204,11 @@ blocks:
     affinity: '7'
     alias: ''
     comment: ''
-    ctrlmodtype: '4'
-    datamodtype: qam_order
     debug: 'False'
-    framelen: frame_data_len_p2
     maxoutbuf: '0'
-    mergestrm: 'True'
     minoutbuf: '32768'
-    nctrlsyms: num_ctrl_syms_p2
-    ndatasyms: num_data_syms_p2
-    npilotsyms: '0'
     nstrm: '1'
+    phase: '1'
     rgmode: rg_mode
     usecsi: 'True'
   states:
@@ -1242,17 +1224,11 @@ blocks:
     affinity: '13'
     alias: ''
     comment: ''
-    ctrlmodtype: '4'
-    datamodtype: qam_order
     debug: 'False'
-    framelen: frame_data_len
     maxoutbuf: '0'
-    mergestrm: 'False'
     minoutbuf: '0'
-    nctrlsyms: num_ctrl_syms
-    ndatasyms: num_data_syms
-    npilotsyms: '0'
     nstrm: '2'
+    phase: '1'
     rgmode: rg_mode
     usecsi: 'False'
   states:

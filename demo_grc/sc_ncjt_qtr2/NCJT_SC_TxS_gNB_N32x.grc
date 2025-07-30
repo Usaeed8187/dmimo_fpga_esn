@@ -85,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: sd_num*num_data_syms_p1r*qam_order_p1
+    value: sd_num*num_data_syms_p1r*qam_order_p1r
   states:
     bus_sink: false
     bus_source: false
@@ -150,7 +150,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1376, 12.0]
+    coordinate: [1352, 12.0]
     rotation: 0
     state: enabled
 - name: num_ctrl_syms_p1
@@ -270,7 +270,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1256, 12.0]
+    coordinate: [1248, 12.0]
     rotation: 0
     state: enabled
 - name: rf_freq
@@ -351,7 +351,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [624, 12.0]
+    coordinate: [616, 12.0]
     rotation: 0
     state: enabled
 - name: sd_num
@@ -423,6 +423,40 @@ blocks:
     coordinate: [16, 124.0]
     rotation: 0
     state: enabled
+- name: blocks_null_sink_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1464, 344.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_0_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1464, 448.0]
+    rotation: 0
+    state: enabled
 - name: ncjt_csi_fb_processing_0
   id: ncjt_csi_fb_processing
   parameters:
@@ -449,7 +483,7 @@ blocks:
     bus_structure: null
     coordinate: [840, 708.0]
     rotation: 180
-    state: enabled
+    state: disabled
 - name: ncjt_demapper_1
   id: ncjt_demapper
   parameters:
@@ -1890,8 +1924,10 @@ blocks:
 connections:
 - [ncjt_csi_fb_processing_0, cqi, ncjt_p1_precoding_0, cqi]
 - [ncjt_csi_fb_processing_0, pmi, ncjt_p1_precoding_0, pmi]
+- [ncjt_demapper_1, '0', blocks_null_sink_0, '0']
 - [ncjt_demapper_1, '0', ncjt_csi_fb_processing_0, '0']
 - [ncjt_demapper_1, '0', ncjt_err_stats_0, '0']
+- [ncjt_demapper_1_0, '0', blocks_null_sink_0_0, '0']
 - [ncjt_demapper_1_0, '0', ncjt_csi_fb_processing_0, '1']
 - [ncjt_demapper_1_0, '0', ncjt_err_stats_1, '0']
 - [ncjt_gnb_sync_0, '0', ncjt_ofdm_demod_0, '0']
