@@ -50,7 +50,8 @@ list(APPEND ncjt_sources
     skip_data_impl.cc
     csi_quantizer_impl.cc
     csi_fb_processing_impl.cc
-    p1_precoding_impl.cc)
+    p1_precoding_impl.cc
+    stream_mapper_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"

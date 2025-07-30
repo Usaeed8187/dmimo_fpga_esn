@@ -37,4 +37,5 @@ install(FILES api.h
     demapper.h
     remapper_muxer.h
     pdc.h
-    skip_data.h DESTINATION include/gnuradio/ncjt)
+    skip_data.h
+    stream_mapper.h DESTINATION include/gnuradio/ncjt)

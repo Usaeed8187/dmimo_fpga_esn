@@ -39,4 +39,5 @@ install(FILES
     ncjt_skip_data.block.yml
     ncjt_csi_quantizer.block.yml
     ncjt_csi_fb_processing.block.yml
-    ncjt_p1_precoding.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_p1_precoding.block.yml
+    ncjt_stream_mapper.block.yml DESTINATION share/gnuradio/grc/blocks)

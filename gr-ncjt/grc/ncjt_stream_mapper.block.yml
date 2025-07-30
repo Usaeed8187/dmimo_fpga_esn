@@ -1,0 +1,75 @@
+id: ncjt_stream_mapper
+label: Stream Mapper
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.stream_mapper(${rgmode}, ${nstrm}, ${phase1_modtype}, ${phase2_modtype}, ${phase3_modtype}, ${code_rate}, ${deterministic_input}, ${debug})
+
+parameters:
+  - id: rgmode
+    label: RG Mode
+    dtype: int
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    hide: part
+  - id: nstrm
+    label: Number of Streams
+    dtype: int
+    default: 1
+    options: [1, 2, 3, 4]
+  - id: phase1_modtype
+    label: Phase 1 Bits per Symbol
+    dtype: int
+    default: 2
+    options: [2, 4, 6, 8]
+    option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
+  - id: phase2_modtype
+    label: Phase 2 Bits per Symbol
+    dtype: int
+    default: 2
+    options: [2, 4, 6, 8]
+    option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
+  - id: phase3_modtype
+    label: Phase 3 Bits per Symbol
+    dtype: int
+    default: 2
+    options: [2, 4, 6, 8]
+    option_labels: [ QPSK, 16QAM, 64QAM, 256QAM ]
+  - id: code_rate
+    label: Code Rate
+    dtype: int
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    option_labels: [ 'Disable', '1/4', '1/3', '1/2', '2/3', '3/4', '4/5', '5/6' ]
+  - id: deterministic_input
+    label: Deterministic Input
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: byte
+    vlen: 1
+  - label: s_modtypes
+    domain: message
+    optional: true
+  - label: s_code_rate
+    domain: message
+    optional: true
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+
+file_format: 1
