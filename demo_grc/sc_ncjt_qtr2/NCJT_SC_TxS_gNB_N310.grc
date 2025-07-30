@@ -423,23 +423,6 @@ blocks:
     coordinate: [8, 108.0]
     rotation: 0
     state: enabled
-- name: blocks_null_sink_0
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: byte
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1488, 448.0]
-    rotation: 0
-    state: disabled
 - name: ncjt_csi_fb_processing_0
   id: ncjt_csi_fb_processing
   parameters:
@@ -1909,7 +1892,6 @@ connections:
 - [ncjt_csi_fb_processing_0, pmi, ncjt_p1_precoding_0, pmi]
 - [ncjt_demapper_1, '0', ncjt_csi_fb_processing_0, '0']
 - [ncjt_demapper_1, '0', ncjt_err_stats_0, '0']
-- [ncjt_demapper_1_0, '0', blocks_null_sink_0, '0']
 - [ncjt_demapper_1_0, '0', ncjt_csi_fb_processing_0, '1']
 - [ncjt_demapper_1_0, '0', ncjt_err_stats_1, '0']
 - [ncjt_gnb_sync_0, '0', ncjt_ofdm_demod_0, '0']

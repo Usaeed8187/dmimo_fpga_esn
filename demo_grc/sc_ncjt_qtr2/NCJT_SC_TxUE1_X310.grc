@@ -519,29 +519,6 @@ blocks:
     coordinate: [680, 304.0]
     rotation: 0
     state: enabled
-- name: ncjt_mapper_muxer_0
-  id: ncjt_mapper_muxer
-  parameters:
-    affinity: ''
-    alias: ''
-    code_rate: '0'
-    comment: ''
-    debug: 'False'
-    deterministic_input: 'False'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    nstrm: '1'
-    phase1_modtype: qam_order_p1r
-    phase2_modtype: qam_order_p1r
-    phase3_modtype: qam_order_p1r
-    rgmode: rg_mode
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [280, 612.0]
-    rotation: 0
-    state: enabled
 - name: ncjt_mimo_detect_0
   id: ncjt_mimo_detect
   parameters:
@@ -853,6 +830,29 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [800, 800.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_stream_mapper_0
+  id: ncjt_stream_mapper
+  parameters:
+    affinity: ''
+    alias: ''
+    code_rate: '0'
+    comment: ''
+    debug: 'False'
+    deterministic_input: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '32768'
+    nstrm: '1'
+    phase1_modtype: qam_order_p1r
+    phase2_modtype: qam_order_p1r
+    phase3_modtype: qam_order_p1r
+    rgmode: rg_mode
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [272, 612.0]
     rotation: 0
     state: enabled
 - name: ncjt_ul_precoding_0
@@ -1872,7 +1872,7 @@ blocks:
     state: enabled
 
 connections:
-- [ncjt_csi_quantizer_0, '0', ncjt_mapper_muxer_0, '0']
+- [ncjt_csi_quantizer_0, '0', ncjt_stream_mapper_0, '0']
 - [ncjt_demapper_1, '0', ncjt_err_stats_0, '0']
 - [ncjt_demapper_1, '0', ncjt_remapper_muxer_0_0_0, '0']
 - [ncjt_dual_tx_ctrl_0, '0', uhd_usrp_sink_0, '0']
@@ -1881,7 +1881,6 @@ connections:
 - [ncjt_ltf_chanest_0, '1', ncjt_mimo_detect_0, '1']
 - [ncjt_ltf_chanest_0, csi, ncjt_csi_quantizer_0, csi]
 - [ncjt_ltf_chanest_0, csi, ncjt_ul_precoding_0, csi]
-- [ncjt_mapper_muxer_0, '0', ncjt_rg_mapper_1, '0']
 - [ncjt_mimo_detect_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_mimo_detect_0, '0', ncjt_skip_data_0_1_0, '0']
 - [ncjt_mimo_detect_0, '1', ncjt_skip_data_0_1_0_0, '0']
@@ -1906,6 +1905,7 @@ connections:
 - [ncjt_skip_data_0_1_0_0, '0', qtgui_const_sink_x_0_1_0_0, '0']
 - [ncjt_stbc_encode_0, '0', ncjt_ofdm_mod_0, '0']
 - [ncjt_stbc_encode_0, '1', ncjt_ofdm_mod_0_0, '0']
+- [ncjt_stream_mapper_0, '0', ncjt_rg_mapper_1, '0']
 - [ncjt_ul_precoding_0, '0', ncjt_ofdm_mod_0_1, '0']
 - [ncjt_ul_precoding_0, '1', ncjt_ofdm_mod_0_0_0, '0']
 - [uhd_usrp_source_0, '0', ncjt_rx_sync_0, '0']

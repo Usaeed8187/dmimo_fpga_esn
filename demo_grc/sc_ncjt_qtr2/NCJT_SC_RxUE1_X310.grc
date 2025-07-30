@@ -964,7 +964,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 996.0]
+    coordinate: [488, 1012.0]
     rotation: 0
     state: enabled
 - name: ncjt_rx_sync_0

@@ -611,7 +611,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 932.0]
+    coordinate: [56, 948.0]
     rotation: 0
     state: enabled
 - name: ncjt_mapper_muxer_0_0
@@ -624,7 +624,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
-    minoutbuf: '0'
+    minoutbuf: '32768'
     nstrm: '1'
     phase1_modtype: init_phase1_bits_per_sym
     phase2_modtype: init_phase2_bits_per_sym
@@ -634,7 +634,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [360, 940.0]
+    coordinate: [336, 956.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0
