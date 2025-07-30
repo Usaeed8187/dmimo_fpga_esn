@@ -1,0 +1,464 @@
+options:
+  parameters:
+    author: Nima
+    catch_exceptions: 'False'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: software_sim_2str
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: NCJT SC 1Tx Software
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 16.0]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: SNR
+  id: variable
+  parameters:
+    comment: ''
+    value: '60'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [440, 104.0]
+    rotation: 0
+    state: enabled
+- name: ctrl_polar_coding
+  id: variable
+  parameters:
+    comment: ''
+    value: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [712, 16.0]
+    rotation: 0
+    state: enabled
+- name: deterministic
+  id: variable
+  parameters:
+    comment: ''
+    value: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [712, 96.0]
+    rotation: 0
+    state: enabled
+- name: frames_per_sec
+  id: variable
+  parameters:
+    comment: ''
+    value: '20'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 96.0]
+    rotation: 0
+    state: enabled
+- name: init_code_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [960, 104.0]
+    rotation: 0
+    state: enabled
+- name: init_phase1_bits_per_sym
+  id: variable
+  parameters:
+    comment: ''
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1152, 16.0]
+    rotation: 0
+    state: enabled
+- name: init_phase2_bits_per_sym
+  id: variable
+  parameters:
+    comment: ''
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1152, 88.0]
+    rotation: 0
+    state: enabled
+- name: init_phase3_bits_per_sym
+  id: variable
+  parameters:
+    comment: ''
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1152, 160.0]
+    rotation: 0
+    state: enabled
+- name: modulations
+  id: variable
+  parameters:
+    comment: ''
+    value: '{2: "QPSK", 4: "16QAM", 6: "64QAM", 8: "256QAM"}'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [952, 16.0]
+    rotation: 0
+    state: enabled
+- name: num_streams
+  id: variable
+  parameters:
+    comment: ''
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [608, 224.0]
+    rotation: 0
+    state: enabled
+- name: pkts_per_sec
+  id: variable
+  parameters:
+    comment: ''
+    value: frames_per_sec
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 16.0]
+    rotation: 0
+    state: true
+- name: rgmode
+  id: variable
+  parameters:
+    comment: ''
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [848, 16.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: 20e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 16.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1504, 672.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1064, 296.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_1_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1136, 632.0]
+    rotation: 0
+    state: enabled
+- name: blocks_tag_debug_0
+  id: blocks_tag_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    display: 'True'
+    filter: '"packet_len"'
+    name: ''
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 664.0]
+    rotation: 0
+    state: disabled
+- name: ncjt_demapper_1
+  id: ncjt_demapper
+  parameters:
+    affinity: ''
+    alias: ''
+    coded: 'False'
+    comment: ''
+    debug: 'False'
+    deterministic_input: deterministic
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    rgmode: rgmode
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1480, 456.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_err_stats_0_1
+  id: ncjt_err_stats
+  parameters:
+    affinity: ''
+    alias: ''
+    caption: Phase 1 Rx (TX UE)
+    cols: '3'
+    comment: ''
+    dark: 'True'
+    debug: 'False'
+    frame_per_sec: frames_per_sec
+    gui_hint: ''
+    logfreq: '5'
+    row_height: '300'
+    show_birate: 'True'
+    show_coded_ber: 'True'
+    show_num_copies: 'False'
+    show_per: 'False'
+    show_throughput: 'True'
+    show_uncoded_ber: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1544, 132.0]
+    rotation: 180
+    state: enabled
+- name: ncjt_knobs_0
+  id: ncjt_knobs
+  parameters:
+    affinity: ''
+    alias: ''
+    code_rate: init_code_rate
+    comment: ''
+    gui_hint: (0, 0, 1, 1)
+    maxoutbuf: '0'
+    mcs: 'True'
+    minoutbuf: '0'
+    noair: 'True'
+    phase1_modtype: init_phase1_bits_per_sym
+    phase2_modtype: init_phase2_bits_per_sym
+    phase3_modtype: init_phase3_bits_per_sym
+    reset: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [64.0, 160]
+    rotation: 270
+    state: enabled
+- name: ncjt_mapper_muxer_0_0
+  id: ncjt_mapper_muxer
+  parameters:
+    affinity: ''
+    alias: ''
+    code_rate: init_code_rate
+    comment: ''
+    debug: 'False'
+    deterministic_input: deterministic
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nstrm: num_streams
+    phase1_modtype: init_phase1_bits_per_sym
+    phase2_modtype: init_phase2_bits_per_sym
+    phase3_modtype: init_phase3_bits_per_sym
+    rgmode: rgmode
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [264, 452.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_noair_0_0
+  id: ncjt_noair
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'False'
+    frame_per_sec: frames_per_sec
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_drop_init_packets: '0'
+    phase: '1'
+    rgmode: rgmode
+    snr_db: SNR
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 400.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_noair_0_0_0
+  id: ncjt_noair
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'False'
+    frame_per_sec: frames_per_sec
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_drop_init_packets: '0'
+    phase: '1'
+    rgmode: rgmode
+    snr_db: SNR
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [848, 536.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_rg_demapper_0_1
+  id: ncjt_rg_demapper
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nstrm: num_streams
+    phase: '1'
+    rgmode: rgmode
+    usecsi: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1232, 440.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_rg_mapper_0_1
+  id: ncjt_rg_mapper
+  parameters:
+    addcs: 'False'
+    addltf: 'False'
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'False'
+    ltfdata: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mucpt: 'False'
+    nstrm: num_streams
+    numue: '1'
+    rgmode: rgmode
+    ueidx: '-1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 464.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [ncjt_demapper_1, '0', ncjt_err_stats_0_1, '0']
+- [ncjt_knobs_0, s_code_rate, ncjt_mapper_muxer_0_0, s_code_rate]
+- [ncjt_knobs_0, s_modtypes, ncjt_mapper_muxer_0_0, s_modtypes]
+- [ncjt_knobs_0, s_snr1, ncjt_noair_0_0, s_snr]
+- [ncjt_knobs_0, s_snr1, ncjt_noair_0_0_0, s_snr]
+- [ncjt_mapper_muxer_0_0, '0', blocks_tag_debug_0, '0']
+- [ncjt_mapper_muxer_0_0, '0', ncjt_rg_mapper_0_1, '0']
+- [ncjt_noair_0_0, '0', blocks_null_sink_1, '0']
+- [ncjt_noair_0_0, '0', ncjt_rg_demapper_0_1, '0']
+- [ncjt_noair_0_0, '1', blocks_null_sink_1_0, '0']
+- [ncjt_noair_0_0, '1', ncjt_rg_demapper_0_1, '2']
+- [ncjt_noair_0_0_0, '0', ncjt_rg_demapper_0_1, '1']
+- [ncjt_noair_0_0_0, '1', ncjt_rg_demapper_0_1, '3']
+- [ncjt_rg_demapper_0_1, '0', blocks_null_sink_0, '0']
+- [ncjt_rg_demapper_0_1, '0', ncjt_demapper_1, '0']
+- [ncjt_rg_demapper_0_1, '1', blocks_null_sink_0, '1']
+- [ncjt_rg_demapper_0_1, '1', ncjt_demapper_1, '1']
+- [ncjt_rg_mapper_0_1, '0', ncjt_noair_0_0, '0']
+- [ncjt_rg_mapper_0_1, '1', ncjt_noair_0_0_0, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0
