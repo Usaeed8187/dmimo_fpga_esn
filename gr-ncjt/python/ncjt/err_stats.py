@@ -276,7 +276,7 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
             self.chartsLayout.addWidget(
                 self.coded_ber_view, widget_id // cols, widget_id % cols)
             self.last_CodedBERs = []
-            self.CodedBERs = [0]
+            self.CodedBERs = [EPS]
             if dark:
                 self.coded_ber_chart.setTheme(QChart.ChartThemeDark)
             self.coded_ber_chart.setTitleFont(
@@ -312,7 +312,7 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
             self.chartsLayout.addWidget(
                 self.uncoded_ber_view, widget_id // cols, widget_id % cols)
             self.last_UncodedBERs = []
-            self.UncodedBERs = [0]
+            self.UncodedBERs = [EPS]
             if dark:
                 self.uncoded_ber_chart.setTheme(QChart.ChartThemeDark)
             self.uncoded_ber_chart.setTitleFont(
