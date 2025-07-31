@@ -180,7 +180,7 @@ int csi_fb_processing_impl::work(int noutput_items, gr_vector_int &ninput_items,
             throw std::runtime_error("invalid PMI index");
 
         if (d_total_frames % d_logfreq == 0)
-            dout << "received pmi_idx: " << pmi_idx << std::endl;
+            dout << "UE [" << ch << "] " << "received pmi_idx: " << pmi_idx << std::endl;
 
         CMatrixX Wm(d_ntx_gnb, d_nss);
         const auto &entry = d_codebook[pmi_idx];
@@ -209,7 +209,7 @@ int csi_fb_processing_impl::work(int noutput_items, gr_vector_int &ninput_items,
             int idx = std::min<int>(std::max<int>(d_wb_cqi[s], 0), 15);
             d_wb_cqi_db[s] = th_db[idx];
             if (d_total_frames % d_logfreq == 0){
-                dout << "decoded CQI[" << s << "] = "
+                dout << "UE [" << ch << "] " << "decoded CQI[" << s << "] = "
                     << int(d_wb_cqi[s]) << " -> " << d_wb_cqi_db[s]
                     << " dB" << std::endl;
             }
