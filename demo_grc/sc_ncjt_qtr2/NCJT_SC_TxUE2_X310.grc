@@ -405,7 +405,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    debug: 'False'
+    debug: 'True'
     fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
