@@ -201,9 +201,15 @@ int csi_fb_processing_impl::work(int noutput_items, gr_vector_int &ninput_items,
             for (int i = 0; i < 4 && (d_pmi_bits + 4 * s + i) < info_bits; ++i)
                 d_wb_cqi[s] |= (decoded[d_pmi_bits + 4 * s + i] & 1) << i;
 
+        // constexpr float th_db[16] = {
+        //       -1e3,-6.7,-4.7,-2.3,0.0,2.4,4.3,5.9,
+        //       8.7,10.3,11.7,13.1,14.3,15.8,17.3,18.7};
         constexpr float th_db[16] = {
-            -1e3,-6.7,-4.7,-2.3,0.0,2.4,4.3,5.9,
-            8.7,10.3,11.7,13.1,14.3,15.8,17.3,18.7};
+            0.0,5.0,10.0,               // 5 dB steps
+            12.0,14.0,16.0,             // 2 dB steps
+            17.0,18.0,19.0,20.0,21.0,   // 1 dB steps
+            22.5,24.0,25.5,27.0,28.5    // 1.5 dB steps
+        };
 
         for (int s = 0; s < d_nss; ++s) {
             int idx = std::min<int>(std::max<int>(d_wb_cqi[s], 0), 15);
