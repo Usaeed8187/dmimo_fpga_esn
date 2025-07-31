@@ -376,6 +376,14 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_plots)
         self.timer.start(int(self.logfreq / self.frame_per_sec * 1000))
+
+        if self.show_coded_ber:
+            self.log_scale_checkbox_coded.setChecked(True)
+            self.toggle_coded_ber_scale(Qt.Checked)
+        if self.show_uncoded_ber:
+            self.log_scale_checkbox_uncoded.setChecked(True)
+            self.toggle_uncoded_ber_scale(Qt.Checked)
+
     
     def OnResetMsgRecvd(self, msg):
         self.total_packets = 0
