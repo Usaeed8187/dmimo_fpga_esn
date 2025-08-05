@@ -464,6 +464,40 @@ blocks:
     coordinate: [1048, 376.0]
     rotation: 0
     state: enabled
+- name: blocks_null_sink_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1456, 760.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_1_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1328, 376.0]
+    rotation: 0
+    state: enabled
 - name: ncjt_demapper_1
   id: ncjt_demapper
   parameters:
@@ -482,7 +516,7 @@ blocks:
     bus_structure: null
     coordinate: [1288, 304.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_demapper_1_0
   id: ncjt_demapper
   parameters:
@@ -520,7 +554,7 @@ blocks:
     bus_structure: null
     coordinate: [1432, 688.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_err_stats_0
   id: ncjt_err_stats
   parameters:
@@ -547,13 +581,13 @@ blocks:
     bus_structure: null
     coordinate: [1608, 148.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_err_stats_1
   id: ncjt_err_stats
   parameters:
     affinity: ''
     alias: ''
-    caption: Phase 2 BER (RxUE2)
+    caption: Phase 2 Reception (RxUE2)
     cols: '2'
     comment: ''
     dark: 'False'
@@ -601,7 +635,7 @@ blocks:
     bus_structure: null
     coordinate: [1720, 628.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_ltf_chanest_0
   id: ncjt_ltf_chanest
   parameters:
@@ -1091,7 +1125,7 @@ blocks:
     comment: ''
     csifile: ''
     debug: 'False'
-    eigenmode: 'True'
+    eigenmode: 'False'
     loadcsi: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
@@ -1160,7 +1194,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '"Rx gNB CSI"'
+    name: '"Rx gNB CSI-RS"'
     nconnections: '1'
     size: '512'
     style1: '0'
@@ -1252,7 +1286,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '"Tx UE"'
+    name: '"Phase 2 Reception"'
     nconnections: '1'
     size: '1024'
     style1: '0'
@@ -1344,7 +1378,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '"Tx gNB"'
+    name: '"Tx gNB Beacon"'
     nconnections: '1'
     size: '1024'
     style1: '0'
@@ -2126,11 +2160,15 @@ connections:
 - [ncjt_ofdm_mod_0, '0', ncjt_tx_frm_ctrl_0, '0']
 - [ncjt_ofdm_mod_1, '0', ncjt_tx_frm_ctrl_0, '1']
 - [ncjt_remapper_muxer_1, '0', ncjt_rg_mapper_0, '0']
+- [ncjt_rg_demapper_0, '0', blocks_null_sink_1_0, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_demapper_1, '0']
+- [ncjt_rg_demapper_0, '1', blocks_null_sink_1_0, '1']
 - [ncjt_rg_demapper_0, '1', ncjt_demapper_1, '1']
 - [ncjt_rg_demapper_0_0, '0', ncjt_demapper_1_0, '0']
 - [ncjt_rg_demapper_0_0, '1', ncjt_demapper_1_0, '1']
+- [ncjt_rg_demapper_1, '0', blocks_null_sink_1, '0']
 - [ncjt_rg_demapper_1, '0', ncjt_demapper_1_0_0, '0']
+- [ncjt_rg_demapper_1, '1', blocks_null_sink_1, '1']
 - [ncjt_rg_demapper_1, '1', ncjt_demapper_1_0_0, '1']
 - [ncjt_rg_mapper_0, '0', ncjt_ul_precoding_0, '0']
 - [ncjt_rx_sync_0, '0', ncjt_ofdm_demod_0, '0']
@@ -2156,4 +2194,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: 3.10.12.0
