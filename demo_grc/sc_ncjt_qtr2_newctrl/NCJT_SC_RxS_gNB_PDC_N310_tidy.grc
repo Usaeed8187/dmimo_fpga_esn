@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: ncjt_demo_rxs_gnb_pdc_n310
+    id: ncjt_demo_rxs_gnb_pdc_n310_tidy
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -241,7 +241,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '6'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -261,6 +261,42 @@ blocks:
     coordinate: [280, 12.0]
     rotation: 0
     state: true
+- name: port0
+  id: variable
+  parameters:
+    comment: ''
+    value: '9200'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1816, 280.0]
+    rotation: 0
+    state: enabled
+- name: port1
+  id: variable
+  parameters:
+    comment: ''
+    value: port0+1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1840, 368.0]
+    rotation: 0
+    state: enabled
+- name: port2
+  id: variable
+  parameters:
+    comment: ''
+    value: port1+1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1856, 456.0]
+    rotation: 0
+    state: enabled
 - name: qam_order
   id: variable
   parameters:
@@ -418,7 +454,7 @@ blocks:
   id: variable_qtgui_range
   parameters:
     comment: ''
-    gui_hint: (1,2,1,1)
+    gui_hint: (1,2,1,2)
     label: Tx Gain
     min_len: '200'
     orient: QtCore.Qt.Horizontal
@@ -603,6 +639,23 @@ blocks:
     coordinate: [1336, 416.0]
     rotation: 0
     state: enabled
+- name: blocks_null_sink_3
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1416, 880.0]
+    rotation: 0
+    state: enabled
 - name: blocks_stream_to_tagged_stream_0
   id: blocks_stream_to_tagged_stream
   parameters:
@@ -689,6 +742,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: '9123'
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -708,6 +762,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: port1
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -727,6 +782,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: port0
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -746,6 +802,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: '9123'
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -765,6 +822,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: port2
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -812,7 +870,7 @@ blocks:
     dark: 'False'
     debug: 'False'
     frame_per_sec: pkts_per_sec
-    gui_hint: (5, 0, 1, 3)
+    gui_hint: (5, 0, 1, 4)
     logfreq: '5'
     row_height: '300'
     show_birate: 'False'
@@ -820,7 +878,7 @@ blocks:
     show_num_copies: 'False'
     show_per: 'False'
     show_throughput: 'False'
-    show_uncoded_ber: 'True'
+    show_uncoded_ber: 'False'
   states:
     bus_sink: false
     bus_source: false
@@ -839,7 +897,7 @@ blocks:
     dark: 'False'
     debug: 'False'
     frame_per_sec: pkts_per_sec
-    gui_hint: (4, 0, 1, 3)
+    gui_hint: (4, 0, 1, 4)
     logfreq: '5'
     row_height: '300'
     show_birate: 'False'
@@ -847,7 +905,7 @@ blocks:
     show_num_copies: 'False'
     show_per: 'False'
     show_throughput: 'False'
-    show_uncoded_ber: 'True'
+    show_uncoded_ber: 'False'
   states:
     bus_sink: false
     bus_source: false
@@ -893,22 +951,22 @@ blocks:
     dark: 'True'
     debug: 'False'
     frame_per_sec: pkts_per_sec
-    gui_hint: (2, 0, 2, 3)
+    gui_hint: (2, 0, 2, 4)
     logfreq: '5'
     row_height: '300'
     show_birate: 'False'
-    show_coded_ber: 'False'
+    show_coded_ber: 'True'
     show_num_copies: 'False'
-    show_per: 'False'
+    show_per: 'True'
     show_throughput: 'True'
     show_uncoded_ber: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1704, 924.0]
+    coordinate: [1752, 932.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_err_stats_0_1_2_0
   id: ncjt_err_stats
   parameters:
@@ -947,7 +1005,7 @@ blocks:
     dark: 'False'
     debug: 'False'
     frame_per_sec: pkts_per_sec
-    gui_hint: (6, 0, 1, 3)
+    gui_hint: (6, 0, 1, 4)
     logfreq: '5'
     row_height: '300'
     show_birate: 'False'
@@ -955,7 +1013,7 @@ blocks:
     show_num_copies: 'False'
     show_per: 'False'
     show_throughput: 'False'
-    show_uncoded_ber: 'True'
+    show_uncoded_ber: 'False'
   states:
     bus_sink: false
     bus_source: false
@@ -986,28 +1044,24 @@ blocks:
     coordinate: [1320, 660.0]
     rotation: 0
     state: disabled
-- name: ncjt_ltf_chanest_0
-  id: ncjt_ltf_chanest
+- name: ncjt_mc_stbc_decode_0
+  id: ncjt_mc_stbc_decode
   parameters:
-    affinity: '4'
+    affinity: '3'
     alias: ''
     comment: ''
-    csi_fb: 'True'
-    debug: 'True'
-    logfreq: '50'
+    debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    ndatasyms: num_data_syms + num_ctrl_syms
-    npreamblesyms: num_ltf_syms
-    nrx: '2'
-    ntx: '4'
-    removecs: 'False'
+    modtype: qam_order
+    ndatasyms: num_data_syms+num_ctrl_syms
+    npilotsyms: '0'
     rgmode: rg_mode
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 368.0]
+    coordinate: [848, 368.0]
     rotation: 0
     state: enabled
 - name: ncjt_mimo_detect_0
@@ -1032,26 +1086,29 @@ blocks:
     coordinate: [896, 1040.0]
     rotation: 0
     state: enabled
-- name: ncjt_mimo_detect_0_0
-  id: ncjt_mimo_detect
+- name: ncjt_mu_chanest_0
+  id: ncjt_mu_chanest
   parameters:
-    affinity: '5'
+    affinity: '3'
     alias: ''
     comment: ''
-    debug: 'False'
+    debug: 'True'
     logfreq: '50'
     maxoutbuf: '0'
     minoutbuf: '32768'
-    ndatasymbols: num_data_syms + num_ctrl_syms
-    nrx: nss
-    nss: nss
+    mucpt: 'True'
+    ndatasyms: num_data_syms+num_ctrl_syms
+    npreamblesyms: num_ltf_syms
+    nrx: '2'
+    ntx: ntx
+    nue: '2'
+    removecs: 'True'
     rgmode: rg_mode
-    showmaxllr: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 364.0]
+    coordinate: [640, 368.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0_0
@@ -1328,9 +1385,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1480, 856.0]
+    coordinate: [1528, 864.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_rg_demapper_0
   id: ncjt_rg_demapper
   parameters:
@@ -1539,7 +1596,7 @@ blocks:
     bus_structure: null
     coordinate: [1104, 1232.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_skip_data_0_1_0_1_1
   id: ncjt_skip_data
   parameters:
@@ -1672,7 +1729,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '"Phase 3 Reception"'
+    name: '"Phase 3 Reception (RxUE 1)"'
     nconnections: '1'
     size: '512'
     style1: '0'
@@ -1804,7 +1861,7 @@ blocks:
     bus_structure: null
     coordinate: [1224, 1212.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: qtgui_const_sink_x_0_1_0
   id: qtgui_const_sink_x
   parameters:
@@ -2838,15 +2895,15 @@ connections:
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_1_2, reset]
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_1_2_0, reset]
 - [ncjt_knobs_0, reset, ncjt_err_stats_0_2, reset]
-- [ncjt_ltf_chanest_0, '0', ncjt_mimo_detect_0_0, '0']
-- [ncjt_ltf_chanest_0, '1', ncjt_mimo_detect_0_0, '1']
+- [ncjt_mc_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
+- [ncjt_mc_stbc_decode_0, '0', ncjt_skip_data_0_1_0, '0']
+- [ncjt_mc_stbc_decode_0, '1', blocks_null_sink_1, '0']
 - [ncjt_mimo_detect_0, '0', ncjt_rg_demapper_0_1, '0']
 - [ncjt_mimo_detect_0, '0', ncjt_skip_data_0_1_0_1, '0']
 - [ncjt_mimo_detect_0, '1', ncjt_rg_demapper_0_2, '0']
 - [ncjt_mimo_detect_0, '1', ncjt_skip_data_0_1_0_1_0, '0']
-- [ncjt_mimo_detect_0_0, '0', ncjt_rg_demapper_0, '0']
-- [ncjt_mimo_detect_0_0, '0', ncjt_skip_data_0_1_0, '0']
-- [ncjt_mimo_detect_0_0, '1', blocks_null_sink_1, '0']
+- [ncjt_mu_chanest_0, '0', ncjt_mc_stbc_decode_0, '0']
+- [ncjt_mu_chanest_0, '1', ncjt_mc_stbc_decode_0, '1']
 - [ncjt_mu_chanest_0_0, '0', ncjt_mimo_detect_0, '0']
 - [ncjt_mu_chanest_0_0, '1', ncjt_mimo_detect_0, '1']
 - [ncjt_mu_chanest_0_0, '2', ncjt_mimo_detect_0, '2']
@@ -2855,8 +2912,8 @@ connections:
 - [ncjt_mu_chanest_0_0_0, '1', ncjt_stbc_decode_0_0, '1']
 - [ncjt_mu_chanest_0_1, '0', ncjt_stbc_decode_0_0_1, '0']
 - [ncjt_mu_chanest_0_1, '1', ncjt_stbc_decode_0_0_1, '1']
-- [ncjt_ofdm_demod_0, '0', ncjt_ltf_chanest_0, '0']
-- [ncjt_ofdm_demod_0_0, '0', ncjt_ltf_chanest_0, '1']
+- [ncjt_ofdm_demod_0, '0', ncjt_mu_chanest_0, '0']
+- [ncjt_ofdm_demod_0_0, '0', ncjt_mu_chanest_0, '1']
 - [ncjt_ofdm_demod_0_0_0, '0', ncjt_mu_chanest_0_0_0, '1']
 - [ncjt_ofdm_demod_0_0_0_0, '0', ncjt_mu_chanest_0_0, '1']
 - [ncjt_ofdm_demod_0_0_0_0_0, '0', ncjt_mu_chanest_0_0, '2']
@@ -2874,8 +2931,10 @@ connections:
 - [ncjt_rg_demapper_0_1, '0', ncjt_pdc_0, '2']
 - [ncjt_rg_demapper_0_1, '1', ncjt_demapper_0_0, '1']
 - [ncjt_rg_demapper_0_1, '1', ncjt_pdc_0, '6']
+- [ncjt_rg_demapper_0_1_0, '0', blocks_null_sink_3, '0']
 - [ncjt_rg_demapper_0_1_0, '0', ncjt_demapper_0_1_0, '0']
 - [ncjt_rg_demapper_0_1_0, '0', ncjt_pdc_0, '1']
+- [ncjt_rg_demapper_0_1_0, '1', blocks_null_sink_3, '1']
 - [ncjt_rg_demapper_0_1_0, '1', ncjt_demapper_0_1_0, '1']
 - [ncjt_rg_demapper_0_1_0, '1', ncjt_pdc_0, '5']
 - [ncjt_rg_demapper_0_1_1, '0', ncjt_demapper_0_1, '0']
