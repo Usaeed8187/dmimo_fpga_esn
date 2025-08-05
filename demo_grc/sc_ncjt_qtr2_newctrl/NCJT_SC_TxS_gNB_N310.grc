@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -109,7 +109,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
@@ -121,7 +121,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
@@ -133,7 +133,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
@@ -297,7 +297,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '75'
-    value: '50'
+    value: '45'
     widget: counter_slider
   states:
     bus_sink: false
@@ -366,7 +366,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '65'
-    value: '50'
+    value: '45'
     widget: counter_slider
   states:
     bus_sink: false
@@ -397,6 +397,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: '9123'
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -416,6 +417,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: '9124'
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -832,7 +834,7 @@ blocks:
     bus_structure: null
     coordinate: [1024, 192.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_skip_data_0_1_1
   id: ncjt_skip_data
   parameters:
@@ -850,7 +852,7 @@ blocks:
     bus_structure: null
     coordinate: [1032, 600.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_stbc_encode_0
   id: ncjt_stbc_encode
   parameters:
@@ -1007,7 +1009,7 @@ blocks:
     bus_structure: null
     coordinate: [1144, 172.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: qtgui_const_sink_x_0_0
   id: qtgui_const_sink_x
   parameters:
@@ -1099,7 +1101,7 @@ blocks:
     bus_structure: null
     coordinate: [1152, 580.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:
@@ -1864,4 +1866,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: 3.10.12.0
