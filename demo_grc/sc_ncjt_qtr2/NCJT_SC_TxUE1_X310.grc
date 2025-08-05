@@ -432,6 +432,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: '9123'
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -473,7 +474,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    caption: Tx gNB to TxUE1
+    caption: Phase 1 Reception (TxUE 1)
     cols: '2'
     comment: ''
     dark: 'False'
@@ -485,7 +486,7 @@ blocks:
     show_birate: 'False'
     show_coded_ber: 'True'
     show_num_copies: 'False'
-    show_per: 'False'
+    show_per: 'True'
     show_throughput: 'False'
     show_uncoded_ber: 'True'
   states:
@@ -932,7 +933,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '"Tx gNB"'
+    name: '"Tx gNB Data Stream 1"'
     nconnections: '1'
     size: '1024'
     style1: '0'
@@ -1024,7 +1025,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '"Tx gNB"'
+    name: '"Tx gNB Data Stream 2"'
     nconnections: '1'
     size: '1024'
     style1: '0'
@@ -1156,7 +1157,7 @@ blocks:
     bus_structure: null
     coordinate: [1392, 196.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:

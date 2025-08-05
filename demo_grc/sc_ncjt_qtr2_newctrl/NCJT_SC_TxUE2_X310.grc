@@ -397,6 +397,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: '9128'
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -438,7 +439,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    caption: Tx gNB to TxUE2
+    caption: Phase 1 Transmission (TxUE 2)
     cols: '2'
     comment: ''
     dark: 'False'
@@ -450,7 +451,7 @@ blocks:
     show_birate: 'False'
     show_coded_ber: 'True'
     show_num_copies: 'False'
-    show_per: 'False'
+    show_per: 'True'
     show_throughput: 'False'
     show_uncoded_ber: 'True'
   states:
@@ -780,7 +781,7 @@ blocks:
     bus_structure: null
     coordinate: [1080, 200.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_skip_data_0_1_0_0
   id: ncjt_skip_data
   parameters:
@@ -798,7 +799,7 @@ blocks:
     bus_structure: null
     coordinate: [1080, 432.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: ncjt_stbc_encode_0
   id: ncjt_stbc_encode
   parameters:
@@ -896,7 +897,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '"Tx gNB"'
+    name: '"Tx gNB Data Stream 1"'
     nconnections: '1'
     size: '1024'
     style1: '0'
@@ -988,7 +989,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '"Tx gNB"'
+    name: '"Tx gNB Data Stream 2"'
     nconnections: '1'
     size: '1024'
     style1: '0'
@@ -1120,7 +1121,7 @@ blocks:
     bus_structure: null
     coordinate: [1392, 172.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:
@@ -1841,11 +1842,9 @@ connections:
 - [ncjt_dual_tx_ctrl_0, '0', uhd_usrp_sink_0, '0']
 - [ncjt_dual_tx_ctrl_0, '1', uhd_usrp_sink_0, '1']
 - [ncjt_mapper_muxer_0, '0', ncjt_rg_mapper_0_0, '0']
-- [ncjt_mc_stbc_decode_0, '0', ncjt_rg_demapper_0, '0']
 - [ncjt_mc_stbc_decode_0, '0', ncjt_skip_data_0_1_0, '0']
-- [ncjt_mc_stbc_decode_0, '0', qtgui_const_sink_x_0_1_0, '0']
+- [ncjt_mc_stbc_decode_0, '1', ncjt_rg_demapper_0, '0']
 - [ncjt_mc_stbc_decode_0, '1', ncjt_skip_data_0_1_0_0, '0']
-- [ncjt_mc_stbc_decode_0, '1', qtgui_const_sink_x_0_1_0_0, '0']
 - [ncjt_mu_chanest_0, '0', ncjt_mc_stbc_decode_0, '0']
 - [ncjt_mu_chanest_0, '1', ncjt_mc_stbc_decode_0, '1']
 - [ncjt_ofdm_demod_0, '0', ncjt_mu_chanest_0, '0']
@@ -1876,4 +1875,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: 3.10.12.0
