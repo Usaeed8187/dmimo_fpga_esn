@@ -26,6 +26,7 @@ list(APPEND ncjt_sources
     ul_precoding_impl.cc
     mimo_detect_impl.cc
     utils.cc
+    rx_mrc_impl.cc
     common.cc
     mu_chanest_impl.cc
     sic_detect_impl.cc

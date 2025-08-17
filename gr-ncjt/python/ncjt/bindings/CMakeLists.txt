@@ -33,6 +33,7 @@ list(APPEND ncjt_python_files
     rg_demapper_python.cc
     ul_precoding_python.cc
     mimo_detect_python.cc
+    rx_mrc_python.cc
     mu_chanest_python.cc
     sic_detect_python.cc
     stbc_encode_python.cc

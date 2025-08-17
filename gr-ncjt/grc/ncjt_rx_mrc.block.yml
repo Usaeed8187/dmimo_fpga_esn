@@ -1,0 +1,57 @@
+id: ncjt_rx_mrc
+label: Rx MRC
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.rx_mrc(${rgmode}, ${nrx}, ${nsymbols}, ${debug})
+
+parameters:
+  - id: rgmode
+    label: RG Mode
+    dtype: int
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    hide: part
+  - id: nrx
+    label: Number of Rx
+    dtype: int
+    default: 1
+    options: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+    hide: part
+  - id: nsymbols
+    label: Data Symobols
+    dtype: int
+  - id: debug
+    label: Debug
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
+    hide: part
+
+inputs:
+  - label: in
+    domain: stream
+    dtype: complex
+    multiplicity: ${nrx}
+
+outputs:
+  - label: out
+    domain: stream
+    dtype: complex
+    multiplicity: 1
+  - label: csi
+    domain: stream
+    dtype: complex
+    multiplicity: 1
+  - label: const
+    domain: stream
+    dtype: complex
+    multiplicity: ${nrx}
+    optional: true
+
+asserts:
+  - ${ nsymbols > 0 }
+
+file_format: 1

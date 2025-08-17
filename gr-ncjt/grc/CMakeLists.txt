@@ -16,6 +16,7 @@ install(FILES
     ncjt_ul_precoding.block.yml
     ncjt_mimo_detect.block.yml
     ncjt_mimo_detect.block.yml
+    ncjt_rx_mrc.block.yml
     ncjt_mu_chanest.block.yml
     ncjt_sic_detect.block.yml
     ncjt_stbc_encode.block.yml
