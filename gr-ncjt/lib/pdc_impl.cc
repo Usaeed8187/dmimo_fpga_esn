@@ -19,23 +19,22 @@ namespace gr
 {
   namespace ncjt
   {
-
     pdc::sptr pdc::make(int rgmode,
-                        bool majority_enabled,
+                        int combiner, // 1: HLL, 2: Majority, 3: HLL+Majority
                         int num_copies,
                         int expire_ms,
                         int num_threads,
                         bool deterministic_input,
                         bool debug)
     {
-      return gnuradio::make_block_sptr<pdc_impl>(rgmode, majority_enabled, num_copies, expire_ms, num_threads, deterministic_input, debug);
+      return gnuradio::make_block_sptr<pdc_impl>(rgmode, combiner, num_copies, expire_ms, num_threads, deterministic_input, debug);
     }
 
     /*
      * The private constructor
      */
     pdc_impl::pdc_impl(int rgmode,
-                       bool majority_enabled,
+                       int combiner,
                        int num_copies,
                        int expire_ms,
                        int num_threads,
@@ -47,8 +46,6 @@ namespace gr
           d_rgmode(rgmode),
           d_num_copies(num_copies),
           d_num_threads(num_threads),
-          d_hll_enabled(true),
-          d_majority_enabled(majority_enabled),
           d_expire_ms(expire_ms),
           d_deterministic_input(deterministic_input),
           d_debug(debug),
@@ -61,6 +58,11 @@ namespace gr
         d_num_packet_syms = (RG_NUM_OFDM_SYM[rgmode] * RG_NUM_DATA_SC[rgmode] - 64);
         set_min_noutput_items(d_num_packet_syms * 8);
       }
+
+      if (combiner < 1 || combiner > 3)
+        throw std::runtime_error("Invalid combiner type. Use 1 for HLL, 2 for Majority, or 3 for HLL+Majority.");
+      d_hll_enabled = (combiner == 1 || combiner == 3);
+      d_majority_enabled = (combiner == 2 || combiner == 3);
 
       for (int mtype = 2; mtype <= 8; mtype += 2)
       {
@@ -122,6 +124,8 @@ namespace gr
       }
 
       set_tag_propagation_policy(TPP_DONT);
+
+      d_last_warn_time = std::chrono::steady_clock::now();
     }
 
     pdc_impl::~pdc_impl()
@@ -140,6 +144,20 @@ namespace gr
                                gr_vector_const_void_star &input_items,
                                gr_vector_void_star &output_items)
     {
+
+      if (d_pendings.size() > 100)
+      {
+        auto now = std::chrono::steady_clock::now();
+        if (now - d_last_warn_time >= std::chrono::milliseconds(500))
+        {
+          std::cout << "[PDC] Warning: Combining is not fast enough. "
+                    << d_pendings.size() << " pending packets. You may want to increase thread numbers or expire_ms.." << std::endl;
+          d_last_warn_time = now;
+        }
+      }
+      int hll_port = 0;
+      int majority_port = d_hll_enabled ? 1 : 0;
+
       std::vector<const uint8_t *> inps;
       int max_in = 0;
       for (size_t i = 0; i < ninput_items.size(); i++)
@@ -205,17 +223,21 @@ namespace gr
       int64_t _p2modtype = 0;
       int64_t _p3modtype = 0;
       int64_t _rx_coding_rate;
+      uint64_t _rx_reserved = 0;
       uint64_t _rx_data_checksum = 0;
       uint64_t _ctrl_syms_len = 0;
       uint64_t _sd_num = 0;
       uint64_t _tt = 0;
 
+      bool consuming = false;
+
       for (size_t qam_inp = 0; qam_inp < static_cast<size_t>(d_num_copies); qam_inp++)
       {
         // std::cout << "Nima: Processing input port " << qam_inp
         //           << ", ninput_items=" << ninput_items[qam_inp]
-        //           << ", ninput_items[qam_inp + d_num_copies]=" << ninput_items[qam_inp + d_num_copies] 
+        //           << ", ninput_items[qam_inp + d_num_copies]=" << ninput_items[qam_inp + d_num_copies]
         //           << ", d_num_packet_syms=" << d_num_packet_syms << std::endl;
+
         if (ninput_items[qam_inp] >= d_num_packet_syms && ninput_items[qam_inp + d_num_copies] >= d_num_packet_syms)
         {
           // std::cout << "\tNima: Processing input port " << qam_inp << std::endl;
@@ -260,10 +282,11 @@ namespace gr
             if (_p2modtype > _modtype)
             {
               std::cout << "[pdc_impl] WARNING: rx_modtype_phase2 (" << _p2modtype
-                        << ") is greater than rx_modtype (" << _modtype << "), this is unexpected! " 
+                        << ") is greater than rx_modtype (" << _modtype << "), this is unexpected! "
                         << "Possibly an indicator of corrupted CTRL misidentified as valid. Still consuming input." << std::endl;
               consume(qam_inp, _packet_len_syms);
               consume(qam_inp + d_num_copies, _packet_len_syms);
+              consuming = true;
               continue; // Skip this copy
             }
             ////
@@ -275,6 +298,13 @@ namespace gr
               throw std::runtime_error("[pdc_impl] ERROR: No rx_coding_rate tag found in input stream");
             }
             _rx_coding_rate = pmt::to_uint64(tags2[0].value);
+            // tag: rx_reserved
+            get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_reserved"));
+            if (tags2.size() == 0)
+            {
+              throw std::runtime_error("[pdc_impl] ERROR: No rx_reserved tag found in input stream");
+            }
+            _rx_reserved = pmt::to_uint64(tags2[0].value);
             // tag: rx_data_checksum
             get_tags_in_window(tags2, qam_inp, 0, 1, pmt::string_to_symbol("rx_data_checksum"));
             if (tags2.size() == 0)
@@ -357,6 +387,7 @@ namespace gr
                                     _p2modtype,
                                     _p3modtype,
                                     _rx_coding_rate,
+                                    _rx_reserved,
                                     _rx_data_checksum,
                                     _snr_rbs_db,
                                     _ctrl_syms_len,
@@ -396,6 +427,7 @@ namespace gr
                                       _p2modtype,
                                       _p3modtype,
                                       _rx_coding_rate,
+                                      _rx_reserved,
                                       _rx_data_checksum,
                                       _snr_rbs_db,
                                       _ctrl_syms_len,
@@ -421,6 +453,7 @@ namespace gr
                                         _p2modtype,
                                         _p3modtype,
                                         _rx_coding_rate,
+                                        _rx_reserved,
                                         _rx_data_checksum,
                                         _snr_rbs_db,
                                         _ctrl_syms_len,
@@ -459,6 +492,7 @@ namespace gr
           }
           consume(qam_inp, _packet_len_syms);
           consume(qam_inp + d_num_copies, _packet_len_syms);
+          consuming = true;
           if (d_debug)
           {
             std::cout << "Consumed " << _packet_len_syms << " symbols from input port " << qam_inp
@@ -467,6 +501,12 @@ namespace gr
         }
       }
 
+      if (consuming)
+      {
+        produce(0, 0);
+        produce(1, 0);
+        return WORK_CALLED_PRODUCE;
+      }
       // Look for a fully-assembled or expired packet
       int process_till = -1;
       for (size_t j = 0; j < d_pendings.size(); j++)
@@ -524,18 +564,19 @@ namespace gr
         auto rx_coding_rate = pending.begin()->second.rx_coding_rate;
         auto rx_data_checksum = pending.begin()->second.rx_data_checksum;
         auto sd_num = pending.begin()->second.sd_num;
+        auto rx_reserved = pending.begin()->second.rx_reserved;
 
         int copies_count = (int)pending.size();
 
         if (d_debug)
         {
           NCJT_LOG(d_debug, "Processing packet with seqno: " << seqno
-                    << ", packet_len: " << packet_len
-                    << ", copies_count: " << copies_count
-                    << ", p2modtype: " << p2modtype
-                    << ", p3modtype: " << p3modtype
-                    << ", rx_coding_rate: " << rx_coding_rate
-                    << ", rx_data_checksum: " << rx_data_checksum);
+                                                             << ", packet_len: " << packet_len
+                                                             << ", copies_count: " << copies_count
+                                                             << ", p2modtype: " << p2modtype
+                                                             << ", p3modtype: " << p3modtype
+                                                             << ", rx_coding_rate: " << rx_coding_rate
+                                                             << ", rx_data_checksum: " << rx_data_checksum);
         }
         int max_modtype = 0;
         for (const auto &pair : pending)
@@ -551,8 +592,8 @@ namespace gr
         int p2max_bits_per_pkt = packet_len * p2modtype;
 
         NCJT_LOG(d_debug, "max_modtype: " << max_modtype
-                  << ", max_bits_per_pkt: " << max_bits_per_pkt
-                  << ", packet_len: " << packet_len);
+                                          << ", max_bits_per_pkt: " << max_bits_per_pkt
+                                          << ", packet_len: " << packet_len);
 
         /**************************************************************
          * 1) MAJORITY VOTING decode
@@ -587,7 +628,7 @@ namespace gr
           for (int i = 0; i < p2max_bits_per_pkt; i++)
           {
             llrs_majority[i] /= copies_count; // Normalize by number of copies
-            llrs_majority[i] -= 0.5f; // Center around zero
+            llrs_majority[i] -= 0.5f;         // Center around zero
             // Now threshold
             bits_majority[i] = (llrs_majority[i] > 0) ? 1 : 0;
           }
@@ -644,7 +685,7 @@ namespace gr
             //           << std::endl;
 
             assert(it->second.p2modtype <= it->second.modtype);
-            
+
             // Make a temporary buffer for remapping
             uint8_t *tmp_remap_buf = (uint8_t *)malloc(packet_len * sizeof(uint8_t) * it->second.modtype);
             for (int sym_idx = 0; sym_idx < packet_len; sym_idx++)
@@ -665,9 +706,10 @@ namespace gr
               }
             }
             // Remap
-            for (int sym_idx = 0; sym_idx < packet_len; sym_idx++) {
+            for (int sym_idx = 0; sym_idx < packet_len; sym_idx++)
+            {
               int idx = sym_idx * copies_count + copy_cnt;
-            // for (int k = 0; k < packet_len; k++) {
+              // for (int k = 0; k < packet_len; k++) {
               int period_offset = sym_idx * it->second.p2modtype;
               int val = 0;
               for (int b = 0; b < it->second.p2modtype; b++)
@@ -705,12 +747,12 @@ namespace gr
           // Run HardLogLikelihoodVanilla -> returns bit LLRs if sum_over_rx=true + return_bit_llrs=true
 
           d_hlls[p2modtype][copies_count]->Compute(rx_real.data(),
-                                                 rx_imag.data(),
-                                                 SNRs.data(),
-                                                 packet_len,
-                                                 copies_count,
-                                                 llrs_hll,
-                                                 d_num_threads);
+                                                   rx_imag.data(),
+                                                   SNRs.data(),
+                                                   packet_len,
+                                                   copies_count,
+                                                   llrs_hll,
+                                                   d_num_threads);
           // Reverse the order of the LLRs
           for (size_t d = 0; d < llrs_hll.size(); d += p2modtype)
           {
@@ -877,14 +919,9 @@ namespace gr
           }
         }
         /**************************************************************
-         * Determine ports
+         * 5) Calculate BERs if deterministic and rx_reserved != 1
          **************************************************************/
-        int hll_port = 0;
-        int majority_port = 1;
-        /**************************************************************
-         * 5) If deterministic input => measure coded BER and uncoded BER
-         **************************************************************/
-        if (d_deterministic_input)
+        if (d_deterministic_input && rx_reserved != 1)
         {
           // Recalculate how many *info bits* the mapper used
           int frame_data_syms = packet_len;
@@ -1048,7 +1085,7 @@ namespace gr
           }
         }
         /**************************************************************
-         * 6) LDPC decode
+         * 6) CRC verification and output tagging
          **************************************************************/
         bool crc_ok_majority = false;
         bool crc_ok_hll = false;
@@ -1121,6 +1158,15 @@ namespace gr
             out[d] = val;
           }
 
+          add_item_tag(hll_port, nitems_written(hll_port),
+                       pmt::string_to_symbol("rx_video_on"),
+                       pmt::from_bool(rx_reserved == 1),
+                       pmt::string_to_symbol(this->name()));
+
+          add_item_tag(hll_port, nitems_written(hll_port), pmt::string_to_symbol("rx_modtype_phase2"),
+                       pmt::from_uint64(p2modtype),
+                       pmt::string_to_symbol(this->name()));
+
           free(hll_buf);
           hll_buf = nullptr;
           // Add CRC tag for HLL
@@ -1145,6 +1191,17 @@ namespace gr
             out[d] = val;
           }
 
+          ////////////////////////////
+
+          add_item_tag(majority_port, nitems_written(majority_port),
+                       pmt::string_to_symbol("rx_video_on"),
+                       pmt::from_bool(rx_reserved == 1),
+                       pmt::string_to_symbol(this->name()));
+
+          add_item_tag(majority_port, nitems_written(majority_port), pmt::string_to_symbol("rx_modtype_phase2"),
+                       pmt::from_uint64(p2modtype),
+                       pmt::string_to_symbol(this->name()));
+
           free(majority_buf);
           majority_buf = nullptr;
           // Add CRC tag for MAJORITY
@@ -1154,7 +1211,7 @@ namespace gr
                        pmt::from_long(majority_buf_len / p2modtype),
                        pmt::string_to_symbol(this->name()));
         }
-        for (int pp = 0; pp < int(d_hll_enabled) + int(d_majority_enabled); pp++)
+        for (int pp = 0; pp < (d_hll_enabled ? 1 : 0) + (d_majority_enabled ? 1 : 0); pp++)
         {
           add_item_tag(pp, nitems_written(pp), pmt::string_to_symbol("rx_ctrl_ok"),
                        pmt::from_bool(true),
@@ -1186,17 +1243,24 @@ namespace gr
         {
           produce(hll_port, hll_buf_len / p2modtype);
         }
+        else
+        {
+          produce(hll_port, 0);
+        }
         if (d_majority_enabled)
         {
           produce(majority_port, majority_buf_len / p2modtype);
         }
+        else
+        {
+          produce(majority_port, 0);
+        }
         return WORK_CALLED_PRODUCE;
       }
-      produce(0, 0);
-      if (d_majority_enabled && d_hll_enabled)
-      {
-        produce(1, 0);
-      }
+      if (d_hll_enabled)
+        produce(hll_port, 0);
+      if (d_majority_enabled)
+        produce(majority_port, 0);
       return WORK_CALLED_PRODUCE;
     }
   } /* namespace ncjt */

@@ -52,7 +52,8 @@ list(APPEND ncjt_sources
     csi_quantizer_impl.cc
     csi_fb_processing_impl.cc
     p1_precoding_impl.cc
-    stream_mapper_impl.cc)
+    stream_mapper_impl.cc
+    udp_video_pub_impl.cc)
 
 set(ncjt_sources
     "${ncjt_sources}"

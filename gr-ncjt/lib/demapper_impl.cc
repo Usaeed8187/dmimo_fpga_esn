@@ -19,6 +19,7 @@
 #include "common.h"
 #include <random>
 
+
 namespace gr
 {
   namespace ncjt
@@ -50,6 +51,7 @@ namespace gr
           cc(0),
           d_rgmode(rgmode),
           d_current_phase(0),
+          d_last_reserved(0),
           d_last_nstrm(1),
           d_last_modtype(2),
           d_last_coding_rate(0),
@@ -65,11 +67,12 @@ namespace gr
           d_info_len(0)
     {
       NCJT_LOG(d_debug, "d_output_raw=" << d_output_raw
-                << ", d_deterministic_input=" << d_deterministic_input);
+                                        << ", d_deterministic_input=" << d_deterministic_input);
 
       if (rgmode < 0 || rgmode >= 8)
         throw std::runtime_error("Unsupported RG mode");
-      else {
+      else
+      {
         set_output_multiple(RG_NUM_OFDM_SYM[rgmode] * RG_NUM_DATA_SC[rgmode] - 64);
       }
 
@@ -105,6 +108,8 @@ namespace gr
               "[mapper_muxer_impl] ERROR: LDPC factories could not be created.");
         }
       }
+
+      
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -142,11 +147,11 @@ namespace gr
       cc++;
 
       NCJT_LOG(d_debug, " (" << cc
-                << ") noutput_items=" << noutput_items
-                << ", ninput_items[0]=" << ninput_items[0]
-                << ", ninput_items[1]=" << ninput_items[1]
-                << ", d_last_modtype=" << d_last_modtype
-                << ", d_last_coding_rate=" << d_last_coding_rate);
+                             << ") noutput_items=" << noutput_items
+                             << ", ninput_items[0]=" << ninput_items[0]
+                             << ", ninput_items[1]=" << ninput_items[1]
+                             << ", d_last_modtype=" << d_last_modtype
+                             << ", d_last_coding_rate=" << d_last_coding_rate);
 
       if (ninput_items[0] != ninput_items[1])
       {
@@ -203,8 +208,12 @@ namespace gr
           d_last_modtype = pmt::to_uint64(tg.value);
           modtype_bits_to_index(d_last_modtype);
           NCJT_LOG(d_debug, "Found rx_modtype=" << d_last_modtype);
-                    
-        } 
+        }
+        else if (key == "rx_reserved")
+        {
+          d_last_reserved = pmt::to_uint64(tg.value);
+          NCJT_LOG(d_debug, "Found rx_reserved=" << d_last_reserved);
+        }
         else if (key == "rx_current_phase")
         {
           d_current_phase = pmt::to_uint64(tg.value);
@@ -340,8 +349,8 @@ namespace gr
           int in_bits_per_seg =
               base_in_bits_per_seg + (seg == num_segs - 1 ? remainder : 0);
           NCJT_LOG(d_debug, "\t\t >> Segment " << seg
-                    << " (start_idx=" << start_idx
-                    << ", in_bits_per_seg=" << in_bits_per_seg << ")");
+                                               << " (start_idx=" << start_idx
+                                               << ", in_bits_per_seg=" << in_bits_per_seg << ")");
           auto d_bits = gr::ncjt::ldpc_decode(in_bits_per_seg,
                                               std::vector<srsran::log_likelihood_ratio>(
                                                   llrs.begin() + start_idx,
@@ -367,9 +376,9 @@ namespace gr
         uint16_t computed_crc = gr::ncjt::compute_crc16(d_info_buf, d_info_len);
         bool crc_ok = (computed_crc == (uint16_t)d_rx_data_checksum);
         NCJT_LOG(d_debug, "Computed CRC16=0x"
-                  << std::hex << computed_crc
-                  << "  vs. 0x" << d_rx_data_checksum << std::dec
-                  << " => match=" << crc_ok);
+                              << std::hex << computed_crc
+                              << "  vs. 0x" << d_rx_data_checksum << std::dec
+                              << " => match=" << crc_ok);
         auto d_name = pmt::string_to_symbol(this->name());
         for (int op = 0; op < 1 + int(d_output_raw); op++)
         {
@@ -416,23 +425,26 @@ namespace gr
                        pmt::init_f32vector(d_snr_rbs_db.size(), d_snr_rbs_db.data()),
                        d_name);
           NCJT_LOG(d_debug, "(" << cc << ")"
-                << "\n\t Added tags: " 
-                << "\n\t\trx_data_crc(" << crc_ok << "), rx_ctrl_ok(" << d_last_ctrl_ok << ")"
-                << "\n\t\trx_seqno(" << d_last_seq_no << ")"
-                << "\n\t\trx_modtype(" << d_last_modtype << ")"
-                << "\n\t\trx_current_phase(" << d_current_phase << ")"
-                << ", rx_modtype_phase1(" << d_last_modtype_phase1 << ")"
-                << ", rx_modtype_phase2(" << d_last_modtype_phase2 << ")"
-                << ", rx_modtype_phase3(" << d_last_modtype_phase3 << ")"
-                << "\n\t\trx_raw_ctrl, rx_nstrm(" << d_last_nstrm << ")"
-                << ", rx_coding_rate(" << d_last_coding_rate << ")"
-                << ", rx_data_checksum, snr_rbs_db(" << d_snr_rbs_db.size() << " elements)");
-
+                                << "\n\t Added tags: "
+                                << "\n\t\trx_data_crc(" << crc_ok << "), rx_ctrl_ok(" << d_last_ctrl_ok << ")"
+                                << "\n\t\trx_seqno(" << d_last_seq_no << ")"
+                                << "\n\t\trx_modtype(" << d_last_modtype << ")"
+                                << "\n\t\trx_current_phase(" << d_current_phase << ")"
+                                << ", rx_modtype_phase1(" << d_last_modtype_phase1 << ")"
+                                << ", rx_modtype_phase2(" << d_last_modtype_phase2 << ")"
+                                << ", rx_modtype_phase3(" << d_last_modtype_phase3 << ")"
+                                << "\n\t\trx_raw_ctrl, rx_nstrm(" << d_last_nstrm << ")"
+                                << ", rx_coding_rate(" << d_last_coding_rate << ")"
+                                << ", rx_data_checksum, snr_rbs_db(" << d_snr_rbs_db.size() << " elements)");
         }
       }
 
       add_item_tag(0, nitems_written(0), pmt::string_to_symbol("packet_len"),
                    pmt::from_long(d_info_len / d_last_modtype_phase2),
+                   pmt::string_to_symbol(this->name()));
+      
+      add_item_tag(0, nitems_written(0), pmt::string_to_symbol("rx_video_on"),
+                   pmt::from_bool(d_last_reserved == 1),
                    pmt::string_to_symbol(this->name()));
 
       assert(d_info_len % d_last_modtype_phase2 == 0);
@@ -447,106 +459,85 @@ namespace gr
       assert(d_phase2_coded_len % d_last_modtype_phase2 == 0);
 
       // ----------------------------------------------------------------
-      // 5) If deterministic input => measure coded BER and uncoded BER
+      // 5) Deterministic input: either video‐stream mode (reserved==1)
+      //    or pure BER measurement (reserved!=1)
       // ----------------------------------------------------------------
       if (d_deterministic_input)
       {
-        // Recalculate how many *info bits* the mapper used
-        int frame_data_syms = d_last_pkt_len;
-        // int frame_data_bits_out = frame_data_syms * d_last_modtype;
-        int frame_data_bits_phase2_out = frame_data_syms * d_last_modtype_phase2;
-        double R = code_rates[d_last_coding_rate];
-        int in_bits_needed = frame_data_bits_phase2_out;
-        if (d_last_coding_rate > 0)
+        if (d_last_reserved == 0)
         {
-          in_bits_needed = int(std::floor(frame_data_bits_phase2_out * R));
-          int rem = in_bits_needed % d_last_modtype_phase2;
-          in_bits_needed += d_last_modtype_phase2 - rem;
-        }
-        // Generate the same PRNG bits used by mapper_muxer_impl
-        std::mt19937 gen(d_last_seq_no);
-        std::uniform_int_distribution<int> dist(0, 1);
-        std::vector<uint8_t> reference_bits(in_bits_needed);
-        for (int i = 0; i < in_bits_needed; i++)
-        {
-          reference_bits[i] = dist(gen) & 0x1;
-        }
-        // ---------------------------
-        // 5a) Coded BER
-        //     Compare decoded info bits vs reference_bits
-        // ---------------------------
-        int compare_len = std::min(d_info_len, in_bits_needed);
-        int bit_errors = 0;
-        for (int i = 0; i < compare_len; i++)
-        {
-          if (d_info_buf[i] != reference_bits[i])
+          // --- pure BER measurement mode: calculate coded & uncoded BER tags ---
+          int frame_data_syms = d_last_pkt_len;
+          int frame_bits_p2_out = frame_data_syms * d_last_modtype_phase2;
+          double R = code_rates[d_last_coding_rate];
+          int in_bits_needed = frame_bits_p2_out;
+          if (d_last_coding_rate > 0)
           {
-            bit_errors++;
+            in_bits_needed = int(std::floor(frame_bits_p2_out * R));
+            int rem = in_bits_needed % d_last_modtype_phase2;
+            in_bits_needed += (d_last_modtype_phase2 - rem);
           }
-        }
-        double coded_ber = (compare_len > 0)
-                               ? double(bit_errors) / double(compare_len)
-                               : 0.0;
-        // ---------------------------
-        // 5b) Uncoded BER
-        //     Re-encode the reference_bits so we get the same coded bits
-        //     that the TX used, then compare to d_coded_buf
-        // ---------------------------
-        std::vector<uint8_t> reference_coded_bits;
-        if (d_last_coding_rate > 0)
-        {
-          int seg_out_size = d_last_syms_per_stream;
-          int num_segs = frame_data_bits_phase2_out / seg_out_size;
-          int base_in_bits_per_seg = in_bits_needed / num_segs;
-          int remainder = in_bits_needed % num_segs;
-          reference_coded_bits.reserve(d_phase2_coded_len);
-          int start_idx = 0;
-          for (int seg = 0; seg < num_segs; seg++)
+          // regenerate PRBS for reference bits
+          std::mt19937 gen(d_last_seq_no);
+          std::uniform_int_distribution<int> dist(0, 1);
+          std::vector<uint8_t> ref(in_bits_needed);
+          for (int i = 0; i < in_bits_needed; i++)
+            ref[i] = dist(gen);
+
+          // coded BER
+          int cmp_len = std::min(d_info_len, in_bits_needed);
+          int errs = 0;
+          for (int i = 0; i < cmp_len; i++)
+            if (d_info_buf[i] != ref[i])
+              errs++;
+          double coded_ber = cmp_len ? double(errs) / cmp_len : 0.0;
+
+          // uncoded BER: re-encode reference bits
+          std::vector<uint8_t> ref_coded;
+          if (d_last_coding_rate > 0)
           {
-            int in_bits_per_seg =
-                base_in_bits_per_seg + (seg == num_segs - 1 ? remainder : 0);
-            auto seg_encoded = gr::ncjt::ldpc_encode(
-                std::vector<uint8_t>(reference_bits.begin() + start_idx,
-                                     reference_bits.begin() + start_idx + in_bits_per_seg),
-                seg_out_size,
-                d_ldpc_encoder.get(),
-                d_ldpc_matcher.get());
-            reference_coded_bits.insert(reference_coded_bits.end(),
-                                        seg_encoded.begin(), seg_encoded.end());
-            start_idx += in_bits_per_seg;
+            int seg_out = d_last_syms_per_stream;
+            int num_segs = frame_bits_p2_out / seg_out;
+            int base_in = in_bits_needed / num_segs;
+            int rem = in_bits_needed % num_segs;
+            ref_coded.reserve(d_phase2_coded_len);
+            int idx = 0;
+            for (int s = 0; s < num_segs; s++)
+            {
+              int in_seg = base_in + (s == num_segs - 1 ? rem : 0);
+              auto seg_enc = gr::ncjt::ldpc_encode(
+                  std::vector<uint8_t>(ref.begin() + idx, ref.begin() + idx + in_seg),
+                  seg_out,
+                  d_ldpc_encoder.get(),
+                  d_ldpc_matcher.get());
+              ref_coded.insert(ref_coded.end(), seg_enc.begin(), seg_enc.end());
+              idx += in_seg;
+            }
           }
-          assert(reference_coded_bits.size() == (size_t)d_phase2_coded_len);
-        }
-        else
-        {
-          // no coding => coded bits = raw bits
-          reference_coded_bits = reference_bits;
-        }
-        int uncoded_compare_len = std::min((int)reference_coded_bits.size(), d_phase2_coded_len);
-        int uncoded_errors = 0;
-        for (int i = 0; i < uncoded_compare_len; i++)
-        {
-          if (reference_coded_bits[i] != d_coded_buf[i])
+          else
           {
-            uncoded_errors++;
+            ref_coded = ref;
           }
-        }
-        double uncoded_ber = (uncoded_compare_len > 0)
-                                 ? double(uncoded_errors) / double(uncoded_compare_len)
-                                 : 0.0;
-        NCJT_LOG(d_debug, "\t(" << cc << ") => coded_ber=" << coded_ber
-                  << ", uncoded_ber=" << uncoded_ber);
-        // Add tags for coded and uncoded BER
-        for (int op = 0; op < 1 + int(d_output_raw); op++)
-        {
-          add_item_tag(op, nitems_written(op),
-                       pmt::string_to_symbol("rx_coded_ber"),
-                       pmt::from_double(coded_ber),
-                       pmt::string_to_symbol(this->name()));
-          add_item_tag(op, nitems_written(op),
-                       pmt::string_to_symbol("rx_uncoded_ber"),
-                       pmt::from_double(uncoded_ber),
-                       pmt::string_to_symbol(this->name()));
+          int uncmp = std::min((int)ref_coded.size(), d_phase2_coded_len);
+          int uerrs = 0;
+          for (int i = 0; i < uncmp; i++)
+            if (ref_coded[i] != d_coded_buf[i])
+              uerrs++;
+          double uncoded_ber = uncmp ? double(uerrs) / uncmp : 0.0;
+
+          // push BER tags
+          auto name = pmt::string_to_symbol(this->name());
+          for (int port = 0; port < 1 + int(d_output_raw); port++)
+          {
+            add_item_tag(port, nitems_written(port),
+                         pmt::string_to_symbol("rx_coded_ber"),
+                         pmt::from_double(coded_ber),
+                         name);
+            add_item_tag(port, nitems_written(port),
+                         pmt::string_to_symbol("rx_uncoded_ber"),
+                         pmt::from_double(uncoded_ber),
+                         name);
+          }
         }
       }
 
@@ -563,8 +554,8 @@ namespace gr
         out_dec[i] = val;
       }
       NCJT_LOG(d_debug, "Produced " << out_info_bytes
-                << " " << d_last_modtype << "-bit packed decoded info bytes"
-                << ", d_info_len=" << d_info_len << ")");
+                                    << " " << d_last_modtype << "-bit packed decoded info bytes"
+                                    << ", d_info_len=" << d_info_len << ")");
       produce(0, out_info_bytes);
       // Pack d_last_modtype_phase2 bits into each byte (uncoded)
       if (d_output_raw)
@@ -580,7 +571,6 @@ namespace gr
           }
           out_unc[i] = val;
         }
-        std::cout << "BBB " << out_coded_bytes << std::endl;
         produce(1, out_coded_bytes);
       }
       if (d_last_coding_rate > 0)

@@ -35,7 +35,7 @@ namespace gr
        * creating new instances.
        */
       static sptr make(int rgmode,
-                       bool majority_enabled,
+                       int combiner,
                        int num_copies,
                        int expire_ms,
                        int num_threads,

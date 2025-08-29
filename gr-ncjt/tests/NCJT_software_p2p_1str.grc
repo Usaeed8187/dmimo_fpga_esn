@@ -73,7 +73,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '50'
   states:
     bus_sink: false
     bus_source: false
@@ -85,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '3'
+    value: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -97,7 +97,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
@@ -109,7 +109,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
@@ -121,7 +121,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
@@ -203,7 +203,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1504, 672.0]
+    coordinate: [1328, 704.0]
     rotation: 0
     state: enabled
 - name: blocks_null_sink_1
@@ -269,6 +269,7 @@ blocks:
     debug: 'False'
     deterministic_input: deterministic
     maxoutbuf: '0'
+    mcast_port: '3123'
     minoutbuf: '0'
     rgmode: rgmode
   states:
@@ -278,6 +279,26 @@ blocks:
     coordinate: [1480, 456.0]
     rotation: 0
     state: enabled
+- name: ncjt_demapper_1_0
+  id: ncjt_demapper
+  parameters:
+    affinity: ''
+    alias: ''
+    coded: 'False'
+    comment: ''
+    debug: 'False'
+    deterministic_input: deterministic
+    maxoutbuf: '0'
+    mcast_port: '3124'
+    minoutbuf: '0'
+    rgmode: rgmode
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1552, 704.0]
+    rotation: 0
+    state: disabled
 - name: ncjt_err_stats_0_1
   id: ncjt_err_stats
   parameters:
@@ -295,16 +316,45 @@ blocks:
     show_birate: 'True'
     show_coded_ber: 'True'
     show_num_copies: 'False'
-    show_per: 'False'
+    show_per: 'True'
     show_throughput: 'True'
-    show_uncoded_ber: 'True'
+    show_uncoded_ber: 'False'
+    show_video: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1544, 132.0]
-    rotation: 180
+    coordinate: [1920, 260.0]
+    rotation: 0
     state: enabled
+- name: ncjt_err_stats_0_1_0
+  id: ncjt_err_stats
+  parameters:
+    affinity: ''
+    alias: ''
+    caption: Phase 1 Rx (TX UE)
+    cols: '3'
+    comment: ''
+    dark: 'True'
+    debug: 'False'
+    frame_per_sec: frames_per_sec
+    gui_hint: ''
+    logfreq: '5'
+    row_height: '300'
+    show_birate: 'True'
+    show_coded_ber: 'True'
+    show_num_copies: 'False'
+    show_per: 'True'
+    show_throughput: 'True'
+    show_uncoded_ber: 'False'
+    show_video: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1896, 604.0]
+    rotation: 0
+    state: disabled
 - name: ncjt_knobs_0
   id: ncjt_knobs
   parameters:
@@ -348,7 +398,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [264, 452.0]
+    coordinate: [224, 500.0]
     rotation: 0
     state: enabled
 - name: ncjt_noair_0_0
@@ -381,7 +431,7 @@ blocks:
     debug: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    nstrm: num_streams
+    nstrm: '1'
     phase: '1'
     rgmode: rgmode
     usecsi: 'True'
@@ -389,7 +439,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1232, 440.0]
+    coordinate: [1184, 464.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0_1
@@ -416,9 +466,27 @@ blocks:
     coordinate: [544, 464.0]
     rotation: 0
     state: enabled
+- name: ncjt_udp_video_pub_0
+  id: ncjt_udp_video_pub
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    grp: 239.0.0.1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    port: '9123'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1688, 336.0]
+    rotation: 0
+    state: enabled
 
 connections:
-- [ncjt_demapper_1, '0', ncjt_err_stats_0_1, '0']
+- [ncjt_demapper_1, '0', ncjt_udp_video_pub_0, '0']
+- [ncjt_demapper_1_0, '0', ncjt_err_stats_0_1_0, '0']
 - [ncjt_knobs_0, s_code_rate, ncjt_mapper_muxer_0_0, s_code_rate]
 - [ncjt_knobs_0, s_modtypes, ncjt_mapper_muxer_0_0, s_modtypes]
 - [ncjt_knobs_0, s_snr1, ncjt_noair_0_0, s_snr]
@@ -430,9 +498,12 @@ connections:
 - [ncjt_noair_0_0, '1', ncjt_rg_demapper_0_1, '1']
 - [ncjt_rg_demapper_0_1, '0', blocks_null_sink_0, '0']
 - [ncjt_rg_demapper_0_1, '0', ncjt_demapper_1, '0']
+- [ncjt_rg_demapper_0_1, '0', ncjt_demapper_1_0, '0']
 - [ncjt_rg_demapper_0_1, '1', blocks_null_sink_0, '1']
 - [ncjt_rg_demapper_0_1, '1', ncjt_demapper_1, '1']
+- [ncjt_rg_demapper_0_1, '1', ncjt_demapper_1_0, '1']
 - [ncjt_rg_mapper_0_1, '0', ncjt_noair_0_0, '0']
+- [ncjt_udp_video_pub_0, '0', ncjt_err_stats_0_1, '0']
 
 metadata:
   file_format: 1

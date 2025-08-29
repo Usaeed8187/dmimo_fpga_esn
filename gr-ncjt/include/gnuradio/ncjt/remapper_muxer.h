@@ -32,7 +32,7 @@ public:
    * class. ncjt::remapper_muxer::make is the public interface for
    * creating new instances.
    */
-  static sptr make(int rgmode, int nstrm, bool debug);
+  static sptr make(int rgmode, int nstrm, bool reencode, bool debug);
 };
 
 } // namespace ncjt

@@ -19,11 +19,12 @@ namespace gr
     // Factory
     // ------------------------------------------------------------------------
     remapper_muxer::sptr
-    remapper_muxer::make(int rgmode, int nstrm, bool debug)
+    remapper_muxer::make(int rgmode, int nstrm, bool reencode, bool debug)
     {
       return gnuradio::make_block_sptr<remapper_muxer_impl>(
           rgmode,
           nstrm,
+          reencode,
           debug);
     }
 
@@ -32,6 +33,7 @@ namespace gr
     // ------------------------------------------------------------------------
     remapper_muxer_impl::remapper_muxer_impl(int rgmode,
                                              int nstrm,
+                                             bool reencode,
                                              bool debug)
         : gr::tagged_stream_block(
               "remapper_muxer",
@@ -44,11 +46,13 @@ namespace gr
           d_nstrm(nstrm),
           d_modtype(-1),
           d_code_rate(-1),
+          d_reencode(reencode),
           d_debug(debug),
           d_seqno(0)
     {
 
-      NCJT_LOG(d_debug, " rgmode=" << rgmode << ", nstrm=" << d_nstrm);
+      NCJT_LOG(d_debug, " rgmode=" << rgmode << ", nstrm=" << d_nstrm 
+               << ", reencode=" << d_reencode);
 
       if (rgmode < 0 || rgmode >= 8)
         throw std::runtime_error("Unsupported RG mode");
@@ -105,6 +109,7 @@ namespace gr
       cc++;
       gr_complex *out0 = static_cast<gr_complex *>(output_items[0]);
 
+
       // Get rx_seqno tag
       std::vector<gr::tag_t> tags;
       get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_seqno"));
@@ -114,6 +119,8 @@ namespace gr
                             << "\n\tCalled, noutput_items=" << noutput_items
                             << ", ninput_items[0]=" << ninput_items[0]
                             << ", d_seqno=" << d_seqno);
+
+      // 1) Obtain the tags
 
       // Get rx_modtype_phase1, phase2, and phase3 tags
       get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_modtype_phase1"));
@@ -164,6 +171,8 @@ namespace gr
             "[remapper_muxer_impl] ERROR: d_phase must be 2 or 3, but got " + std::to_string(d_phase));
       }
       ///////
+
+      // 2) Prepare the CTRL and obtain its symbols
 
       get_tags_in_window(tags, 0, 0, 1, pmt::string_to_symbol("rx_raw_ctrl"));
       if (!tags.size())
@@ -216,7 +225,7 @@ namespace gr
         ctrl_syms = ctrl.pack_and_modulate_qpsk();
       }
 
-      // Place those 64 QPSK symbols, repeated per stream
+      // 3) Place CTRL symbols in the output buffer
       for (int i = 0; i < d_nstrm; i++)
       {
         for (int j = 0; j < 64; j++)
@@ -265,7 +274,7 @@ namespace gr
       used_bits.clear();
       used_bits.reserve(frame_data_bits_out_capacity);
 
-      if (d_code_rate == 0)
+      if (d_code_rate == 0 || !d_reencode)
       {
         // No coding, just copy the needed bits
         used_bits.insert(used_bits.end(), raw_in_bits.begin(),

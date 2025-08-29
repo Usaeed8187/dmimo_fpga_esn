@@ -15,8 +15,12 @@
 #include <queue>
 #include <cstdint>
 #include <string>
+#include <thread>
+#include <atomic>
+#include <mutex>
+#include <deque>
+#include <array>
 #include "common.h"
-
 #include "qam_constellation.h"
 
 // A simple structure to keep track of a pending packet we need to decode.
@@ -47,6 +51,7 @@ namespace gr
 
       int d_rgmode; // RG mode (0-7)
       int d_current_phase;    // Storing received rx_current_phase tag value.
+      int d_last_reserved;    // The most recently seen "rx_reserved"
       int d_last_nstrm;       // The most recently seen "rx_nstrm"
       int d_last_modtype;     // The most recently seen "rx_modtype"
       int d_last_modtype_phase1; // The most recently seen "rx_modtype_phase1"
@@ -82,6 +87,7 @@ namespace gr
       // outbits[0..(rx_modtype-1)] gets the bits.
       gr_complex demap_symbol(float x, float y, float csi_val,
                               int rx_modtype, uint8_t *outbits) const;
+
 
     public:
       demapper_impl(int rgmode,

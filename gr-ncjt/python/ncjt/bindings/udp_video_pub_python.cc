@@ -15,8 +15,8 @@
  */
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
-/* BINDTOOL_HEADER_FILE(remapper_muxer.h) */
-/* BINDTOOL_HEADER_FILE_HASH(ec9260ab3684c8c6cc7df252b6d09fb6) */
+/* BINDTOOL_HEADER_FILE(udp_video_pub.h) */
+/* BINDTOOL_HEADER_FILE_HASH(22a864b4d408eda961765c0d7f2e5d83) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -25,20 +25,20 @@
 
 namespace py = pybind11;
 
-#include <gnuradio/ncjt/remapper_muxer.h>
+#include <gnuradio/ncjt/udp_video_pub.h>
 // pydoc.h is automatically generated in the build directory
-#include <remapper_muxer_pydoc.h>
+#include <udp_video_pub_pydoc.h>
 
-void bind_remapper_muxer(py::module &m) {
+void bind_udp_video_pub(py::module &m) {
 
-  using remapper_muxer = gr::ncjt::remapper_muxer;
+  using udp_video_pub = gr::ncjt::udp_video_pub;
 
-  py::class_<remapper_muxer, gr::block, gr::basic_block,
-             std::shared_ptr<remapper_muxer>>(m, "remapper_muxer",
-                                              D(remapper_muxer))
+  py::class_<udp_video_pub, gr::block, gr::basic_block,
+             std::shared_ptr<udp_video_pub>>(m, "udp_video_pub",
+                                             D(udp_video_pub))
 
-      .def(py::init(&remapper_muxer::make), py::arg("rgmode"), py::arg("nstrm"),
-           py::arg("reencode"), py::arg("debug"), D(remapper_muxer, make))
+      .def(py::init(&udp_video_pub::make), py::arg("grp"), py::arg("port"),
+           D(udp_video_pub, make))
 
       ;
 }

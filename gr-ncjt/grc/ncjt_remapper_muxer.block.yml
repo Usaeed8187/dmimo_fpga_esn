@@ -4,8 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.remapper_muxer(${rgmode}, ${nstrm}, ${debug})
-
+  make: ncjt.remapper_muxer(${rgmode}, ${nstrm}, ${reencode}, ${debug})
 parameters:
   - id: rgmode
     label: RG Mode
@@ -18,6 +17,12 @@ parameters:
     dtype: int
     default: 1
     options: [1, 2, 3, 4]
+  - id: reencode
+    label: Reencode
+    dtype: bool
+    default: 'False'
+    options: [ 'True', 'False' ]
+    option_labels: [ Enable, Disable ]
   - id: debug
     label: Debug
     dtype: bool

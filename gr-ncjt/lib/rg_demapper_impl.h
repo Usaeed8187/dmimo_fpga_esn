@@ -26,6 +26,9 @@ namespace gr
       int d_phase;
       int d_rgmode; // RG mode (0-7)
       bool d_ctrl_ok; // whether control was successfully decoded
+
+      int  d_reserved; // Currently the first bit is used for video on/off
+
       int d_code_rate;
       int d_code_rate_phase1;
       int d_code_rate_phase2;
@@ -59,6 +62,7 @@ namespace gr
       unsigned __int128 d_raw_ctrl;
 
       void update_seqno();
+      void update_reserved();
       void update_coding_rate();
       void update_modtype();
       void update_data_checksum();

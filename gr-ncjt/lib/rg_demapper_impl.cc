@@ -163,6 +163,11 @@ namespace gr
       d_seqno = d_ctrl_obj.get_seq_number();
     }
 
+    void rg_demapper_impl::update_reserved()
+    {
+      d_reserved = d_ctrl_obj.get_reserved();
+    }
+
     void rg_demapper_impl::update_coding_rate()
     {
       d_code_rate_phase1 = d_ctrl_obj.get_coding_rate_phase1();
@@ -283,6 +288,7 @@ namespace gr
           NCJT_LOG(d_debug, "(" << cc << ") Successfully demodulated control symbols on stream " << s);
 
           update_seqno();
+          update_reserved();
           // nstrm is not obtained from CTRL for now. Current design of upstream block does not allow this. @TODO
           update_coding_rate();
           update_modtype();
@@ -297,6 +303,7 @@ namespace gr
       auto d_wrt = nitems_written(0);
       auto d_name = pmt::string_to_symbol(this->name());
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_ctrl_ok"), pmt::from_bool(d_ctrl_ok), d_name);
+      add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_reserved"), pmt::from_uint64(d_reserved), d_name);
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_seqno"), pmt::from_uint64(d_seqno), d_name);
       add_item_tag(0, d_wrt, pmt::string_to_symbol("rx_data_checksum"), pmt::from_uint64(d_data_checksum), d_name);
 

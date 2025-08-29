@@ -19,9 +19,8 @@ parameters:
     default: 'False'
     options: [ 'True', 'False' ]
     option_labels: [ Enable, Disable ]
-    hide: all
   - id: deterministic_input
-    label: Deterministic Input
+    label: Deterministic/Video Input
     dtype: bool
     default: 'False'
     options: [ 'True', 'False' ]

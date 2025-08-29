@@ -6,18 +6,72 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+import math
+import os
+import re
+import subprocess
+import sys
+import time
+from collections import deque
+from typing import Optional
+
 import numpy as np
-from PyQt5.QtCore import Qt  # Import Qt from QtCore for alignment flags
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
-from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis, QLogValueAxis
-from PyQt5.QtCore import QTimer
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtChart import (QChart, QChartView, QLineSeries, QLogValueAxis, QValueAxis)
+from PyQt5.QtCore import (QProcess, QThread, Qt, QTimer, pyqtSignal)
+from PyQt5.QtGui import QImage, QPixmap
 from gnuradio import gr
 import pmt
-import time
-import math
 
 EPS = 1e-10
+
+class _VideoReceiverThread(QThread):
+    change_pixmap_signal = pyqtSignal(QImage)
+
+    def __init__(self, mcast_url: str, width: int = 640, height: int = 480, parent=None):
+        super().__init__(parent)
+        self._url = mcast_url
+        self._w = width
+        self._h = height
+        self._running = True
+        self._proc: Optional[QProcess] = None
+        # derive pix_fmt etc.
+        self._pix_fmt = "rgb24"
+        self._frame_size = self._w * self._h * 3
+        self._img_format = QImage.Format_RGB888
+        self._buffer = bytearray()
+
+    def run(self):
+        # ffmpeg command (identical to streamer.py ReceiverThread)
+        cmd = [
+            "-i", self._url.replace("udp://", "udp://@"),
+            "-pix_fmt", self._pix_fmt,
+            "-f", "rawvideo",
+            "-"
+        ]
+        self._proc = QProcess()
+        self._proc.start("ffmpeg", cmd)
+        if not self._proc.waitForStarted(5000):
+            print("[ERR_STATS] ffmpeg receiver failed to start for", self._url)
+            return
+        while self._running:
+            if self._proc.waitForReadyRead(100):
+                chunk = self._proc.readAllStandardOutput().data()
+                if chunk:
+                    self._buffer.extend(chunk)
+            while len(self._buffer) >= self._frame_size:
+                frame = bytes(self._buffer[:self._frame_size])
+                del self._buffer[:self._frame_size]
+                img = QImage(frame, self._w, self._h, self._img_format).copy()
+                self.change_pixmap_signal.emit(img)
+
+        if self._proc and self._proc.state() != QProcess.NotRunning:
+            self._proc.kill()
+            self._proc.waitForFinished(300)
+
+    def stop(self):
+        self._running = False
+        self.wait()
 
 class err_stats(gr.sync_block, QtWidgets.QWidget):
     def __init__(
@@ -33,6 +87,7 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
         show_num_copies,
         show_coded_ber,
         show_uncoded_ber,
+        show_video,
         dark,
         debug,
     ):
@@ -49,11 +104,16 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
         self.show_per = show_per
         self.frame_per_sec = frame_per_sec
         self.logfreq = logfreq
+        self.show_video = show_video
         self.debug = debug
         gr.sync_block.__init__(self, name="err_stats",
                                in_sig=[np.uint8], out_sig=None)
         # Use QtWidgets.QWidget for widget initialization
         QtWidgets.QWidget.__init__(self)
+
+        if show_video == 1 and not show_coded_ber:
+            raise Exception("Coded BER must be enabled if video is set to replace coded BER chart. "
+                            "Consider setting video to a separate tile (show_video=2) or enabling coded BER.")
 
         if dark:
             dark_palette = QtGui.QPalette()
@@ -125,6 +185,11 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
         # Create a container widget for charts layout so we can hide/show it easily.
         self.chartsWidget = QtWidgets.QWidget()
         self.chartsLayout = QtWidgets.QGridLayout()
+
+        # Make each column occupy equal space
+        for col in range(cols):
+            self.chartsLayout.setColumnStretch(col, 1)
+
         self.chartsWidget.setLayout(self.chartsLayout)
         # Add charts widget to the frame layout instead of the main layout
         self.frameLayout.addWidget(self.chartsWidget)
@@ -253,6 +318,18 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
         # Create QChart for Coded BER (if enabled)
         # ----------------------------------
         if self.show_coded_ber:
+            if self.show_video == 1:
+                # Video display
+                self.video_label = QtWidgets.QLabel("Video Display")
+                self.chartsLayout.addWidget(self.video_label, widget_id // cols, widget_id % cols)
+                self.video_label.setAlignment(Qt.AlignCenter)
+                self.video_label.setVisible(False)  # Hide video label initially
+                self.video_label.setScaledContents(True)
+                if dark:
+                    self.video_label.setStyleSheet("color: white; font-size: 14pt;")
+                else:
+                    self.video_label.setStyleSheet("font-size: 14pt;")
+            # The Coded BER
             self.coded_ber_chart = QChart()
             self.coded_ber_chart.setTitle("Coded BER")
             self.coded_ber_chart.legend().setVisible(False)
@@ -320,6 +397,18 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
             widget_id += 1
         # --------------------------------
 
+        if self.show_video == 2:
+            # Video on a separate tile
+            self.video_label = QtWidgets.QLabel("Video Display")
+            self.video_label.setAlignment(Qt.AlignCenter)
+            self.video_label.setVisible(False)  # Hide video label initially
+            self.chartsLayout.addWidget(self.video_label, widget_id // cols, widget_id % cols)
+            if dark:
+                self.video_label.setStyleSheet("color: white; font-size: 14pt;")
+            else:
+                self.video_label.setStyleSheet("font-size: 14pt;")
+            widget_id += 1
+
         for r in range(self.chartsLayout.rowCount()):
             self.chartsLayout.setRowMinimumHeight(r, row_height)
 
@@ -384,6 +473,36 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
             self.log_scale_checkbox_uncoded.setChecked(True)
             self.toggle_uncoded_ber_scale(Qt.Checked)
 
+        self._video_url: Optional[str] = None
+        self._video_thr: Optional[_VideoReceiverThread] = None
+        self.stream_video = False
+
+    # -----------------------------------------------------------
+    # Video helpers
+    # -----------------------------------------------------------
+    def _start_video(self, url: str):
+        """Start a new receiver thread (terminating any existing one)."""
+        self._stop_video()                       # be safe
+        self._video_url = url
+        self._video_thr = _VideoReceiverThread(url, parent=self)
+        self._video_thr.change_pixmap_signal.connect(
+            lambda img: self.video_label.setPixmap(
+                QPixmap.fromImage(img).scaled(
+                    self.video_label.size(),
+                    Qt.KeepAspectRatio,
+                    Qt.SmoothTransformation)))
+        self._video_thr.start()
+        if self.debug:
+            print(f"[err_stats] Started video thread for {url}")
+
+    def _stop_video(self):
+        """Terminate the current receiver thread (if any)."""
+        if self._video_thr is not None:
+            self._video_thr.stop()
+            self._video_thr = None
+            if self.debug:
+                print("[err_stats] Stopped video thread")
+        self._video_url = None
     
     def OnResetMsgRecvd(self, msg):
         self.total_packets = 0
@@ -607,6 +726,24 @@ class err_stats(gr.sync_block, QtWidgets.QWidget):
             if 'snr_rbs_db' in self.tags:
                 str_val = '(' + ', '.join([f'{v:.2f}' for v in self.tags['snr_rbs_db']['value']]) + ')'
                 stats.append(("RB SNRs (dB)", str_val))
+            if self.show_video != 0:
+                if "rx_udp_stream" in self.tags:
+                    video_url = self.tags["rx_udp_stream"]["value"]
+                    if self._video_url != video_url:
+                        self._start_video(video_url)
+                    if self.show_video == 1:
+                        self.coded_ber_view.setVisible(False)
+                        self.log_scale_checkbox_coded.setVisible(False)
+                    self.video_label.setVisible(True)
+                else:
+                    if self._video_url is not None:
+                        self._stop_video()
+                    self.video_label.setText("Tuning to video stream. Please wait...")
+                    if self.show_video == 1:
+                        self.coded_ber_view.setVisible(True)
+                        self.log_scale_checkbox_coded.setVisible(True)
+                    self.video_label.setVisible(False)
+                stats.append(("Video Stream URL", self._video_url if self._video_url else "Not available"))
 
 
             self.stats_table.setRowCount(len(stats))

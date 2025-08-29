@@ -55,6 +55,7 @@ namespace py = pybind11;
     void bind_csi_fb_processing(py::module& m);
     void bind_p1_precoding(py::module& m);
     void bind_stream_mapper(py::module& m);
+    void bind_udp_video_pub(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 // We need this hack because import_array() returns NULL
@@ -116,5 +117,6 @@ PYBIND11_MODULE(ncjt_python, m)
     bind_csi_fb_processing(m);
     bind_p1_precoding(m);
     bind_stream_mapper(m);
+    bind_udp_video_pub(m);
     // ) END BINDING_FUNCTION_CALLS
 }

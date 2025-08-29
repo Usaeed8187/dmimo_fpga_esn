@@ -26,6 +26,7 @@ private:
   int d_n_ofdm_syms;  ///< Number of OFDM symbols per frame
   int d_sd_num;       ///< Number of data subcarriers per OFDM symbol
   int d_code_rate;    ///< Code rate index for data (0=no coding, 1..7 per table)
+  bool d_reencode;    ///< Whether to re-encode data or not
   bool d_debug;       ///< Debug flag
 
   int cc; // Debug counter
@@ -48,7 +49,7 @@ protected:
   int calculate_output_stream_length(const gr_vector_int &ninput_items);
 
 public:
-  remapper_muxer_impl(int rgmode, int nstrm, bool debug);
+  remapper_muxer_impl(int rgmode, int nstrm, bool reencode, bool debug);
   ~remapper_muxer_impl();
 
   // Where all the action really happens

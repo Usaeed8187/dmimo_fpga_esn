@@ -15,6 +15,22 @@
 
 #include <set>
 
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
+#include <chrono>
+
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <deque>
+#include <array>
+
+
 namespace gr {
   namespace ncjt {
     class mapper_muxer_impl : public mapper_muxer {
@@ -49,6 +65,31 @@ namespace gr {
 
       std::vector<uint8_t> d_bit_buffer;
 
+      // --- network‑producer state ---
+      std::thread           d_producer_thr;
+      std::atomic<bool>     d_producer_run{false};
+
+      std::atomic<bool>     d_video_on{false};
+      // timestamp of last successful packet reception
+      std::chrono::steady_clock::time_point d_last_packet_time;
+
+      std::deque<std::array<uint8_t, 188>> d_net_fifo;
+      std::mutex            d_net_mtx;       // protects d_net_fifo
+
+      // for incoming‐rate printing
+      std::chrono::steady_clock::time_point d_rate_last_time;
+      size_t                                d_rate_byte_count;
+
+      // multicast params – make them ctor arguments if you like
+      std::string           d_mcast_grp = "239.255.0.1";
+      uint16_t              d_mcast_port = 1234;
+
+      void producer_loop();
+      void start_producer();
+      void stop_producer();
+
+      std::chrono::steady_clock::time_point d_last_warn_time;  // for rate‐limit warning
+
     public:
       mapper_muxer_impl(int rgmode,
                         int nstrm,
@@ -59,8 +100,7 @@ namespace gr {
                         bool deterministic_input,
                         bool debug);
 
-      ~mapper_muxer_impl() override {
-      }
+      ~mapper_muxer_impl();
 
       void forecast(int noutput_items, gr_vector_int &ninput_items_required) override;
 

@@ -57,7 +57,8 @@ list(APPEND ncjt_python_files
     csi_quantizer_python.cc
     csi_fb_processing_python.cc
     p1_precoding_python.cc
-    stream_mapper_python.cc python_bindings.cc)
+    stream_mapper_python.cc
+    udp_video_pub_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(ncjt ../../.. gr::ncjt "${ncjt_python_files}")
 

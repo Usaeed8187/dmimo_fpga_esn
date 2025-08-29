@@ -1,0 +1,28 @@
+id: ncjt_udp_video_pub
+label: UDP Video Publisher
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.udp_video_pub(${grp}, ${port})
+
+parameters:
+  - id: grp
+    label: Group
+    dtype: string
+    default: "239.0.0.1"
+  - id: port
+    label: Port
+    dtype: int
+    default: 9123
+
+inputs:
+  - label: inp
+    domain: stream
+    dtype: byte
+outputs:
+  - label: out
+    domain: stream
+    dtype: byte
+
+file_format: 1

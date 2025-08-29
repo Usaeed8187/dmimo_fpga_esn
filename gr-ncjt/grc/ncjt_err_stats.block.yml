@@ -5,7 +5,7 @@ flags: [ show_id, python ]
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.err_stats(${caption}, ${cols}, ${row_height}, ${frame_per_sec}, ${logfreq}, ${show_birate}, ${show_throughput}, ${show_per}, ${show_num_copies}, ${show_coded_ber}, ${show_uncoded_ber}, ${dark}, ${debug})
+  make: ncjt.err_stats(${caption}, ${cols}, ${row_height}, ${frame_per_sec}, ${logfreq}, ${show_birate}, ${show_throughput}, ${show_per}, ${show_num_copies}, ${show_coded_ber}, ${show_uncoded_ber}, ${show_video}, ${dark}, ${debug})
 
 parameters:
 - id: caption
@@ -64,6 +64,12 @@ parameters:
   default: 'False'
   options: [ 'True', 'False' ]
   option_labels: [ Enable, Disable ]
+- id: show_video
+  label: Show Video
+  dtype: int
+  default: '1'
+  options: [ '0', '1', '2' ]
+  option_labels: [ Disable, Replace Coded BER, Separate Tile ]
 - id: dark
   label: Dark Mode
   dtype: bool
@@ -103,7 +109,7 @@ templates:
         <%
             win = '_%s_err_stats'%id
         %>\
-        ${win} = err_stats(${caption}, ${cols}, ${row_height}, ${frame_per_sec}, ${logfreq}, ${show_birate}, ${show_throughput}, ${show_per}, ${show_num_copies}, ${show_coded_ber}, ${show_uncoded_ber}, ${dark}, ${debug})
+        ${win} = err_stats(${caption}, ${cols}, ${row_height}, ${frame_per_sec}, ${logfreq}, ${show_birate}, ${show_throughput}, ${show_per}, ${show_num_copies}, ${show_coded_ber}, ${show_uncoded_ber}, ${show_video}, ${dark}, ${debug})
         self.${id} = ${win}
         ${gui_hint() % win} 
 

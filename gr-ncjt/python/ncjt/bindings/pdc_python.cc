@@ -16,7 +16,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0) */
 /* BINDTOOL_USE_PYGCCXML(0) */
 /* BINDTOOL_HEADER_FILE(pdc.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(c13808cf7aa2c2d078f3c231cdd4f328) */
+/* BINDTOOL_HEADER_FILE_HASH(00b7e322be56670c49b520ec50178083) */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -36,7 +36,7 @@ void bind_pdc(py::module &m) {
   py::class_<pdc, gr::block, gr::basic_block, std::shared_ptr<pdc>>(m, "pdc",
                                                                     D(pdc))
 
-      .def(py::init(&pdc::make), py::arg("rgmode"), py::arg("majority_enabled"),
+      .def(py::init(&pdc::make), py::arg("rgmode"), py::arg("combiner"),
            py::arg("num_copies"), py::arg("expire_ms"), py::arg("num_threads"),
            py::arg("deterministic_input"), py::arg("debug"), D(pdc, make))
 
