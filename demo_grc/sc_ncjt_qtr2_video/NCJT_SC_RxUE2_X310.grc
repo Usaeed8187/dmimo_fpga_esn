@@ -616,7 +616,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    caption: Rx gNB to RxUE1
+    caption: Rx gNB to RxUE2
     cols: '2'
     comment: ''
     dark: 'False'

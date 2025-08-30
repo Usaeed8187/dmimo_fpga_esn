@@ -66,7 +66,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 76.0]
+    coordinate: [1240, 76.0]
     rotation: 0
     state: enabled
 - name: frame_data_len
@@ -114,7 +114,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1368, 12.0]
+    coordinate: [1448, 12.0]
     rotation: 0
     state: enabled
 - name: nss
@@ -294,7 +294,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 12.0]
+    coordinate: [1240, 12.0]
     rotation: 0
     state: enabled
 - name: qam_type_p3r
@@ -306,7 +306,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1256, 12.0]
+    coordinate: [1336, 12.0]
     rotation: 0
     state: enabled
 - name: rf_freq
@@ -318,7 +318,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [856, 12.0]
+    coordinate: [904, 12.0]
     rotation: 0
     state: enabled
 - name: rg_fft_size
@@ -330,7 +330,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1232, 76.0]
+    coordinate: [1312, 76.0]
     rotation: 0
     state: enabled
 - name: rg_mode
@@ -363,7 +363,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [952, 12.0]
+    coordinate: [1000, 12.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -456,7 +456,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1056, 12.0]
+    coordinate: [1104, 12.0]
     rotation: 0
     state: enabled
 - name: udp_base_port
