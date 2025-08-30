@@ -39,5 +39,8 @@ install(FILES api.h
     remapper_muxer.h
     pdc.h
     skip_data.h
+    csi_quantizer.h
+    csi_fb_processing.h
+    p1_precoding.h
     stream_mapper.h
     udp_video_pub.h DESTINATION include/gnuradio/ncjt)

@@ -45,18 +45,6 @@ blocks:
     coordinate: [472, 12.0]
     rotation: 0
     state: enabled
-- name: deterministic
-  id: variable
-  parameters:
-    comment: ''
-    value: 'True'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [440, 532.0]
-    rotation: 0
-    state: enabled
 - name: fft_size
   id: variable
   parameters:
@@ -66,7 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1144, 76.0]
+    coordinate: [1168, 76.0]
     rotation: 0
     state: enabled
 - name: frame_data_len
@@ -114,7 +102,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 12.0]
+    coordinate: [1264, 12.0]
     rotation: 0
     state: enabled
 - name: ntx
@@ -229,12 +217,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '6'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 12.0]
+    coordinate: [640, 12.0]
     rotation: 0
     state: true
 - name: qam_type
@@ -246,7 +234,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1144, 12.0]
+    coordinate: [1168, 12.0]
     rotation: 0
     state: enabled
 - name: rf_freq
@@ -270,7 +258,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1224, 76.0]
+    coordinate: [1248, 76.0]
     rotation: 0
     state: enabled
 - name: rg_mode
@@ -372,14 +360,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1016, 12.0]
+    coordinate: [1008, 12.0]
     rotation: 0
     state: enabled
 - name: usrp_address
   id: variable
   parameters:
     comment: ''
-    value: '"addr=192.168.30.2"'
+    value: '"addr=192.168.20.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -395,16 +383,15 @@ blocks:
     coded: 'False'
     comment: ''
     debug: 'False'
-    deterministic_input: deterministic
+    deterministic_input: 'True'
     maxoutbuf: '0'
-    mcast_port: '9130'
     minoutbuf: '0'
     rgmode: rg_mode
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1304, 304.0]
+    coordinate: [1248, 312.0]
     rotation: 0
     state: enabled
 - name: ncjt_dual_tx_ctrl_0
@@ -454,11 +441,12 @@ blocks:
     show_per: 'True'
     show_throughput: 'False'
     show_uncoded_ber: 'True'
+    show_video: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1600, 236.0]
+    coordinate: [1672, 244.0]
     rotation: 0
     state: enabled
 - name: ncjt_mapper_muxer_0
@@ -469,7 +457,7 @@ blocks:
     code_rate: '0'
     comment: ''
     debug: 'False'
-    deterministic_input: deterministic
+    deterministic_input: 'True'
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrm: '1'
@@ -501,7 +489,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [872, 304.0]
+    coordinate: [864, 328.0]
     rotation: 0
     state: enabled
 - name: ncjt_mu_chanest_0
@@ -526,7 +514,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 304.0]
+    coordinate: [664, 328.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0
@@ -544,7 +532,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [520, 320.0]
+    coordinate: [512, 344.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_demod_0_0
@@ -562,7 +550,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [520, 352.0]
+    coordinate: [512, 376.0]
     rotation: 0
     state: enabled
 - name: ncjt_ofdm_mod_0
@@ -651,6 +639,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrm: '1'
+    reencode: 'True'
     rgmode: rg_mode
   states:
     bus_sink: false
@@ -676,7 +665,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 292.0]
+    coordinate: [1064, 300.0]
     rotation: 0
     state: enabled
 - name: ncjt_rg_mapper_0_0
@@ -724,7 +713,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 804.0]
+    coordinate: [600, 820.0]
     rotation: 0
     state: enabled
 - name: ncjt_rx_sync_0
@@ -761,7 +750,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [280, 320.0]
+    coordinate: [272, 344.0]
     rotation: 0
     state: enabled
 - name: ncjt_skip_data_0_1_0
@@ -779,7 +768,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 200.0]
+    coordinate: [1072, 232.0]
     rotation: 0
     state: enabled
 - name: ncjt_skip_data_0_1_0_0
@@ -797,7 +786,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 432.0]
+    coordinate: [1088, 432.0]
     rotation: 0
     state: enabled
 - name: ncjt_stbc_encode_0
@@ -817,7 +806,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 800.0]
+    coordinate: [800, 816.0]
+    rotation: 0
+    state: enabled
+- name: ncjt_udp_video_pub_0
+  id: ncjt_udp_video_pub
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    grp: 239.0.0.1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    port: '8123'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1496, 316.0]
     rotation: 0
     state: enabled
 - name: ncjt_ul_precoding_0
@@ -935,7 +941,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1200, 180.0]
+    coordinate: [1200, 212.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_1_0_0
@@ -1030,98 +1036,6 @@ blocks:
     coordinate: [1208, 412.0]
     rotation: 0
     state: enabled
-- name: qtgui_const_sink_x_0_1_0_1
-  id: qtgui_const_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'False'
-    axislabels: 'True'
-    color1: '"blue"'
-    color10: '"red"'
-    color2: '"red"'
-    color3: '"red"'
-    color4: '"red"'
-    color5: '"red"'
-    color6: '"red"'
-    color7: '"red"'
-    color8: '"red"'
-    color9: '"red"'
-    comment: ''
-    grid: 'True'
-    gui_hint: (2,0,2,2)
-    label1: ''
-    label10: ''
-    label2: ''
-    label3: ''
-    label4: ''
-    label5: ''
-    label6: ''
-    label7: ''
-    label8: ''
-    label9: ''
-    legend: 'False'
-    marker1: '0'
-    marker10: '0'
-    marker2: '0'
-    marker3: '0'
-    marker4: '0'
-    marker5: '0'
-    marker6: '0'
-    marker7: '0'
-    marker8: '0'
-    marker9: '0'
-    name: '"RG Demapper"'
-    nconnections: '1'
-    size: '1024'
-    style1: '0'
-    style10: '0'
-    style2: '0'
-    style3: '0'
-    style4: '0'
-    style5: '0'
-    style6: '0'
-    style7: '0'
-    style8: '0'
-    style9: '0'
-    tr_chan: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: '""'
-    type: complex
-    update_time: '0.5'
-    width1: '1'
-    width10: '1'
-    width2: '1'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    xmax: '1.5'
-    xmin: '-1.5'
-    ymax: '1.5'
-    ymin: '-1.5'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1392, 196.0]
-    rotation: 0
-    state: disabled
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:
@@ -1396,7 +1310,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1624, 588.0]
+    coordinate: [1544, 580.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_source_0
@@ -1832,13 +1746,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [48, 300.0]
+    coordinate: [40, 324.0]
     rotation: 0
     state: enabled
 
 connections:
-- [ncjt_demapper_1, '0', ncjt_err_stats_0, '0']
 - [ncjt_demapper_1, '0', ncjt_remapper_muxer_0_0_0, '0']
+- [ncjt_demapper_1, '0', ncjt_udp_video_pub_0, '0']
 - [ncjt_dual_tx_ctrl_0, '0', uhd_usrp_sink_0, '0']
 - [ncjt_dual_tx_ctrl_0, '1', uhd_usrp_sink_0, '1']
 - [ncjt_mapper_muxer_0, '0', ncjt_rg_mapper_0_0, '0']
@@ -1855,7 +1769,6 @@ connections:
 - [ncjt_ofdm_mod_0_1, '0', ncjt_dual_tx_ctrl_0, '0']
 - [ncjt_remapper_muxer_0_0_0, '0', ncjt_rg_mapper_1, '0']
 - [ncjt_rg_demapper_0, '0', ncjt_demapper_1, '0']
-- [ncjt_rg_demapper_0, '0', qtgui_const_sink_x_0_1_0_1, '0']
 - [ncjt_rg_demapper_0, '1', ncjt_demapper_1, '1']
 - [ncjt_rg_mapper_0_0, '0', ncjt_ul_precoding_0, '0']
 - [ncjt_rg_mapper_1, '0', ncjt_stbc_encode_0, '0']
@@ -1868,6 +1781,7 @@ connections:
 - [ncjt_skip_data_0_1_0_0, '0', qtgui_const_sink_x_0_1_0_0, '0']
 - [ncjt_stbc_encode_0, '0', ncjt_ofdm_mod_0, '0']
 - [ncjt_stbc_encode_0, '1', ncjt_ofdm_mod_0_0, '0']
+- [ncjt_udp_video_pub_0, '0', ncjt_err_stats_0, '0']
 - [ncjt_ul_precoding_0, '0', ncjt_ofdm_mod_0_1, '0']
 - [ncjt_ul_precoding_0, '1', ncjt_ofdm_mod_0_0_0, '0']
 - [uhd_usrp_source_0, '0', ncjt_rx_sync_0, '0']

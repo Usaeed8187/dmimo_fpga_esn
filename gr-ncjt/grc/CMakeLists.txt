@@ -15,7 +15,6 @@ install(FILES
     ncjt_rg_demapper.block.yml
     ncjt_ul_precoding.block.yml
     ncjt_mimo_detect.block.yml
-    ncjt_mimo_detect.block.yml
     ncjt_rx_mrc.block.yml
     ncjt_mu_chanest.block.yml
     ncjt_sic_detect.block.yml
