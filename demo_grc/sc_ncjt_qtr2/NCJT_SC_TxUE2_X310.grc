@@ -45,18 +45,6 @@ blocks:
     coordinate: [472, 12.0]
     rotation: 0
     state: enabled
-- name: deterministic
-  id: variable
-  parameters:
-    comment: ''
-    value: 'True'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [920, 172.0]
-    rotation: 0
-    state: enabled
 - name: fft_size
   id: variable
   parameters:
@@ -309,7 +297,7 @@ blocks:
     start: '0'
     step: '0.5'
     stop: '31.5'
-    value: '18'
+    value: '20'
     widget: counter_slider
   states:
     bus_sink: false
@@ -391,7 +379,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"addr=192.168.40.2"'
+    value: '"addr=192.168.60.2"'
   states:
     bus_sink: false
     bus_source: false
@@ -405,7 +393,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    debug: 'True'
+    debug: 'False'
     fftsize: fft_size
     logfreq: '50'
     maxoutbuf: '0'
@@ -430,9 +418,8 @@ blocks:
     coded: 'False'
     comment: ''
     debug: 'False'
-    deterministic_input: deterministic
+    deterministic_input: 'True'
     maxoutbuf: '0'
-    mcast_port: '9123'
     minoutbuf: '0'
     rgmode: rg_mode
   states:
@@ -489,11 +476,12 @@ blocks:
     show_per: 'True'
     show_throughput: 'False'
     show_uncoded_ber: 'True'
+    show_video: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1592, 228.0]
+    coordinate: [1584, 220.0]
     rotation: 0
     state: enabled
 - name: ncjt_ltf_chanest_0
@@ -664,6 +652,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nstrm: '1'
+    reencode: 'True'
     rgmode: rg_mode
   states:
     bus_sink: false
