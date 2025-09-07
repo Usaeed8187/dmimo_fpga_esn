@@ -21,3 +21,4 @@ except ModuleNotFoundError:
 
 from .err_stats import err_stats
 from .knobs import knobs
+from .esn_fpga_bridge import esn_fpga_bridge

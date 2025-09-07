@@ -21,7 +21,8 @@ add_subdirectory(bindings)
 ########################################################################
 gr_python_install(FILES __init__.py
     err_stats.py
-    knobs.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/ncjt)
+    knobs.py
+    esn_fpga_bridge.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/ncjt)
 
 ########################################################################
 # Handle the unit tests

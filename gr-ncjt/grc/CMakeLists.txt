@@ -41,4 +41,5 @@ install(FILES
     ncjt_csi_fb_processing.block.yml
     ncjt_p1_precoding.block.yml
     ncjt_stream_mapper.block.yml
-    ncjt_udp_video_pub.block.yml DESTINATION share/gnuradio/grc/blocks)
+    ncjt_udp_video_pub.block.yml
+    ncjt_esn_fpga_bridge.block.yml DESTINATION share/gnuradio/grc/blocks)

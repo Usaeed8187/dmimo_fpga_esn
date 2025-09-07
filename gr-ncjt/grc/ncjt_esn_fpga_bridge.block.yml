@@ -1,0 +1,72 @@
+id: ncjt_esn_fpga_bridge
+label: ESN FPGA Bridge
+category: '[dMIMO]'
+
+templates:
+  imports: from gnuradio import ncjt
+  make: ncjt.esn_fpga_bridge(${length_tag_key}, ${fpga_ip}, ${data_port}, ${out_len}, ${q15_scale}, ${output_format}, ${socket_timeout_ms}, ${default_weights}, ${update_weights_each_packet}, ${bind_to_data_port})
+
+parameters:
+- id: length_tag_key
+  label: Length tag key (unused)
+  dtype: string
+  default: 'packet_len'
+- id: fpga_ip
+  label: FPGA IP
+  dtype: string
+  default: '192.168.20.20'
+- id: data_port
+  label: Data Port
+  dtype: int
+  default: 8001
+- id: frame_len
+  label: Frame Length (VLEN in)
+  dtype: int
+  default: 256
+- id: out_len
+  label: Output Length (VLEN out)
+  dtype: int
+  default: 128
+- id: q15_scale
+  label: Q15 Scale
+  dtype: float
+  default: 32767.0
+- id: output_format
+  label: Output Format
+  dtype: enum
+  options: ['float32', 'q24']
+  option_labels: ['float32', 'Q24 (fixed)']
+  default: 'float32'
+- id: socket_timeout_ms
+  label: Socket Timeout (ms)
+  dtype: int
+  default: 250
+- id: default_weights
+  label: Default Weights (int16 list or None)
+  dtype: raw
+  default: 'None'
+- id: update_weights_each_packet
+  label: Update Weights Each Packet
+  dtype: bool
+  default: 'True'
+- id: bind_to_data_port
+  label: Bind RX Socket to Data Port
+  dtype: bool
+  default: 'True'
+
+inputs:
+- label: in
+  domain: stream
+  dtype: float
+  vlen: ${ frame_len }
+- id: weights
+  domain: message
+  optional: true
+
+outputs:
+- label: out
+  domain: stream
+  dtype: float
+  vlen: ${ out_len }
+
+file_format: 1
