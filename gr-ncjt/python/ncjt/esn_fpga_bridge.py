@@ -58,6 +58,7 @@ class esn_fpga_bridge(gr.basic_block):
     """
 
     def __init__(self,
+		 length_tag_key='packet_len',
                  fpga_ip="192.168.20.20",
                  data_port=8001,
                  frame_len=256,

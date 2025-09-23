@@ -19,6 +19,9 @@ try:
 except ModuleNotFoundError:
     pass
 
-from .err_stats import err_stats
+try:
+	from .err_stats import err_stats
+except Exception:
+	pass
 from .knobs import knobs
 from .esn_fpga_bridge import esn_fpga_bridge

@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  make: ncjt.esn_fpga_bridge(${length_tag_key}, ${fpga_ip}, ${data_port}, ${out_len}, ${q15_scale}, ${output_format}, ${socket_timeout_ms}, ${default_weights}, ${update_weights_each_packet}, ${bind_to_data_port})
+  make: ncjt.esn_fpga_bridge(${length_tag_key}, ${fpga_ip}, ${data_port}, ${frame_len}, ${out_len}, ${q15_scale}, '${output_format}', ${socket_timeout_ms}, ${default_weights}, ${update_weights_each_packet}, ${bind_to_data_port})
 
 parameters:
 - id: length_tag_key
