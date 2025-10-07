@@ -29,6 +29,10 @@ def _bytes_to_q24(buf: bytes) -> np.ndarray:
     raw = np.frombuffer(buf[:4*n], dtype="<i4")
     return (raw.astype(np.float32) / (1 << 24)).astype(np.float32)
 
+def _bytes_to_int16(buf: bytes) -> np.ndarray:
+    n = len(buf) // 2
+    return np.frombuffer(buf[:2*n], dtype="<i2")
+
 class esn_fpga_bridge(gr.basic_block):
     """
     ESN/FPGA UDP Bridge (general block)
@@ -161,6 +165,9 @@ class esn_fpga_bridge(gr.basic_block):
     def _decode_reply(self, data: bytes) -> np.ndarray:
         if self.output_format == "q24":
             y = _bytes_to_q24(data)
+        elif self.output_format == "int16":
+            y = _bytes_to_int16(data).astype(np.float32) # de-quantize below
+            y = y / self.q15_scale
         else:
             y = _bytes_to_float32(data)
         if y.size < self.out_len:

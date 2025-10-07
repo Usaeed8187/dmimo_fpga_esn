@@ -148,7 +148,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     out_len: frame_len
-    output_format: float32
+    output_format: int16
     q15_scale: '32767.0'
     socket_timeout_ms: '250'
     update_weights_each_packet: 'True'

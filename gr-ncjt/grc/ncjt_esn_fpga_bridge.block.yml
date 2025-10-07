@@ -34,8 +34,8 @@ parameters:
 - id: output_format
   label: Output Format
   dtype: enum
-  options: ['float32', 'q24']
-  option_labels: ['float32', 'Q24 (fixed)']
+  options: ['int16', 'float32', 'q24']
+  option_labels: ['int16 (echo/raw)', 'float32', 'Q24 (fixed)']
   default: 'float32'
 - id: socket_timeout_ms
   label: Socket Timeout (ms)
