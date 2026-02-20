@@ -108,7 +108,7 @@ class esn_fpga_bridge(gr.basic_block):
                 # Fall back to ephemeral if in use
                 self.sock.bind(("", 0))
         else:
-            self.sock.bind(("", 0))
+            self.sock.bind(("", self.data_port+1))
 
         # Weights buffer (int16)
         self.weights = None
