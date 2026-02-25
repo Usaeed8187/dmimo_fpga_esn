@@ -115,8 +115,12 @@ class esn_fpga_bridge(gr.basic_block):
         else:
             self.read_from_file = bool(read_from_file)
 
-        in_sig = [] if self.read_from_file else [(np.float32, int(frame_len))]
-
+        # Keep one stream input port regardless of mode so a GRC flowgraph can
+        # remain connected even when read_from_file=True.
+        #
+        # In file mode we simply ignore input samples in general_work.
+        in_sig = [(np.float32, int(frame_len))]
+        
         gr.basic_block.__init__(
             self,
             name="esn_fpga_bridge",
@@ -406,8 +410,9 @@ class esn_fpga_bridge(gr.basic_block):
     def general_work(self, input_items, output_items):
         """
         output_items[0]: shape (n_out_frames, out_len)
-        If read_from_file=False, input_items[0] has shape (n_in_frames, frame_len).
-        If read_from_file=True, no stream input is required and frames are sourced from file.
+        input_items[0] has shape (n_in_frames, frame_len).
+        If read_from_file=True, stream input is ignored and frames are sourced
+        from file.
         """
         yout = output_items[0]
 

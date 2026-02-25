@@ -96,7 +96,7 @@ blocks:
     bus_structure: null
     coordinate: [1056, 364.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_stream_to_vector_0
   id: blocks_stream_to_vector
   parameters:
@@ -355,7 +355,7 @@ blocks:
     bus_structure: null
     coordinate: [488, 212.0]
     rotation: 0
-    state: enabled
+    state: disabled
 
 connections:
 - [analog_sig_source_x_0, '0', blocks_stream_to_vector_0, '0']
