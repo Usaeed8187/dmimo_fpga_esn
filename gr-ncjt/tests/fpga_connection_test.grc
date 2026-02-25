@@ -147,16 +147,19 @@ blocks:
     length_tag_key: packet_len
     maxoutbuf: '0'
     minoutbuf: '0'
+    npz_key: '''H_mag_phase'''
+    npz_path: '''../../data/H_mag_phase.npz'''
     out_len: frame_len
     output_format: int16
     q15_scale: '32767.0'
+    read_from_file: 'True'
     socket_timeout_ms: '250'
     update_weights_each_packet: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [712, 308.0]
+    coordinate: [712, 284.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
