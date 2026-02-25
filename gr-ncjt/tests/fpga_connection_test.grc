@@ -140,7 +140,7 @@ blocks:
     alias: ''
     bind_to_data_port: 'True'
     comment: ''
-    data_port: '7'
+    data_port: '5001'
     default_weights: None
     fpga_ip: 192.168.1.10
     frame_len: frame_len

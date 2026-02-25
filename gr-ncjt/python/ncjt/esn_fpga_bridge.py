@@ -138,7 +138,11 @@ class esn_fpga_bridge(gr.basic_block):
         self.output_format = str(output_format).lower()
         self.timeout = max(1, int(socket_timeout_ms)) / 1000.0
         self.update_each = bool(update_weights_each_packet)
-        self.bind_to_data_port = bool(bind_to_data_port)
+        if isinstance(bind_to_data_port, str):
+            self.bind_to_data_port = bind_to_data_port.strip().lower() == "true"
+        else:
+            self.bind_to_data_port = bool(bind_to_data_port)
+
         self.npz_path = str(npz_path or "")
         self.npz_key = str(npz_key or "")
 
@@ -150,14 +154,16 @@ class esn_fpga_bridge(gr.basic_block):
         self.addr_cfg = (self.fpga_ip, self.cfg_port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(self.timeout)
-        if self.bind_to_data_port:
-            try:
-                self.sock.bind(("", self.data_port))
-            except OSError:
-                # Fall back to ephemeral if in use
-                self.sock.bind(("", 0))
-        else:
-            self.sock.bind(("", self.data_port+1))
+        bind_port = self.data_port if self.bind_to_data_port else (self.data_port + 1)
+        try:
+            self.sock.bind(("", bind_port))
+        except OSError as e:
+            # Fall back to ephemeral if the requested local port is unavailable
+            self.sock.bind(("", 0))
+            print(
+                f"[esn_fpga_bridge] Could not bind local UDP port {bind_port}: {e}; "
+                f"using ephemeral port {self.sock.getsockname()[1]}"
+            )
 
         # Weights buffer (int16)
         self.weights = None
