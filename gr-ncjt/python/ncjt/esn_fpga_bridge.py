@@ -16,6 +16,9 @@ import socket
 import numpy as np
 from gnuradio import gr
 
+_TENSOR_SHAPE = (2, 2, 2, 6)
+_TENSOR_SIZE = int(np.prod(_TENSOR_SHAPE))
+
 def _int16_to_bytes(arr: np.ndarray) -> bytes:
     assert arr.dtype == np.int16
     return arr.tobytes(order="C")
@@ -59,6 +62,10 @@ class esn_fpga_bridge(gr.basic_block):
         If True, send (header+weights) to cfg port for every frame. If False, send once at start or when updated.
     bind_to_data_port : bool
         If True, bind RX socket to data_port; else bind to ephemeral.
+    npz_path : str
+        .npz path containing real input data to be preloaded into a tensor buffer.
+    npz_key : str
+        Key within the .npz file (defaults to first key when omitted).
     """
 
     def __init__(self,
@@ -72,7 +79,9 @@ class esn_fpga_bridge(gr.basic_block):
                  socket_timeout_ms=250,
                  default_weights=None,
                  update_weights_each_packet=True,
-                 bind_to_data_port=True):
+                 bind_to_data_port=True,
+                 npz_path="",
+                 npz_key=""):
 
         gr.basic_block.__init__(
             self,
@@ -92,6 +101,8 @@ class esn_fpga_bridge(gr.basic_block):
         self.timeout = max(1, int(socket_timeout_ms)) / 1000.0
         self.update_each = bool(update_weights_each_packet)
         self.bind_to_data_port = bool(bind_to_data_port)
+        self.npz_path = str(npz_path or "")
+        self.npz_key = str(npz_key or "")
 
         # Protocol header (matches your fpgaESN.py style)
         self.header = np.array([32670, 0, 64, 0], dtype=np.int16)
@@ -132,6 +143,14 @@ class esn_fpga_bridge(gr.basic_block):
             pass
 
         self._warned_timeout = False
+        self.tensor_buffer = None
+        self.tensor_cursor = 0
+        self.tensors_per_packet = self.frame_len // _TENSOR_SIZE
+
+        if self.npz_path:
+            if self.tensors_per_packet < 1:
+                raise ValueError(f"frame_len={self.frame_len} must be at least {_TENSOR_SIZE} when npz_path is set")
+            self.tensor_buffer = self._load_tensor_buffer(self.npz_path, self.npz_key)
 
     # ---------- lifecycle ----------
     def stop(self):
@@ -178,6 +197,42 @@ class esn_fpga_bridge(gr.basic_block):
             return y[:self.out_len].astype(np.float32)
         else:
             return y.astype(np.float32)
+        
+    def _load_tensor_buffer(self, npz_path: str, npz_key: str) -> np.ndarray:
+        npz = np.load(npz_path)
+        if isinstance(npz, np.lib.npyio.NpzFile):
+            keys = npz.files
+            if not keys:
+                raise ValueError(f"No arrays found in NPZ file: {npz_path}")
+            if npz_key:
+                if npz_key not in keys:
+                    raise KeyError(f"npz_key '{npz_key}' not found in {npz_path}; available keys: {keys}")
+                arr = npz[npz_key]
+            else:
+                arr = npz[keys[0]]
+        else:
+            arr = npz
+
+        if np.iscomplexobj(arr):
+            raise TypeError("Loaded NPZ array must be real-valued (not complex)")
+
+        flat = np.asarray(arr, dtype=np.float32).reshape(-1)
+        ntensors = flat.size // _TENSOR_SIZE
+        if ntensors < 1:
+            raise ValueError(
+                f"Loaded real data has {flat.size} elements; need at least {_TENSOR_SIZE} for one 2x2x2x6 tensor"
+            )
+
+        used = ntensors * _TENSOR_SIZE
+        if used != flat.size:
+            print(f"[esn_fpga_bridge] Dropping {flat.size - used} samples that do not fill a complete tensor")
+
+        return flat[:used].reshape(ntensors, *_TENSOR_SHAPE)
+
+    def _next_tensor_payload(self) -> np.ndarray:
+        tensor = self.tensor_buffer[self.tensor_cursor]
+        self.tensor_cursor = (self.tensor_cursor + 1) % len(self.tensor_buffer)
+        return tensor.astype(np.float32).reshape(-1)
 
     # ---------- message port: weights ----------
     def _on_weights_msg(self, pdu):
@@ -235,12 +290,21 @@ class esn_fpga_bridge(gr.basic_block):
 
             # Quantize and send
             try:
-                q = self._quantize_to_int16(frame.astype(np.float32))
-                self.sock.sendto(_int16_to_bytes(q), self.addr_data)
+                if self.tensor_buffer is None:
+                    q = self._quantize_to_int16(frame.astype(np.float32))
+                    self.sock.sendto(_int16_to_bytes(q), self.addr_data)
+                    data, _ = self.sock.recvfrom(65535)
+                    y = self._decode_reply(data)
+                else:
+                    replies = []
+                    for _ in range(self.tensors_per_packet):
+                        payload = self._next_tensor_payload()
+                        q = self._quantize_to_int16(payload)
+                        self.sock.sendto(_int16_to_bytes(q), self.addr_data)
+                        data, _ = self.sock.recvfrom(65535)
+                        replies.append(self._decode_reply(data))
 
-                # Receive reply
-                data, _ = self.sock.recvfrom(65535)
-                y = self._decode_reply(data)
+                    y = np.mean(np.stack(replies, axis=0), axis=0).astype(np.float32)
                 self._warned_timeout = False
             except socket.timeout:
                 if not self._warned_timeout:
