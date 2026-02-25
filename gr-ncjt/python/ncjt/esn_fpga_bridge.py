@@ -13,11 +13,30 @@
 # - Decodes reply as float32 or Q24
 
 import socket
+import struct
+import io
+import math
 import numpy as np
 from gnuradio import gr
 
 _TENSOR_SHAPE = (2, 2, 2, 6)
 _TENSOR_SIZE = int(np.prod(_TENSOR_SHAPE))
+
+_MAGIC = b"NPYB"
+_VER = 1
+_TYPE_INIT = 1
+_TYPE_DATA = 2
+_INIT_FMT = "!4sBBH I I I I I I I"
+_DATA_FMT = "!4sBBH I I I H I H"
+
+_RX_HEADER_ID = b"BLK64___"
+_RX_HEADER_FMT = struct.Struct("!8sI")
+_RX_HEADER_LEN = _RX_HEADER_FMT.size
+
+_BLOCK_TENSORS = 10
+_TX_CHUNK_SIZE = 1200
+
+
 
 def _int16_to_bytes(arr: np.ndarray) -> bytes:
     assert arr.dtype == np.int16
@@ -35,6 +54,11 @@ def _bytes_to_q24(buf: bytes) -> np.ndarray:
 def _bytes_to_int16(buf: bytes) -> np.ndarray:
     n = len(buf) // 2
     return np.frombuffer(buf[:2*n], dtype="<i2")
+    
+def _block_to_npy_bytes(block: np.ndarray) -> bytes:
+    buf = io.BytesIO()
+    np.save(buf, block, allow_pickle=False)
+    return buf.getvalue()
 
 class esn_fpga_bridge(gr.basic_block):
     """
@@ -155,7 +179,10 @@ class esn_fpga_bridge(gr.basic_block):
         self._warned_timeout = False
         self.tensor_buffer = None
         self.tensor_cursor = 0
-        self.tensors_per_packet = self.frame_len // _TENSOR_SIZE
+        self.tensors_per_packet = _BLOCK_TENSORS
+        self._session_id = 1
+        self._init_sent = False
+
 
         if self.npz_path:
             if self.read_from_file and self.tensors_per_packet < 1:
@@ -229,23 +256,117 @@ class esn_fpga_bridge(gr.basic_block):
         if np.iscomplexobj(arr):
             raise TypeError("Loaded NPZ array must be real-valued (not complex)")
 
-        flat = np.asarray(arr, dtype=np.float32).reshape(-1)
+        flat = np.asarray(arr, dtype=np.float64).reshape(-1)
         ntensors = flat.size // _TENSOR_SIZE
         if ntensors < 1:
             raise ValueError(
                 f"Loaded real data has {flat.size} elements; need at least {_TENSOR_SIZE} for one 2x2x2x6 tensor"
             )
 
-        used = ntensors * _TENSOR_SIZE
+        if ntensors < self.tensors_per_packet:
+            raise ValueError(
+                f"Need at least {self.tensors_per_packet} tensors in file, found {ntensors}"
+            )
+
+        used_tensors = (ntensors // self.tensors_per_packet) * self.tensors_per_packet
+        used = used_tensors * _TENSOR_SIZE
+
         if used != flat.size:
-            print(f"[esn_fpga_bridge] Dropping {flat.size - used} samples that do not fill a complete tensor")
+            print(
+                f"[esn_fpga_bridge] Dropping {flat.size - used} samples so tensor count is a multiple of {self.tensors_per_packet}"
+            )
 
-        return flat[:used].reshape(ntensors, *_TENSOR_SHAPE)
+        return flat[:used].reshape(used_tensors, *_TENSOR_SHAPE)
 
-    def _next_tensor_payload(self) -> np.ndarray:
-        tensor = self.tensor_buffer[self.tensor_cursor]
-        self.tensor_cursor = (self.tensor_cursor + 1) % len(self.tensor_buffer)
-        return tensor.astype(np.float32).reshape(-1)
+    def _next_tensor_block(self):
+        start = self.tensor_cursor
+        end = start + self.tensors_per_packet
+        block = self.tensor_buffer[start:end]
+        if len(block) < self.tensors_per_packet:
+            remain = self.tensors_per_packet - len(block)
+            block = np.concatenate([block, self.tensor_buffer[:remain]], axis=0)
+            self.tensor_cursor = remain
+        else:
+            self.tensor_cursor = end % len(self.tensor_buffer)
+        return start, block.astype(np.float64)
+
+    def _send_init_packet(self):
+        if self._init_sent or self.tensor_buffer is None:
+            return
+
+        total_tensors = int(len(self.tensor_buffer))
+        d1, d2, d3, d4 = _TENSOR_SHAPE
+        init_pkt = struct.pack(
+            _INIT_FMT,
+            _MAGIC,
+            _VER,
+            _TYPE_INIT,
+            0,
+            self._session_id,
+            total_tensors,
+            self.tensors_per_packet,
+            d1,
+            d2,
+            d3,
+            d4,
+        )
+
+        for _ in range(3):
+            self.sock.sendto(init_pkt, self.addr_data)
+        self._init_sent = True
+
+    def _send_tensor_block(self, start: int, block: np.ndarray):
+        npy_bytes = _block_to_npy_bytes(block)
+        npy_len = len(npy_bytes)
+        n_chunks = math.ceil(npy_len / _TX_CHUNK_SIZE)
+
+        for seq in range(n_chunks):
+            off = seq * _TX_CHUNK_SIZE
+            chunk = npy_bytes[off:off + _TX_CHUNK_SIZE]
+            pkt = struct.pack(
+                _DATA_FMT,
+                _MAGIC,
+                _VER,
+                _TYPE_DATA,
+                0,
+                self._session_id,
+                start,
+                npy_len,
+                _TX_CHUNK_SIZE,
+                seq,
+                len(chunk),
+            ) + chunk
+            self.sock.sendto(pkt, self.addr_data)
+
+    def _recv_file_header(self):
+        while True:
+            data, _ = self.sock.recvfrom(65535)
+            if len(data) < _RX_HEADER_LEN:
+                continue
+            file_id, file_size = _RX_HEADER_FMT.unpack_from(data, 0)
+            if file_id != _RX_HEADER_ID:
+                continue
+            return file_size
+
+    def _recv_file_payload(self, nbytes: int) -> bytes:
+        chunks = []
+        got = 0
+        while got < nbytes:
+            data, _ = self.sock.recvfrom(65535)
+            chunks.append(data)
+            got += len(data)
+        return b"".join(chunks)[:nbytes]
+
+    def _decode_file_reply(self) -> np.ndarray:
+        file_size = self._recv_file_header()
+        payload = self._recv_file_payload(file_size)
+        arr = np.frombuffer(payload, dtype=np.float64)
+        y = arr.astype(np.float32)
+        if y.size < self.out_len:
+            z = np.zeros(self.out_len, dtype=np.float32)
+            z[:y.size] = y
+            return z
+        return y[:self.out_len]
 
     # ---------- message port: weights ----------
     def _on_weights_msg(self, pdu):
@@ -313,15 +434,11 @@ class esn_fpga_bridge(gr.basic_block):
                     data, _ = self.sock.recvfrom(65535)
                     y = self._decode_reply(data)
                 else:
-                    replies = []
-                    for _ in range(self.tensors_per_packet):
-                        payload = self._next_tensor_payload()
-                        q = self._quantize_to_int16(payload)
-                        self.sock.sendto(_int16_to_bytes(q), self.addr_data)
-                        data, _ = self.sock.recvfrom(65535)
-                        replies.append(self._decode_reply(data))
+                    self._send_init_packet()
+                    start, block = self._next_tensor_block()
+                    self._send_tensor_block(start, block)
+                    y = self._decode_file_reply()
 
-                    y = np.mean(np.stack(replies, axis=0), axis=0).astype(np.float32)
                 self._warned_timeout = False
             except socket.timeout:
                 if not self._warned_timeout:
