@@ -62,6 +62,8 @@ class esn_fpga_bridge(gr.basic_block):
         If True, send (header+weights) to cfg port for every frame. If False, send once at start or when updated.
     bind_to_data_port : bool
         If True, bind RX socket to data_port; else bind to ephemeral.
+    read_from_file : bool
+        If True, ignore stream input and continuously read payloads from file for UDP transmit.
     npz_path : str
         .npz path containing real input data to be preloaded into a tensor buffer.
     npz_key : str
@@ -80,13 +82,21 @@ class esn_fpga_bridge(gr.basic_block):
                  default_weights=None,
                  update_weights_each_packet=True,
                  bind_to_data_port=True,
+                 read_from_file=True,
                  npz_path="",
                  npz_key=""):
+
+        if isinstance(read_from_file, str):
+            self.read_from_file = read_from_file.strip().lower() == "true"
+        else:
+            self.read_from_file = bool(read_from_file)
+
+        in_sig = [] if self.read_from_file else [(np.float32, int(frame_len))]
 
         gr.basic_block.__init__(
             self,
             name="esn_fpga_bridge",
-            in_sig=[(np.float32, int(frame_len))],
+            in_sig=in_sig,
             out_sig=[(np.float32, int(out_len))],
         )
 
@@ -148,9 +158,12 @@ class esn_fpga_bridge(gr.basic_block):
         self.tensors_per_packet = self.frame_len // _TENSOR_SIZE
 
         if self.npz_path:
-            if self.tensors_per_packet < 1:
+            if self.read_from_file and self.tensors_per_packet < 1:
                 raise ValueError(f"frame_len={self.frame_len} must be at least {_TENSOR_SIZE} when npz_path is set")
             self.tensor_buffer = self._load_tensor_buffer(self.npz_path, self.npz_key)
+
+            if self.read_from_file and self.tensor_buffer is None:
+                raise ValueError("read_from_file=True requires npz_path to be set")
 
     # ---------- lifecycle ----------
     def stop(self):
@@ -271,18 +284,22 @@ class esn_fpga_bridge(gr.basic_block):
     # ---------- main ----------
     def general_work(self, input_items, output_items):
         """
-        input_items[0]: shape (n_in_frames, frame_len)
         output_items[0]: shape (n_out_frames, out_len)
-        We process up to min(n_in_frames, n_out_frames) frames per call.
+        If read_from_file=False, input_items[0] has shape (n_in_frames, frame_len).
+        If read_from_file=True, no stream input is required and frames are sourced from file.
         """
-        xin = input_items[0]
         yout = output_items[0]
 
-        nframes = min(len(xin), len(yout))
         produced = 0
+        if self.read_from_file:
+            nframes = len(yout)
+            xin = None
+        else:
+            xin = input_items[0]
+            nframes = min(len(xin), len(yout))
 
         for k in range(nframes):
-            frame = xin[k]
+            frame = None if self.read_from_file else xin[k]
 
             # Update weights this frame if requested
             if self.update_each:
@@ -290,7 +307,7 @@ class esn_fpga_bridge(gr.basic_block):
 
             # Quantize and send
             try:
-                if self.tensor_buffer is None:
+                if not self.read_from_file:
                     q = self._quantize_to_int16(frame.astype(np.float32))
                     self.sock.sendto(_int16_to_bytes(q), self.addr_data)
                     data, _ = self.sock.recvfrom(65535)
@@ -319,5 +336,6 @@ class esn_fpga_bridge(gr.basic_block):
             produced += 1
 
         # Consume input frames and report produced outputs
-        self.consume(0, produced)
+        if not self.read_from_file:
+            self.consume(0, produced)
         return produced
