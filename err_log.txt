@@ -1,0 +1,80 @@
+chunxiao@chunxiao-minipc:~/Projects/dmimo_fpga_esn$ sudo gnuradio-companion 
+[sudo] password for chunxiao: 
+>>> Warning: vocoder_codec2_decode_ps - option_attributes are for enums only, ignoring
+>>> Warning: vocoder_codec2_encode_sp - option_attributes are for enums only, ignoring
+ncjt_err_stats.block.yml                 block: error: Value type 'NoneType' for 'outputs' not in valid types
+ncjt_noair.block.yml                     block.parameters[3]: warn: Ignoring extra key 'help'
+<<< Welcome to GNU Radio Companion 3.10.1.1 >>>
+
+Block paths:
+	/usr/share/gnuradio/grc/blocks
+	/usr/local/share/gnuradio/grc/blocks
+
+Loading: "/home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.grc"
+>>> Done
+>>> Warning: vocoder_codec2_decode_ps - option_attributes are for enums only, ignoring
+>>> Warning: vocoder_codec2_encode_sp - option_attributes are for enums only, ignoring
+ncjt_err_stats.block.yml                 block: error: Value type 'NoneType' for 'outputs' not in valid types
+ncjt_noair.block.yml                     block.parameters[3]: warn: Ignoring extra key 'help'
+
+Generating: '/home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.py'
+>>> Warning: This flow graph may not have flow control: no audio or RF hardware blocks found. Add a Misc->Throttle block to your flow graph to avoid CPU congestion.
+
+Executing: /usr/bin/python3 -u /home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.py
+
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
+[esn_fpga_bridge] Could not bind local UDP port 5002: [Errno 98] Address already in use; using ephemeral port 47284
+[esn_fpga_bridge] FPGA addr_data=('192.168.1.10', 5001) addr_cfg=('192.168.1.10', 6001)
+[esn_fpga_bridge] local UDP socket bound to ('0.0.0.0', 47284)
+[esn_fpga_bridge] socket timeout = 2000 ms
+[esn_fpga_bridge] pacing: init=0.01s chunk=0.001s block=0.01s
+qt.svg: /usr/share/icons/WhiteSur-light/apps/scalable/gnuradio-grc.svg:1:12346: Could not resolve property: #a
+qt.svg: /usr/share/icons/WhiteSur-light/apps/scalable/gnuradio-grc.svg:1:12346: Could not resolve property: #a
+qt.svg: /usr/share/icons/WhiteSur-light/apps/scalable/gnuradio-grc.svg:1:12346: Could not resolve property: #a
+[esn_fpga_bridge] sent INIT 1/3 to ('192.168.1.10', 5001) bytes=36 session=1
+[esn_fpga_bridge] sent INIT 2/3 to ('192.168.1.10', 5001) bytes=36 session=1
+[esn_fpga_bridge] sent INIT 3/3 to ('192.168.1.10', 5001) bytes=36 session=1
+[esn_fpga_bridge] TX block start=0 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] mode=file starting RX wait...
+[esn_fpga_bridge] UDP recv timeout; emitting zeros
+[esn_fpga_bridge] TX block start=10 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=20 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=30 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=40 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=50 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=60 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=70 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=80 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=90 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=100 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=110 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+[esn_fpga_bridge] TX block start=120 npy_len=3968 n_chunks=4 chunk_size=1200
+[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
+[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+^C^X^Z
+[7]+  Stopped                 sudo gnuradio-companion
+
