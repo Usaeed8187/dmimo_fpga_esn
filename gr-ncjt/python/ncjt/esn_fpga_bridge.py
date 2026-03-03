@@ -29,9 +29,11 @@ _TYPE_DATA = 2
 _INIT_FMT = "!4sBBH I I I I I I I"
 _DATA_FMT = "!4sBBH I I I H I H"
 
-_RX_HEADER_ID = b"BLK64___"
+_RX_HEADER_ID = b"NMSE64__"
 _RX_HEADER_FMT = struct.Struct("!8sI")
 _RX_HEADER_LEN = _RX_HEADER_FMT.size
+_EXPECTED_REPLY_VALUES = 2
+_MAX_REPLY_SIZE = 10 * 1024 * 1024
 
 _BLOCK_TENSORS = 10
 _TX_CHUNK_SIZE = 1200
@@ -371,12 +373,38 @@ class esn_fpga_bridge(gr.basic_block):
         file_size = self._recv_file_header()
         payload = self._recv_file_payload(file_size)
         arr = np.frombuffer(payload, dtype=np.float64)
+        if arr.size != _EXPECTED_REPLY_VALUES:
+            print(
+                f"[esn_fpga_bridge] Expected {_EXPECTED_REPLY_VALUES} float64 values from FPGA; got {arr.size}"
+            )
         y = arr.astype(np.float32)
         if y.size < self.out_len:
             z = np.zeros(self.out_len, dtype=np.float32)
             z[:y.size] = y
             return z
         return y[:self.out_len]
+    
+    def _decode_single_reply_packet(self, packet: bytes) -> np.ndarray:
+        if len(packet) >= _RX_HEADER_LEN:
+            file_id, file_size = _RX_HEADER_FMT.unpack_from(packet, 0)
+            if file_id == _RX_HEADER_ID and 0 < file_size <= _MAX_REPLY_SIZE:
+                payload = packet[_RX_HEADER_LEN:]
+                remaining = file_size - len(payload)
+                if remaining > 0:
+                    payload += self._recv_file_payload(remaining)
+                arr = np.frombuffer(payload[:file_size], dtype=np.float64)
+                if arr.size != _EXPECTED_REPLY_VALUES:
+                    print(
+                        f"[esn_fpga_bridge] Expected {_EXPECTED_REPLY_VALUES} float64 values from FPGA; got {arr.size}"
+                    )
+                y = arr.astype(np.float32)
+                if y.size < self.out_len:
+                    z = np.zeros(self.out_len, dtype=np.float32)
+                    z[:y.size] = y
+                    return z
+                return y[:self.out_len]
+
+        return self._decode_reply(packet)
 
     # ---------- message port: weights ----------
     def _on_weights_msg(self, pdu):
@@ -443,7 +471,7 @@ class esn_fpga_bridge(gr.basic_block):
                     q = self._quantize_to_int16(frame.astype(np.float32))
                     self.sock.sendto(_int16_to_bytes(q), self.addr_data)
                     data, _ = self.sock.recvfrom(65535)
-                    y = self._decode_reply(data)
+                    y = self._decode_single_reply_packet(data)
                 else:
                     self._send_init_packet()
                     start, block = self._next_tensor_block()

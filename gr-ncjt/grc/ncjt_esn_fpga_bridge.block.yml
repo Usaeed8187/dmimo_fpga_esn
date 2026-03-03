@@ -26,7 +26,7 @@ parameters:
 - id: out_len
   label: Output Length (VLEN out)
   dtype: int
-  default: 128
+  default: 2
 - id: q15_scale
   label: Q15 Scale
   dtype: float
