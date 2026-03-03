@@ -34,6 +34,7 @@ _RX_HEADER_FMT = struct.Struct("!8sI")
 _RX_HEADER_LEN = _RX_HEADER_FMT.size
 _EXPECTED_REPLY_VALUES = 2
 _MAX_REPLY_SIZE = 10 * 1024 * 1024
+_EXPECTED_REPLY_BYTES = _EXPECTED_REPLY_VALUES * np.dtype(np.float64).itemsize
 
 _BLOCK_TENSORS = 10
 _TX_CHUNK_SIZE = 1200
@@ -355,10 +356,31 @@ class esn_fpga_bridge(gr.basic_block):
             data, _ = self.sock.recvfrom(65535)
             if len(data) < _RX_HEADER_LEN:
                 continue
-            file_id, file_size = _RX_HEADER_FMT.unpack_from(data, 0)
-            if file_id != _RX_HEADER_ID:
+            file_size = self._parse_file_size_from_header(data)
+            if file_size is None:
                 continue
             return file_size
+
+    def _parse_file_size_from_header(self, data: bytes):
+        file_id, file_size_be = _RX_HEADER_FMT.unpack_from(data, 0)
+        if file_id != _RX_HEADER_ID:
+            return None
+
+        if 0 < file_size_be <= _MAX_REPLY_SIZE:
+            return file_size_be
+
+        # Some FPGA images send file_size in host byte order instead of htonl.
+        # Fall back to little-endian decode when the network-order value is not sane.
+        file_size_le = struct.unpack_from("<I", data, 8)[0]
+        if 0 < file_size_le <= _MAX_REPLY_SIZE:
+            if file_size_le == _EXPECTED_REPLY_BYTES and file_size_be != file_size_le:
+                print(
+                    "[esn_fpga_bridge] Detected little-endian reply header size; "
+                    "accepting file_size without network byte order conversion"
+                )
+            return file_size_le
+
+        return None
 
     def _recv_file_payload(self, nbytes: int) -> bytes:
         chunks = []
@@ -386,8 +408,8 @@ class esn_fpga_bridge(gr.basic_block):
     
     def _decode_single_reply_packet(self, packet: bytes) -> np.ndarray:
         if len(packet) >= _RX_HEADER_LEN:
-            file_id, file_size = _RX_HEADER_FMT.unpack_from(packet, 0)
-            if file_id == _RX_HEADER_ID and 0 < file_size <= _MAX_REPLY_SIZE:
+            file_size = self._parse_file_size_from_header(packet)
+            if file_size is not None:
                 payload = packet[_RX_HEADER_LEN:]
                 remaining = file_size - len(payload)
                 if remaining > 0:
