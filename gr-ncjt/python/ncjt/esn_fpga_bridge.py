@@ -16,6 +16,7 @@ import socket
 import struct
 import io
 import math
+import time
 import numpy as np
 from gnuradio import gr
 
@@ -111,12 +112,24 @@ class esn_fpga_bridge(gr.basic_block):
                  bind_to_data_port=True,
                  read_from_file=True,
                  npz_path="",
-                 npz_key=""):
+                 npz_key="",
+                 init_sleep_s=0.01,
+                 chunk_sleep_s=0.001,
+                 block_sleep_s=0.01,
+                 debug_udp=True):
 
         if isinstance(read_from_file, str):
             self.read_from_file = read_from_file.strip().lower() == "true"
         else:
             self.read_from_file = bool(read_from_file)
+
+        self.init_sleep_s  = float(init_sleep_s)
+        self.chunk_sleep_s = float(chunk_sleep_s)
+        self.block_sleep_s = float(block_sleep_s)
+        self.debug_udp = bool(debug_udp)
+
+        # Limit spam in console
+        self._dbg_once = False
 
         # Keep one stream input port regardless of mode so a GRC flowgraph can
         # remain connected even when read_from_file=True.
@@ -167,6 +180,15 @@ class esn_fpga_bridge(gr.basic_block):
                 f"[esn_fpga_bridge] Could not bind local UDP port {bind_port}: {e}; "
                 f"using ephemeral port {self.sock.getsockname()[1]}"
             )
+
+        if self.debug_udp:
+            try:
+                print(f"[esn_fpga_bridge] FPGA addr_data={self.addr_data} addr_cfg={self.addr_cfg}")
+                print(f"[esn_fpga_bridge] local UDP socket bound to {self.sock.getsockname()}")
+                print(f"[esn_fpga_bridge] socket timeout = {socket_timeout_ms} ms")
+                print(f"[esn_fpga_bridge] pacing: init={self.init_sleep_s}s chunk={self.chunk_sleep_s}s block={self.block_sleep_s}s")
+            except Exception as e:
+                print(f"[esn_fpga_bridge] debug print failed: {e}")
 
         # Weights buffer (int16)
         self.weights = None
@@ -324,14 +346,21 @@ class esn_fpga_bridge(gr.basic_block):
             d4,
         )
 
-        for _ in range(3):
+        for i in range(3):
             self.sock.sendto(init_pkt, self.addr_data)
+            if self.debug_udp:
+                print(f"[esn_fpga_bridge] sent INIT {i+1}/3 to {self.addr_data} bytes={len(init_pkt)} session={self._session_id}")
+            time.sleep(self.init_sleep_s)
         self._init_sent = True
+        time.sleep(0.05)
 
     def _send_tensor_block(self, start: int, block: np.ndarray):
         npy_bytes = _block_to_npy_bytes(block)
         npy_len = len(npy_bytes)
         n_chunks = math.ceil(npy_len / _TX_CHUNK_SIZE)
+
+        if self.debug_udp:
+            print(f"[esn_fpga_bridge] TX block start={start} npy_len={npy_len} n_chunks={n_chunks} chunk_size={_TX_CHUNK_SIZE}")
 
         for seq in range(n_chunks):
             off = seq * _TX_CHUNK_SIZE
@@ -350,6 +379,12 @@ class esn_fpga_bridge(gr.basic_block):
                 len(chunk),
             ) + chunk
             self.sock.sendto(pkt, self.addr_data)
+            if self.debug_udp and (seq == 0 or seq == n_chunks - 1 or (seq % 20) == 0):
+                print(f"[esn_fpga_bridge]   sent chunk {seq+1}/{n_chunks} bytes={len(pkt)} payload={len(chunk)}")
+        
+            time.sleep(self.chunk_sleep_s)
+
+        time.sleep(self.block_sleep_s)
 
     def _recv_file_header(self):
         while True:
@@ -498,12 +533,18 @@ class esn_fpga_bridge(gr.basic_block):
                     self._send_init_packet()
                     start, block = self._next_tensor_block()
                     self._send_tensor_block(start, block)
+                    if self.debug_udp and not self._dbg_once:
+                        print(f"[esn_fpga_bridge] mode={'file' if self.read_from_file else 'stream'} starting RX wait...")
+                        self._dbg_once = True
                     y = self._decode_file_reply()
 
                 self._warned_timeout = False
             except socket.timeout:
                 if not self._warned_timeout:
-                    print("[esn_fpga_bridge] UDP recv timeout; emitting zeros")
+                    try:
+                        print(f"[esn_fpga_bridge] UDP recv timeout; emitting zeros. local={self.sock.getsockname()} fpga={self.addr_data} timeout_ms={self.socket_timeout_ms}")
+                    except Exception:
+                        print("[esn_fpga_bridge] UDP recv timeout; emitting zeros")
                     self._warned_timeout = True
                 y = np.zeros(self.out_len, dtype=np.float32)
             except Exception as e:
