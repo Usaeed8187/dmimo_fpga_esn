@@ -33,7 +33,7 @@ LISTEN_IP = "0.0.0.0"
 LISTEN_PORT = 5002           # must match UDP_SEND_PORT on PS
 SOCKET_RCVBUF = 4 * 1024 * 1024
 
-EXPECTED_FILE_ID = b"BLK64___"  # must match "BLK64___" in send_header()
+EXPECTED_FILE_ID = b"NMSE64__"  # must match "BLK64___" in send_header()
 HEADER_LEN = 12
 
 # Choose endianness that matches PS send_header():
@@ -70,15 +70,18 @@ def recv_payload(sock: socket.socket, nbytes: int, timeout_s: float = 2.0) -> by
     return blob[:nbytes]
 
 
+MAX_FILE_SIZE = 10 * 1024 * 1024  # sanity cap (10 MB) adjust as needed
+
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((LISTEN_IP, LISTEN_PORT))
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, SOCKET_RCVBUF)
+    sock.bind((LISTEN_IP, LISTEN_PORT))
 
     print(f"Listening on {LISTEN_IP}:{LISTEN_PORT}")
-    print(f"Expecting header: file_id={EXPECTED_FILE_ID!r}, {HEADER_STRUCT.format}, {HEADER_LEN} bytes")
 
+    locked_addr = None
     blocks = 0
+
     while True:
         try:
             file_id, file_size, addr = recv_header(sock)
@@ -86,7 +89,17 @@ def main():
             continue
 
         if file_id != EXPECTED_FILE_ID:
-            print(f"Ignoring header file_id={file_id!r} from {addr}")
+            continue
+
+        if not (0 < file_size <= MAX_FILE_SIZE):
+            print(f"Bad file_size={file_size} from {addr}, skipping")
+            continue
+
+        if locked_addr is None:
+            locked_addr = addr
+            print(f"Locking to sender {locked_addr}")
+        elif addr != locked_addr:
+            # ignore other senders
             continue
 
         print(f"\n[{blocks}] Header from {addr}: file_size={file_size} bytes")
@@ -101,18 +114,8 @@ def main():
             print(f"Length mismatch: got {len(payload)} vs {file_size}")
             continue
 
-        # Interpret as float64
         arr = np.frombuffer(payload, dtype=np.float64)
         print(f"Received {arr.size} float64 values. First 5: {arr[:5]}")
-
-        # Optional reshape
-        if arr.size % TRAIL_ELEMS == 0:
-            B = arr.size // TRAIL_ELEMS
-            arr5 = arr.reshape((B,) + TRAIL_SHAPE)
-            print(f"Reshaped to {arr5.shape} (B={B}). Example first element: {arr5[0,0,0,0,0]}")
-        else:
-            print("Not divisible by 48; skipping reshape.")
-
         blocks += 1
 
 
