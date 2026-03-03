@@ -86,7 +86,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: /tmp/debug.txt
+    file: '''../../data/debug.txt'''
     type: float
     unbuffered: 'False'
     vlen: frame_len
@@ -132,13 +132,13 @@ blocks:
     bus_structure: null
     coordinate: [1056, 576.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: ncjt_esn_fpga_bridge_0
   id: ncjt_esn_fpga_bridge
   parameters:
     affinity: ''
     alias: ''
-    bind_to_data_port: 'True'
+    bind_to_data_port: 'False'
     comment: ''
     data_port: '5001'
     default_weights: None
@@ -258,7 +258,7 @@ blocks:
     bus_structure: null
     coordinate: [1288, 556.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: qtgui_time_sink_x_0_0
   id: qtgui_time_sink_x
   parameters:

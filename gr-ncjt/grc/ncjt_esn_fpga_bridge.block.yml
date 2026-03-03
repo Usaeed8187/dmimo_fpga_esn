@@ -54,6 +54,7 @@ parameters:
   dtype: enum
   options: ['True', 'False']
   option_labels: ['True', 'False']
+  default: 'False'
 - id: read_from_file
   label: Read from File
   dtype: bool
