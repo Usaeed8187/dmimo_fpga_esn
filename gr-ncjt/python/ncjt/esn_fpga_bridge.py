@@ -175,10 +175,9 @@ class esn_fpga_bridge(gr.basic_block):
             self.sock.bind(("", bind_port))
         except OSError as e:
             # Fall back to ephemeral if the requested local port is unavailable
-            self.sock.bind(("", 0))
-            print(
-                f"[esn_fpga_bridge] Could not bind local UDP port {bind_port}: {e}; "
-                f"using ephemeral port {self.sock.getsockname()[1]}"
+            raise RuntimeError(
+                f"[esn_fpga_bridge] FATAL: could not bind UDP port {bind_port}: {e}. "
+                f"Something else is using it. Free the port and rerun."
             )
 
         if self.debug_udp:
