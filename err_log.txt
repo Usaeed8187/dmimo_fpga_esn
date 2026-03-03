@@ -42,7 +42,6 @@ qt.svg: /usr/share/icons/WhiteSur-light/apps/scalable/gnuradio-grc.svg:1:12346: 
 [esn_fpga_bridge] TX block start=30 npy_len=3968 n_chunks=4 chunk_size=1200
 [esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
 [esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
-[esn_fpga_bridge] TX block start=40 npy_len=3968 n_chunks=4 chunk_size=1200
-[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
-[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
+^C^Z^X
+[11]+  Stopped                 sudo gnuradio-companion
 

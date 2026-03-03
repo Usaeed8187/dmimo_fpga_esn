@@ -1,0 +1,130 @@
+chunxiao@chunxiao-minipc:~/Projects/dmimo_fpga_esn/gr-ncjt/build$ sudo tcpdump -n -i any -vv udp and host 192.168.1.10
+tcpdump: data link type LINUX_SLL2
+tcpdump: listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+17:38:45.970673 enp3s0 Out IP (tos 0x0, ttl 64, id 56470, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:38:45.970709 enp3s0 Out IP (tos 0x0, ttl 64, id 56471, offset 0, flags [DF], proto UDP (17), length 64)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x839a -> 0xa9bf!] UDP, length 36
+17:38:45.980827 enp3s0 Out IP (tos 0x0, ttl 64, id 56475, offset 0, flags [DF], proto UDP (17), length 64)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x839a -> 0xa9bf!] UDP, length 36
+17:38:45.990937 enp3s0 Out IP (tos 0x0, ttl 64, id 56478, offset 0, flags [DF], proto UDP (17), length 64)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x839a -> 0xa9bf!] UDP, length 36
+17:38:46.051517 enp3s0 Out IP (tos 0x0, ttl 64, id 56516, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0xfc54!] UDP, length 1228
+17:38:46.052795 enp3s0 Out IP (tos 0x0, ttl 64, id 56517, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x1320!] UDP, length 1228
+17:38:46.053892 enp3s0 Out IP (tos 0x0, ttl 64, id 56518, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x20ab!] UDP, length 1228
+17:38:46.054977 enp3s0 Out IP (tos 0x0, ttl 64, id 56519, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0xc8c1!] UDP, length 396
+17:38:48.068659 enp3s0 Out IP (tos 0x0, ttl 64, id 56545, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:38:48.068958 enp3s0 Out IP (tos 0x0, ttl 64, id 56546, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x7c09!] UDP, length 1228
+17:38:48.070109 enp3s0 Out IP (tos 0x0, ttl 64, id 56547, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x9166!] UDP, length 1228
+17:38:48.071279 enp3s0 Out IP (tos 0x0, ttl 64, id 56548, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x8155!] UDP, length 1228
+17:38:48.072516 enp3s0 Out IP (tos 0x0, ttl 64, id 56549, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0x9f0a!] UDP, length 396
+17:38:50.086201 enp3s0 Out IP (tos 0x0, ttl 64, id 57018, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:38:50.086452 enp3s0 Out IP (tos 0x0, ttl 64, id 57019, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x4806!] UDP, length 1228
+17:38:50.087572 enp3s0 Out IP (tos 0x0, ttl 64, id 57020, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x45ce!] UDP, length 1228
+17:38:50.088710 enp3s0 Out IP (tos 0x0, ttl 64, id 57021, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x6674!] UDP, length 1228
+17:38:50.089813 enp3s0 Out IP (tos 0x0, ttl 64, id 57022, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0xe9f4!] UDP, length 396
+17:38:52.103367 enp3s0 Out IP (tos 0x0, ttl 64, id 57060, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:38:52.103614 enp3s0 Out IP (tos 0x0, ttl 64, id 57061, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x42f8!] UDP, length 1228
+17:38:52.104833 enp3s0 Out IP (tos 0x0, ttl 64, id 57063, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0xc7be!] UDP, length 1228
+17:38:52.105950 enp3s0 Out IP (tos 0x0, ttl 64, id 57064, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x7bc0!] UDP, length 1228
+17:38:52.107067 enp3s0 Out IP (tos 0x0, ttl 64, id 57065, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0xea61!] UDP, length 396
+17:38:54.120593 enp3s0 Out IP (tos 0x0, ttl 64, id 57140, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:38:54.120791 enp3s0 Out IP (tos 0x0, ttl 64, id 57141, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0xff6e!] UDP, length 1228
+17:38:54.121867 enp3s0 Out IP (tos 0x0, ttl 64, id 57142, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0xbe6d!] UDP, length 1228
+17:38:54.122942 enp3s0 Out IP (tos 0x0, ttl 64, id 57143, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x5b00!] UDP, length 1228
+17:38:54.124010 enp3s0 Out IP (tos 0x0, ttl 64, id 57144, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0xec0c!] UDP, length 396
+17:38:56.137501 enp3s0 Out IP (tos 0x0, ttl 64, id 57472, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:38:56.137801 enp3s0 Out IP (tos 0x0, ttl 64, id 57473, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0xf453!] UDP, length 1228
+17:38:56.138914 enp3s0 Out IP (tos 0x0, ttl 64, id 57474, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0xb8a0!] UDP, length 1228
+17:38:56.140013 enp3s0 Out IP (tos 0x0, ttl 64, id 57475, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x954e!] UDP, length 1228
+17:38:56.141116 enp3s0 Out IP (tos 0x0, ttl 64, id 57476, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0xb2f7!] UDP, length 396
+17:38:58.154579 enp3s0 Out IP (tos 0x0, ttl 64, id 58411, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:38:58.154860 enp3s0 Out IP (tos 0x0, ttl 64, id 58412, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x9d8f!] UDP, length 1228
+17:38:58.155966 enp3s0 Out IP (tos 0x0, ttl 64, id 58413, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x7d3b!] UDP, length 1228
+17:38:58.157179 enp3s0 Out IP (tos 0x0, ttl 64, id 58414, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x3620!] UDP, length 1228
+17:38:58.158307 enp3s0 Out IP (tos 0x0, ttl 64, id 58415, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0x506a!] UDP, length 396
+17:39:00.171941 enp3s0 Out IP (tos 0x0, ttl 64, id 58785, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:39:00.172187 enp3s0 Out IP (tos 0x0, ttl 64, id 58786, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x4b06!] UDP, length 1228
+17:39:00.173313 enp3s0 Out IP (tos 0x0, ttl 64, id 58787, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0xfc95!] UDP, length 1228
+17:39:00.174520 enp3s0 Out IP (tos 0x0, ttl 64, id 58788, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x9f8c!] UDP, length 1228
+17:39:00.175644 enp3s0 Out IP (tos 0x0, ttl 64, id 58789, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0x4de8!] UDP, length 396
+17:39:02.188965 enp3s0 Out IP (tos 0x0, ttl 64, id 59148, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:39:02.189174 enp3s0 Out IP (tos 0x0, ttl 64, id 59149, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x9724!] UDP, length 1228
+17:39:02.190291 enp3s0 Out IP (tos 0x0, ttl 64, id 59150, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x049a!] UDP, length 1228
+17:39:02.191394 enp3s0 Out IP (tos 0x0, ttl 64, id 59151, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x1e3a!] UDP, length 1228
+17:39:02.192490 enp3s0 Out IP (tos 0x0, ttl 64, id 59152, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0xbd89!] UDP, length 396
+17:39:04.206023 enp3s0 Out IP (tos 0x0, ttl 64, id 60416, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:39:04.206260 enp3s0 Out IP (tos 0x0, ttl 64, id 60417, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x4d45!] UDP, length 1228
+17:39:04.207466 enp3s0 Out IP (tos 0x0, ttl 64, id 60418, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x8ef2!] UDP, length 1228
+17:39:04.208695 enp3s0 Out IP (tos 0x0, ttl 64, id 60419, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x3533!] UDP, length 1228
+17:39:04.209909 enp3s0 Out IP (tos 0x0, ttl 64, id 60421, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0x0a66!] UDP, length 396
+17:39:06.223409 enp3s0 Out IP (tos 0x0, ttl 64, id 61156, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:39:06.223718 enp3s0 Out IP (tos 0x0, ttl 64, id 61157, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x38b7!] UDP, length 1228
+17:39:06.224960 enp3s0 Out IP (tos 0x0, ttl 64, id 61158, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x1648!] UDP, length 1228
+17:39:06.226108 enp3s0 Out IP (tos 0x0, ttl 64, id 61159, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x0909!] UDP, length 1228
+17:39:06.227276 enp3s0 Out IP (tos 0x0, ttl 64, id 61160, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0xfc16!] UDP, length 396
+17:39:08.240874 enp3s0 Out IP (tos 0x0, ttl 64, id 62911, offset 0, flags [DF], proto UDP (17), length 36)
+    192.168.1.2.5002 > 192.168.1.10.6001: [udp sum ok] UDP, length 8
+17:39:08.241113 enp3s0 Out IP (tos 0x0, ttl 64, id 62912, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x9abd!] UDP, length 1228
+17:39:08.242231 enp3s0 Out IP (tos 0x0, ttl 64, id 62913, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0xbdbd!] UDP, length 1228
+17:39:08.243331 enp3s0 Out IP (tos 0x0, ttl 64, id 62914, offset 0, flags [DF], proto UDP (17), length 1256)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8842 -> 0x2b19!] UDP, length 1228
+17:39:08.244427 enp3s0 Out IP (tos 0x0, ttl 64, id 62915, offset 0, flags [DF], proto UDP (17), length 424)
+    192.168.1.2.5002 > 192.168.1.10.5001: [bad udp cksum 0x8502 -> 0x5565!] UDP, length 396
+
