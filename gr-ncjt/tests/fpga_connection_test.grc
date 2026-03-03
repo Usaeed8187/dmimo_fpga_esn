@@ -89,12 +89,12 @@ blocks:
     file: '''../../data/debug.txt'''
     type: float
     unbuffered: 'False'
-    vlen: frame_len
+    vlen: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1056, 364.0]
+    coordinate: [1064, 364.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_vector_0
@@ -149,7 +149,7 @@ blocks:
     minoutbuf: '0'
     npz_key: '''H_mag_phase'''
     npz_path: '''../../data/H_mag_phase.npz'''
-    out_len: frame_len
+    out_len: '2'
     output_format: int16
     q15_scale: '32767.0'
     read_from_file: 'True'
