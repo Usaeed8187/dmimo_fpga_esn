@@ -18,32 +18,6 @@ Generating: '/home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connectio
 Executing: /usr/bin/python3 -u /home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.py
 
 QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.10/dist-packages/gnuradio/ncjt/esn_fpga_bridge.py", line 175, in __init__
-    self.sock.bind(("", bind_port))
-OSError: [Errno 98] Address already in use
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.py", line 150, in <module>
-    main()
-  File "/home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.py", line 128, in main
-    tb = top_block_cls()
-  File "/home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.py", line 82, in __init__
-    self.ncjt_esn_fpga_bridge_0 = ncjt.esn_fpga_bridge('packet_len', '192.168.1.10', 5001, frame_len, 2, 32767.0, 'int16', 2000, None, True, False, True, '../../data/H_mag_phase.npz', 'H_mag_phase')
-  File "/usr/local/lib/python3.10/dist-packages/gnuradio/ncjt/esn_fpga_bridge.py", line 178, in __init__
-    raise RuntimeError(
-RuntimeError: [esn_fpga_bridge] FATAL: could not bind UDP port 5002: [Errno 98] Address already in use. Something else is using it. Free the port and rerun.
-
->>> Done (return code 1)
-
-Generating: '/home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.py'
->>> Warning: This flow graph may not have flow control: no audio or RF hardware blocks found. Add a Misc->Throttle block to your flow graph to avoid CPU congestion.
-
-Executing: /usr/bin/python3 -u /home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.py
-
-QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
 [esn_fpga_bridge] FPGA addr_data=('192.168.1.10', 5001) addr_cfg=('192.168.1.10', 6001)
 [esn_fpga_bridge] local UDP socket bound to ('0.0.0.0', 5002)
 [esn_fpga_bridge] socket timeout = 2000 ms
@@ -69,18 +43,6 @@ qt.svg: /usr/share/icons/WhiteSur-light/apps/scalable/gnuradio-grc.svg:1:12346: 
 [esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
 [esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
 [esn_fpga_bridge] TX block start=40 npy_len=3968 n_chunks=4 chunk_size=1200
-[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
-[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
-[esn_fpga_bridge] TX block start=50 npy_len=3968 n_chunks=4 chunk_size=1200
-[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
-[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
-[esn_fpga_bridge] TX block start=60 npy_len=3968 n_chunks=4 chunk_size=1200
-[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
-[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
-[esn_fpga_bridge] TX block start=70 npy_len=3968 n_chunks=4 chunk_size=1200
-[esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
-[esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
-[esn_fpga_bridge] TX block start=80 npy_len=3968 n_chunks=4 chunk_size=1200
 [esn_fpga_bridge]   sent chunk 1/4 bytes=1228 payload=1200
 [esn_fpga_bridge]   sent chunk 4/4 bytes=396 payload=368
 
