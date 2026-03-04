@@ -107,7 +107,8 @@ class esn_fpga_bridge(gr.basic_block):
     save_fpga_replies : bool
         If True, append each FPGA reply to a text file as human-readable floats.
     fpga_replies_path : str
-        Path to the text file used when save_fpga_replies is enabled.
+        Base path used when save_fpga_replies is enabled. Replies are written
+        as one value per line to `<stem>_1<suffix>` and `<stem>_2<suffix>`.
     """
 
     def __init__(self,
@@ -196,7 +197,7 @@ class esn_fpga_bridge(gr.basic_block):
         else:
             self.save_fpga_replies = bool(save_fpga_replies)
         self.fpga_replies_path = str(fpga_replies_path or "../../data/nmses.txt")
-        self._fpga_replies_file = None
+        self._fpga_replies_files = None
 
         # Protocol header (matches your fpgaESN.py style)
         self.header = np.array([32670, 0, 64, 0], dtype=np.int16)
@@ -271,11 +272,12 @@ class esn_fpga_bridge(gr.basic_block):
             self.sock.close()
         except Exception:
             pass
-        if self._fpga_replies_file is not None:
-            try:
-                self._fpga_replies_file.close()
-            except Exception:
-                pass
+        if self._fpga_replies_files is not None:
+            for fp in self._fpga_replies_files:
+                try:
+                    fp.close()
+                except Exception:
+                    pass
         return super().stop()
 
     # ---------- forecast ----------
@@ -527,13 +529,22 @@ class esn_fpga_bridge(gr.basic_block):
         if not self.save_fpga_replies:
             return
         try:
-            if self._fpga_replies_file is None:
+            if self._fpga_replies_files is None:
                 reply_path = Path(self.fpga_replies_path)
                 reply_path.parent.mkdir(parents=True, exist_ok=True)
-                self._fpga_replies_file = reply_path.open("a", encoding="utf-8")
-            line = " ".join(f"{float(v):.17g}" for v in arr)
-            self._fpga_replies_file.write(f"{line}\n")
-            self._fpga_replies_file.flush()
+                reply_path_1 = reply_path.with_name(f"{reply_path.stem}_1{reply_path.suffix}")
+                reply_path_2 = reply_path.with_name(f"{reply_path.stem}_2{reply_path.suffix}")
+                self._fpga_replies_files = (
+                    reply_path_1.open("a", encoding="utf-8"),
+                    reply_path_2.open("a", encoding="utf-8"),
+                )
+
+            v1 = float(arr[0]) if arr.size > 0 else 0.0
+            v2 = float(arr[1]) if arr.size > 1 else 0.0
+            self._fpga_replies_files[0].write(f"{v1:.17g}\n")
+            self._fpga_replies_files[1].write(f"{v2:.17g}\n")
+            self._fpga_replies_files[0].flush()
+            self._fpga_replies_files[1].flush()
         except Exception as e:
             print(f"[esn_fpga_bridge] Failed to save FPGA reply to '{self.fpga_replies_path}': {e}")
 

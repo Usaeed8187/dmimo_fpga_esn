@@ -86,7 +86,7 @@ parameters:
   dtype: bool
   default: 'True'
 - id: fpga_replies_path
-  label: FPGA Replies File Path
+  label: FPGA Replies Base Path
   dtype: string
   default: '../../data/nmses.txt'
 
