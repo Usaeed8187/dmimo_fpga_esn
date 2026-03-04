@@ -143,6 +143,7 @@ blocks:
     data_port: '5001'
     default_weights: None
     fpga_ip: 192.168.1.10
+    fpga_reply_mode: batch
     frame_len: frame_len
     length_tag_key: packet_len
     maxoutbuf: '0'
@@ -153,7 +154,9 @@ blocks:
     output_format: int16
     q15_scale: '32767.0'
     read_from_file: 'True'
-    socket_timeout_ms: '2000'
+    reply_every_n_transmissions: '70'
+    socket_timeout_ms: '180000'
+    terminate_after_n_transmissions: 'True'
     update_weights_each_packet: 'True'
   states:
     bus_sink: false
