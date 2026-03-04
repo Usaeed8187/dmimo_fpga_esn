@@ -17,6 +17,7 @@ import struct
 import io
 import math
 import time
+from pathlib import Path
 import numpy as np
 from gnuradio import gr
 
@@ -103,6 +104,10 @@ class esn_fpga_bridge(gr.basic_block):
         N used for batch reply timing (and optional termination threshold).
     terminate_after_n_transmissions : bool
         If True, return WORK_DONE after N transmissions in file mode.
+    save_fpga_replies : bool
+        If True, append each FPGA reply to a text file as human-readable floats.
+    fpga_replies_path : str
+        Path to the text file used when save_fpga_replies is enabled.
     """
 
     def __init__(self,
@@ -126,7 +131,9 @@ class esn_fpga_bridge(gr.basic_block):
                  debug_udp=True,
                  fpga_reply_mode="batch",
                  reply_every_n_transmissions=70,
-                 terminate_after_n_transmissions=False):
+                 terminate_after_n_transmissions=False,
+                 save_fpga_replies=False,
+                 fpga_replies_path="../../data/nmses.txt"):
 
         if isinstance(read_from_file, str):
             self.read_from_file = read_from_file.strip().lower() == "true"
@@ -183,6 +190,13 @@ class esn_fpga_bridge(gr.basic_block):
             )
         else:
             self.terminate_after_n_transmissions = bool(terminate_after_n_transmissions)
+
+        if isinstance(save_fpga_replies, str):
+            self.save_fpga_replies = save_fpga_replies.strip().lower() == "true"
+        else:
+            self.save_fpga_replies = bool(save_fpga_replies)
+        self.fpga_replies_path = str(fpga_replies_path or "../../data/nmses.txt")
+        self._fpga_replies_file = None
 
         # Protocol header (matches your fpgaESN.py style)
         self.header = np.array([32670, 0, 64, 0], dtype=np.int16)
@@ -257,6 +271,11 @@ class esn_fpga_bridge(gr.basic_block):
             self.sock.close()
         except Exception:
             pass
+        if self._fpga_replies_file is not None:
+            try:
+                self._fpga_replies_file.close()
+            except Exception:
+                pass
         return super().stop()
 
     # ---------- forecast ----------
@@ -462,6 +481,7 @@ class esn_fpga_bridge(gr.basic_block):
         file_size = self._recv_file_header()
         payload = self._recv_file_payload(file_size)
         arr = np.frombuffer(payload, dtype=np.float64)
+        self._save_fpga_reply(arr)
         if arr.size != _EXPECTED_REPLY_VALUES:
             print(
                 f"[esn_fpga_bridge] Expected {_EXPECTED_REPLY_VALUES} float64 values from FPGA; got {arr.size}"
@@ -494,6 +514,20 @@ class esn_fpga_bridge(gr.basic_block):
                 return y[:self.out_len]
 
         return self._decode_reply(packet)
+    
+    def _save_fpga_reply(self, arr: np.ndarray):
+        if not self.save_fpga_replies:
+            return
+        try:
+            if self._fpga_replies_file is None:
+                reply_path = Path(self.fpga_replies_path)
+                reply_path.parent.mkdir(parents=True, exist_ok=True)
+                self._fpga_replies_file = reply_path.open("a", encoding="utf-8")
+            line = " ".join(f"{float(v):.17g}" for v in arr)
+            self._fpga_replies_file.write(f"{line}\n")
+            self._fpga_replies_file.flush()
+        except Exception as e:
+            print(f"[esn_fpga_bridge] Failed to save FPGA reply to '{self.fpga_replies_path}': {e}")
 
     # ---------- message port: weights ----------
     def _on_weights_msg(self, pdu):
