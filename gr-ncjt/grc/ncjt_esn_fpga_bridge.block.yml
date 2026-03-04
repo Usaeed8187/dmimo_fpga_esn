@@ -84,7 +84,7 @@ parameters:
 - id: save_fpga_replies
   label: Save FPGA Replies to File
   dtype: bool
-  default: 'False'
+  default: 'True'
 - id: fpga_replies_path
   label: FPGA Replies File Path
   dtype: string
