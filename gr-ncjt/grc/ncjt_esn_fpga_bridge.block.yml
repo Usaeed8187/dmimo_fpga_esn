@@ -4,7 +4,7 @@ category: '[dMIMO]'
 
 templates:
   imports: from gnuradio import ncjt
-  mmake: ncjt.esn_fpga_bridge(length_tag_key=${length_tag_key}, fpga_ip=${fpga_ip}, data_port=${data_port}, frame_len=${frame_len}, out_len=${out_len}, q15_scale=${q15_scale}, output_format='${output_format}', socket_timeout_ms=${socket_timeout_ms}, default_weights=${default_weights}, update_weights_each_packet=${update_weights_each_packet}, bind_to_data_port=${bind_to_data_port}, read_from_file=${read_from_file}, npz_path=${npz_path}, npz_key=${npz_key}, fpga_reply_mode='${fpga_reply_mode}', reply_every_n_transmissions=${reply_every_n_transmissions}, terminate_after_n_transmissions=${terminate_after_n_transmissions})
+  make: ncjt.esn_fpga_bridge(length_tag_key=${length_tag_key}, fpga_ip=${fpga_ip}, data_port=${data_port}, frame_len=${frame_len}, out_len=${out_len}, q15_scale=${q15_scale}, output_format='${output_format}', socket_timeout_ms=${socket_timeout_ms}, default_weights=${default_weights}, update_weights_each_packet=${update_weights_each_packet}, bind_to_data_port=${bind_to_data_port}, read_from_file=${read_from_file}, npz_path=${npz_path}, npz_key=${npz_key}, fpga_reply_mode='${fpga_reply_mode}', reply_every_n_transmissions=${reply_every_n_transmissions}, terminate_after_n_transmissions=${terminate_after_n_transmissions})
 
 parameters:
 - id: length_tag_key
