@@ -149,13 +149,13 @@ blocks:
     length_tag_key: packet_len
     maxoutbuf: '0'
     minoutbuf: '0'
-    npz_key: '''H_mag_phase'''
-    npz_path: '''../../data/H_mag_phase.npz'''
+    npz_key: '''H_real_imag'''
+    npz_path: '''../../data/H_real_imag_filtered_float64.npz'''
     out_len: '2'
     output_format: int16
     q15_scale: '32767.0'
     read_from_file: 'True'
-    reply_every_n_transmissions: '70'
+    reply_every_n_transmissions: '40'
     save_fpga_replies: 'True'
     socket_timeout_ms: '180000'
     terminate_after_n_transmissions: 'True'

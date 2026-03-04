@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 from gnuradio import gr
 
-_TENSOR_SHAPE = (2, 2, 2, 6)
+_TENSOR_SHAPE = (2, 2, 2, 32)
 _TENSOR_SIZE = int(np.prod(_TENSOR_SHAPE))
 
 _MAGIC = b"NPYB"
