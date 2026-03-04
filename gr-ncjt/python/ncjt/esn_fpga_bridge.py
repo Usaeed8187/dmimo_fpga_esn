@@ -99,7 +99,7 @@ class esn_fpga_bridge(gr.basic_block):
         Key within the .npz file (defaults to first key when omitted).
     fpga_reply_mode : str
         'streaming' expects one FPGA reply per transmission.
-        'batch' expects one FPGA reply after every N transmissions.
+        'batch' expects N FPGA replies after every N transmissions.
     reply_every_n_transmissions : int
         N used for batch reply timing (and optional termination threshold).
     terminate_after_n_transmissions : bool
@@ -493,6 +493,14 @@ class esn_fpga_bridge(gr.basic_block):
             return z
         return y[:self.out_len]
     
+    def _decode_file_replies(self, nreplies: int) -> np.ndarray:
+        """Decode and save a batch of FPGA replies; return the last reply for stream output."""
+        n = max(1, int(nreplies))
+        y_last = np.zeros(self.out_len, dtype=np.float32)
+        for _ in range(n):
+            y_last = self._decode_file_reply()
+        return y_last
+    
     def _decode_single_reply_packet(self, packet: bytes) -> np.ndarray:
         if len(packet) >= _RX_HEADER_LEN:
             file_size = self._parse_file_size_from_header(packet)
@@ -617,7 +625,10 @@ class esn_fpga_bridge(gr.basic_block):
                                 f"(mode={self.fpga_reply_mode}, tx_since_reply={self._tx_count_since_reply}, "
                                 f"total_tx={self._total_tx_count})"
                             )
-                        y = self._decode_file_reply()
+                        if self.fpga_reply_mode == "batch":
+                            y = self._decode_file_replies(self.reply_every_n_transmissions)
+                        else:
+                            y = self._decode_file_reply()
                         self._tx_count_since_reply = 0
                     else:
                         y = np.zeros(self.out_len, dtype=np.float32)
