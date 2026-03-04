@@ -143,6 +143,7 @@ blocks:
     data_port: '5001'
     default_weights: None
     fpga_ip: 192.168.1.10
+    fpga_replies_path: ../../data/nmses.txt
     fpga_reply_mode: batch
     frame_len: frame_len
     length_tag_key: packet_len
@@ -155,6 +156,7 @@ blocks:
     q15_scale: '32767.0'
     read_from_file: 'True'
     reply_every_n_transmissions: '70'
+    save_fpga_replies: 'True'
     socket_timeout_ms: '180000'
     terminate_after_n_transmissions: 'True'
     update_weights_each_packet: 'True'

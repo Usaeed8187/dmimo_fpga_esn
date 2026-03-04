@@ -1,0 +1,7 @@
+1) navigate to ~/Projects/dmimo_fpga_esn
+2) run sudo lsof -nP -iUDP:5002 to check if something is already bound to port 5002. If so, kill it using sudo kill -9 *PID*
+3) run sudo gnuradio-companion
+4) open the file /home/chunxiao/Projects/dmimo_fpga_esn/gr-ncjt/tests/fpga_connection_test.grc
+5) run that file
+6) that gnuradio flowgraph will save the nmses under /home/chunxiao/Projects/dmimo_fpga_esn/data/nmse_1.txt and /home/chunxiao/Projects/dmimo_fpga_esn/data/nmse_2.txt
+7) plot those values
