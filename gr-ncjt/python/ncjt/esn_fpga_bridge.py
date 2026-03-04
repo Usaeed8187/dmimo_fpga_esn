@@ -96,6 +96,13 @@ class esn_fpga_bridge(gr.basic_block):
         .npz path containing real input data to be preloaded into a tensor buffer.
     npz_key : str
         Key within the .npz file (defaults to first key when omitted).
+    fpga_reply_mode : str
+        'streaming' expects one FPGA reply per transmission.
+        'batch' expects one FPGA reply after every N transmissions.
+    reply_every_n_transmissions : int
+        N used for batch reply timing (and optional termination threshold).
+    terminate_after_n_transmissions : bool
+        If True, return WORK_DONE after N transmissions in file mode.
     """
 
     def __init__(self,
@@ -116,7 +123,10 @@ class esn_fpga_bridge(gr.basic_block):
                  init_sleep_s=0.01,
                  chunk_sleep_s=0.001,
                  block_sleep_s=0.01,
-                 debug_udp=True):
+                 debug_udp=True,
+                 fpga_reply_mode="batch",
+                 reply_every_n_transmissions=70,
+                 terminate_after_n_transmissions=False):
 
         if isinstance(read_from_file, str):
             self.read_from_file = read_from_file.strip().lower() == "true"
@@ -161,6 +171,18 @@ class esn_fpga_bridge(gr.basic_block):
 
         self.npz_path = str(npz_path or "")
         self.npz_key = str(npz_key or "")
+        self.fpga_reply_mode = str(fpga_reply_mode or "batch").strip().lower()
+        if self.fpga_reply_mode not in ("streaming", "batch"):
+            raise ValueError(
+                f"Unsupported fpga_reply_mode='{fpga_reply_mode}'. Use 'streaming' or 'batch'."
+            )
+        self.reply_every_n_transmissions = max(1, int(reply_every_n_transmissions))
+        if isinstance(terminate_after_n_transmissions, str):
+            self.terminate_after_n_transmissions = (
+                terminate_after_n_transmissions.strip().lower() == "true"
+            )
+        else:
+            self.terminate_after_n_transmissions = bool(terminate_after_n_transmissions)
 
         # Protocol header (matches your fpgaESN.py style)
         self.header = np.array([32670, 0, 64, 0], dtype=np.int16)
@@ -214,6 +236,9 @@ class esn_fpga_bridge(gr.basic_block):
         self.tensor_buffer = None
         self.tensor_cursor = 0
         self.tensors_per_packet = _BLOCK_TENSORS
+        self._tx_count_since_reply = 0
+        self._total_tx_count = 0
+        self._done = False
         self._session_id = 1
         self._init_sent = False
 
@@ -351,6 +376,14 @@ class esn_fpga_bridge(gr.basic_block):
                 print(f"[esn_fpga_bridge] sent INIT {i+1}/3 to {self.addr_data} bytes={len(init_pkt)} session={self._session_id}")
             time.sleep(self.init_sleep_s)
         self._init_sent = True
+
+        print(
+            "[esn_fpga_bridge] INIT summary: "
+            f"total_tensors={total_tensors}, tensors_per_tx={self.tensors_per_packet}, "
+            f"reply_mode={self.fpga_reply_mode}, reply_every_n_transmissions={self.reply_every_n_transmissions}, "
+            f"terminate_after_n_transmissions={self.terminate_after_n_transmissions}"
+        )
+
         time.sleep(0.05)
 
     def _send_tensor_block(self, start: int, block: np.ndarray):
@@ -506,6 +539,9 @@ class esn_fpga_bridge(gr.basic_block):
         """
         yout = output_items[0]
 
+        if self._done:
+            return -1
+
         produced = 0
         if self.read_from_file:
             nframes = len(yout)
@@ -532,10 +568,39 @@ class esn_fpga_bridge(gr.basic_block):
                     self._send_init_packet()
                     start, block = self._next_tensor_block()
                     self._send_tensor_block(start, block)
+                    self._tx_count_since_reply += 1
+                    self._total_tx_count += 1
+
+                    if self.fpga_reply_mode == "streaming":
+                        expect_reply_now = True
+                    else:
+                        expect_reply_now = self._tx_count_since_reply >= self.reply_every_n_transmissions
+
+                    if expect_reply_now:
+                        if self.debug_udp:
+                            print(
+                                f"[esn_fpga_bridge] expecting FPGA reply now "
+                                f"(mode={self.fpga_reply_mode}, tx_since_reply={self._tx_count_since_reply}, "
+                                f"total_tx={self._total_tx_count})"
+                            )
+                        y = self._decode_file_reply()
+                        self._tx_count_since_reply = 0
+                    else:
+                        y = np.zeros(self.out_len, dtype=np.float32)
+
                     if self.debug_udp and not self._dbg_once:
                         print(f"[esn_fpga_bridge] mode={'file' if self.read_from_file else 'stream'} starting RX wait...")
                         self._dbg_once = True
-                    y = self._decode_file_reply()
+                    if (
+                        self.terminate_after_n_transmissions
+                        and self._total_tx_count >= self.reply_every_n_transmissions
+                    ):
+                        if self.debug_udp:
+                            print(
+                                f"[esn_fpga_bridge] termination requested after "
+                                f"{self._total_tx_count} transmissions"
+                            )
+                        self._done = True
 
                 self._warned_timeout = False
             except socket.timeout:
@@ -552,6 +617,9 @@ class esn_fpga_bridge(gr.basic_block):
 
             yout[k, :] = y
             produced += 1
+
+            if self._done:
+                break
 
         # Consume input frames and report produced outputs
         if not self.read_from_file:
